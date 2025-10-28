@@ -49,7 +49,7 @@ const MobileDashboard = () => {
   const [showAddDealModal, setShowAddDealModal] = useState(false);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
-  const [isAICoachExpanded, setIsAICoachExpanded] = useState(false);
+  const [isFairyCoachExpanded, setIsFairyCoachExpanded] = useState(false);
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   // Fetch dashboard data on mount
