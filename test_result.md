@@ -888,6 +888,18 @@ backend:
         comment: "🔧 PRODUCTION-READY FIX IMPLEMENTED - REPLACED CUSTOM MUSTACHE PARSER WITH PYSTACHE LIBRARY: User reported recurring PDF branding issues (8th time breaking) where nested branding variables like {{branding.agent.phone}} and {{#branding.agent.phone}} were displaying as raw HTML in PDF headers instead of actual data. ROOT CAUSE: Custom 70-line Mustache parser in render_template() had fundamental flaw - conditional blocks {{#condition}} only checked top-level keys in data dict, didn't support nested path traversal like {{#branding.agent.phone}}. This caused conditional blocks with nested branding data to fail repeatedly. SOLUTION: Replaced entire custom parser with production-ready pystache library (industry-standard Mustache implementation). Implementation: 1) Installed pystache via pip and added to requirements.txt. 2) Replaced render_template() function with pystache.Renderer implementation. 3) Disabled HTML escaping (escape=lambda u: u) for raw PDF output. 4) Added strict missing_tags mode for debugging. 5) Enhanced error logging with data keys for troubleshooting. BENEFITS: Battle-tested library handles all Mustache features (nested paths, conditionals, arrays, partials), eliminates recurring template parsing bugs, reduces maintenance burden, production-ready with proper edge case handling. Backend restarted successfully. Ready for comprehensive testing across all PDF calculators (seller-net, commission, affordability, investor, closing-date) to verify branding displays correctly for STARTER/PRO users."
 
 frontend:
+  - task: "Mobile Fairy AI Coach Re-integration"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MobileDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ MOBILE FAIRY AI COACH RE-INTEGRATED SUCCESSFULLY: Re-added the Fairy AI Coach (ProOnboardingWizard component) to the mobile Overview page as requested. IMPLEMENTATION DETAILS: 1) LOCATION: Positioned at the top of MobileDashboard, immediately above 'This Month's Net' card as specified. 2) VISIBILITY: Only shown for PRO plan users (user?.plan === 'PRO'). 3) COLLAPSIBLE BEHAVIOR: Implemented expandable/collapsible card with state management (isFairyCoachExpanded), starts in COLLAPSED state by default, toggle functionality with ChevronDown/ChevronUp icons. 4) STYLING: Matches desktop styling with emerald gradient background (from-emerald-600 to-emerald-700), Sparkles icon with white text on emerald background, clean card design with shadow. 5) COLLAPSED STATE: Shows title 'Fairy AI Coach', subtitle 'Your 3-Day Pro Success Guide', Sparkles icon, ChevronDown indicator. 6) EXPANDED STATE: Shows welcome message, Day 1-3 checklist preview with CheckCircle2 icons, 'Start Your Journey' button to open full ProOnboardingWizard modal, helpful tip about accessing later. 7) INTERACTION: Clicking anywhere on the card toggles expand/collapse, 'Start Your Journey' button opens full onboarding wizard modal, maintains existing wizard functionality (sessionStorage persistence, completion tracking). TECHNICAL CHANGES: Added CheckCircle2 to lucide-react imports, added isFairyCoachExpanded state, added collapsible Card component before 'This Month's Net' card, maintained all existing functionality. The Fairy AI Coach is now visible at the top of mobile Overview, collapsible, collapsed by default, and styled to match desktop version. Ready for mobile testing to verify visual appearance and interaction behavior."
+
   - task: "Safari Post-Login Blank Screen Fix - localStorage Access During Initial Render"
     implemented: true
     working: true
