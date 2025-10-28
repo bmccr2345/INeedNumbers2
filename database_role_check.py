@@ -9,7 +9,7 @@ import sys
 import json
 
 class DatabaseRoleChecker:
-    def __init__(self, base_url="https://mobile-dash-fix-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://agent-tracker-20.preview.emergentagent.com"):
         self.base_url = base_url
         self.demo_email = "demo@demo.com"
         self.demo_password = "demo123"

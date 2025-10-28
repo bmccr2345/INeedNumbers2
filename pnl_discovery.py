@@ -9,7 +9,7 @@ import json
 
 def test_pnl_endpoint(endpoint, method="GET", data=None, auth_token=None):
     """Test a single P&L endpoint"""
-    base_url = "https://mobile-dash-fix-1.preview.emergentagent.com"
+    base_url = "https://agent-tracker-20.preview.emergentagent.com"
     url = f"{base_url}/{endpoint}"
     
     headers = {'Content-Type': 'application/json'}

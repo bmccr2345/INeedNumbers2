@@ -10,7 +10,7 @@ import sys
 
 class PlanDataTester:
     def __init__(self):
-        self.base_url = "https://mobile-dash-fix-1.preview.emergentagent.com"
+        self.base_url = "https://agent-tracker-20.preview.emergentagent.com"
         self.user_email = "bmccr23@gmail.com"
         self.user_password = "Goosey23!!23"
         
