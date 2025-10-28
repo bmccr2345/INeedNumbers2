@@ -11,7 +11,8 @@ import {
   PieChart,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import MobileCard from '../components/mobile/MobileCard';
