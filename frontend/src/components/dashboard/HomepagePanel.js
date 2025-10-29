@@ -67,24 +67,6 @@ const HomepagePanel = () => {
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
   
-  // Auth helper functions
-  const getAuthToken = () => {
-    return localStorage.getItem('access_token') || 
-           document.cookie.split(';')
-             .find(c => c.trim().startsWith('access_token='))
-             ?.split('=')[1];
-  };
-
-  const getAuthHeaders = () => {
-    const token = getAuthToken();
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
-
   // Get current month in YYYY-MM format
   const getCurrentMonth = () => {
     const now = new Date();
