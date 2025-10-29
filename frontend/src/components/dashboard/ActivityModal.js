@@ -4,7 +4,6 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import Cookies from 'js-cookie';
 
 const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
   const [currentEntry, setCurrentEntry] = useState({
@@ -13,17 +12,6 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
     reflection: ''
   });
   const [isLogging, setIsLogging] = useState(false);
-
-  // Helper function for API headers
-  const getHeaders = () => {
-    const token = Cookies.get('access_token');
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
 
   // Format activity name (same as ActionTracker)
   const formatActivityName = (activity) => {
