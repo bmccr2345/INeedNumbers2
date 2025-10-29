@@ -91,7 +91,10 @@ const ActionTrackerPanel = () => {
       // Load settings
       const settingsResponse = await axios.get(
         `${backendUrl}/api/tracker/settings?month=${currentMonth}`,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
       setSettings(settingsResponse.data);
 
@@ -103,7 +106,10 @@ const ActionTrackerPanel = () => {
       // Load daily entry
       const dailyResponse = await axios.get(
         `${backendUrl}/api/tracker/daily?date=${today}`,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
       setDailyEntry(dailyResponse.data.dailyEntry);
       setSummary(dailyResponse.data.summary);
@@ -123,7 +129,10 @@ const ActionTrackerPanel = () => {
       const currentMonth = getCurrentMonth();
       const pnlResponse = await axios.get(
         `${backendUrl}/api/pnl/summary?month=${currentMonth}&ytd=true`,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
       setPnlData(pnlResponse.data);
     } catch (error) {
@@ -138,7 +147,10 @@ const ActionTrackerPanel = () => {
       await axios.post(
         `${backendUrl}/api/tracker/settings`,
         newSettings,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
       setSettings(newSettings);
       setIsFirstRun(false);
@@ -166,7 +178,10 @@ const ActionTrackerPanel = () => {
           hours: newDailyEntry.hours,
           reflection: newDailyEntry.reflection
         },
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
       
       setDailyEntry(newDailyEntry);
