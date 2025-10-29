@@ -41,17 +41,6 @@ const ActionTrackerPanel = () => {
   const [isFirstRun, setIsFirstRun] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Helper function for API headers
-  const getHeaders = () => {
-    const token = Cookies.get('access_token');
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
-
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
   
