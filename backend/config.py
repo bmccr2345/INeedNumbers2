@@ -14,6 +14,9 @@ import sys
 # Load environment variables
 load_dotenv()
 
+# Setup logger for configuration warnings
+logger = logging.getLogger(__name__)
+
 class Config(BaseSettings):
     """
     Centralized configuration with validation.
