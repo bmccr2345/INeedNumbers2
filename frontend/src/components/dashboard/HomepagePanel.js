@@ -152,13 +152,19 @@ const HomepagePanel = () => {
       // Load settings
       const settingsResponse = await axios.get(
         `${backendUrl}/api/tracker/settings?month=${currentMonth}`,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
 
       // Load daily entry
       const dailyResponse = await axios.get(
         `${backendUrl}/api/tracker/daily?date=${today}`,
-        { headers: getAuthHeaders() }
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
 
       // Load P&L data if Pro user
@@ -167,7 +173,10 @@ const HomepagePanel = () => {
         try {
           const pnlResponse = await axios.get(
             `${backendUrl}/api/pnl/summary?month=${currentMonth}&ytd=true`,
-            { headers: getAuthHeaders() }
+            { 
+              withCredentials: true,
+              headers: { 'Content-Type': 'application/json' }
+            }
           );
           pnlData = pnlResponse.data;
         } catch (error) {
