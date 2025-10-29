@@ -66,17 +66,6 @@ const ActionTrackerPanel = () => {
       }));
     }
   };
-
-  // Auth helper functions
-  const getAuthToken = () => {
-    return localStorage.getItem('access_token') || 
-           document.cookie.split(';')
-             .find(c => c.trim().startsWith('access_token='))
-             ?.split('=')[1];
-  };
-
-  const getAuthHeaders = () => {
-    const token = getAuthToken();
     return token ? {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
