@@ -3308,15 +3308,16 @@ async def login(request: Request, response: Response, login_data: LoginRequest):
     )
     
     # Set HttpOnly, Secure, SameSite cookie with proper domain handling
-    # Force secure=True for preview environment (HTTPS required)
-    is_secure = config.NODE_ENV == "production" or "preview.emergentagent.com" in request.url.hostname
+    # For cross-domain setup (ineednumbers.com -> agent-financials.emergent.host)
+    # MUST use SameSite=None with Secure=True
+    is_production = config.NODE_ENV == "production" or "preview.emergentagent.com" in request.url.hostname or "emergent.host" in request.url.hostname
     response.set_cookie(
         key="access_token",
         value=access_token,
         max_age=int(access_token_expires.total_seconds()),
         httponly=True,
-        secure=is_secure,
-        samesite="lax",  # Use lax for cross-origin compatibility
+        secure=True,  # REQUIRED for cross-domain (SameSite=None requires Secure)
+        samesite="none",  # REQUIRED for cross-domain authentication to work
         domain=None  # Let browser set domain automatically for better compatibility
     )
     
