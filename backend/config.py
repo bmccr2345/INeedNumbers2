@@ -153,7 +153,7 @@ class Config(BaseSettings):
             self.STORAGE_DRIVER = "local"
         
         if self.STRIPE_API_KEY.startswith('sk_test_'):
-            logging.warning("Using test Stripe keys in production environment")
+            logger.warning("Using test Stripe keys in production environment")
         
         if not self.COOKIE_SECURE:
             raise ValueError("COOKIE_SECURE must be True in production")
