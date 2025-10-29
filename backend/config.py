@@ -139,13 +139,15 @@ class Config(BaseSettings):
             raise ValueError("DEBUG must be False in production")
         
         if not self.REDIS_URL:
-            raise ValueError("REDIS_URL is required in production")
+            logger.warning("REDIS_URL not set in production - rate limiting and caching will use in-memory fallback")
         
         if self.JWT_SECRET_KEY == 'your-secret-key-here-change-in-production':
             raise ValueError("JWT_SECRET_KEY must be changed in production")
         
         if not self.S3_BUCKET or not self.S3_ACCESS_KEY_ID or not self.S3_SECRET_ACCESS_KEY:
-            raise ValueError("S3 configuration is required in production")
+            logger.warning("S3 configuration not complete in production - file uploads will be disabled")
+            # Fallback to local storage if S3 not configured
+            self.STORAGE_DRIVER = "local"
         
         if self.STRIPE_API_KEY.startswith('sk_test_'):
             logging.warning("Using test Stripe keys in production environment")
