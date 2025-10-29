@@ -132,9 +132,9 @@ class Config(BaseSettings):
         # Development mode warnings for optional services
         if not self.is_production():
             if not self.REDIS_URL:
-                logging.warning("Redis not configured - using in-memory fallback in development")
+                logger.warning("Redis not configured - using in-memory fallback in development")
             if not self.S3_ACCESS_KEY_ID or not self.S3_SECRET_ACCESS_KEY:
-                logging.warning("S3 credentials not configured - file uploads will be disabled in development")
+                logger.warning("S3 credentials not configured - file uploads will be disabled in development")
             return
         
         # Production-specific validations (strict requirements)
