@@ -5,7 +5,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Save } from 'lucide-react';
-import Cookies from 'js-cookie';
 
 const GoalSettingsPanel = () => {
   const [settings, setSettings] = useState(null);
@@ -46,21 +45,12 @@ const GoalSettingsPanel = () => {
     loadSettings();
   }, []);
 
-  const getHeaders = () => {
-    const token = Cookies.get('access_token');
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
-
   const loadSettings = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`, {
-        headers: getHeaders()
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (response.ok) {
