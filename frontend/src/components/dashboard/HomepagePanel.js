@@ -66,6 +66,7 @@ const HomepagePanel = () => {
   const [isReflectionModalOpen, setIsReflectionModalOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isFinancialOverviewModalOpen, setIsFinancialOverviewModalOpen] = useState(false);
+  const [showFairyAICoach, setShowFairyAICoach] = useState(false);
 
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
