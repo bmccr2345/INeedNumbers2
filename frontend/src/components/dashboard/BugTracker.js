@@ -145,15 +145,21 @@ const BugTracker = ({ context = 'General' }) => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button
+      <div 
+        className="fixed bottom-4 right-4 z-[9999]" 
+        style={{ zIndex: 9999 }}
+      >
+        <button
           onClick={() => setIsOpen(true)}
-          className="bg-red-600 hover:bg-red-700 text-white shadow-lg"
-          size="lg"
+          className="bg-red-600 hover:bg-red-700 text-white shadow-2xl px-6 py-3 rounded-full font-bold text-lg animate-pulse"
+          style={{
+            boxShadow: '0 10px 40px rgba(220, 38, 38, 0.6)',
+            border: '3px solid white'
+          }}
         >
-          <Bug className="w-5 h-5 mr-2" />
-          Debug Info
-        </Button>
+          <Bug className="w-6 h-6 inline mr-2" />
+          🐛 DEBUG
+        </button>
       </div>
     );
   }
