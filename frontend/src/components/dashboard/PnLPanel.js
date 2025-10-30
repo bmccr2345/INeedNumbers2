@@ -543,11 +543,15 @@ const PnLPanel = () => {
         // Update deal field
         await axios.patch(`${backendUrl}/api/pnl/deals/${id}`, {
           [field]: newValue
+        }, {
+          withCredentials: true
         });
       } else if (type === 'expense') {
         // Update expense field
         await axios.patch(`${backendUrl}/api/pnl/expenses/${id}`, {
           [field]: field === 'description' ? editValue : newValue
+        }, {
+          withCredentials: true
         });
       }
 
