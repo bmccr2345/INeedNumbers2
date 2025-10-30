@@ -24366,10 +24366,10 @@ def main_pnl_calculation_test():
         """Test authentication for mobile API testing"""
         print("\n🔐 TESTING MOBILE AUTHENTICATION...")
         
-        # Use test user account credentials
+        # Use non-PRO user account credentials as specified in review request
         login_data = {
-            "email": "bmccr23@gmail.com",
-            "password": "Goosey23!!23",
+            "email": self.starter_user_email,
+            "password": self.starter_user_password,
             "remember_me": False
         }
         
