@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 class AICoachV2Tester:
-    def __init__(self, base_url="https://agent-tracker-20.preview.emergentagent.com"):
+    def __init__(self, base_url="https://agent-finance.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         self.tests_run = 0

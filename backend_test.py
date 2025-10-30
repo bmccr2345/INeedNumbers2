@@ -10380,7 +10380,7 @@ def run_branding_upload_tests():
         
         try:
             # Test with allowed origin
-            allowed_origin = "https://agent-tracker-20.preview.emergentagent.com"
+            allowed_origin = "https://agent-finance.preview.emergentagent.com"
             response = requests.options(
                 f"{self.base_url}/api/health",
                 headers={
@@ -11139,7 +11139,7 @@ def run_branding_upload_tests():
             
             # Test allowed origin
             allowed_headers = {
-                'Origin': 'https://agent-tracker-20.preview.emergentagent.com',
+                'Origin': 'https://agent-finance.preview.emergentagent.com',
                 'Access-Control-Request-Method': 'GET'
             }
             
@@ -11854,7 +11854,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for unauthenticated users (Starter plan)"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -11888,7 +11888,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for unauthenticated users (Pro plan)"""
         checkout_data = {
             "plan": "pro",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -12036,7 +12036,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for Starter plan"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -12063,7 +12063,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for Pro plan"""
         checkout_data = {
             "plan": "pro",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -12079,7 +12079,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout with invalid plan"""
         checkout_data = {
             "plan": "invalid_plan",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -12095,7 +12095,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout without authentication"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -15961,7 +15961,7 @@ def run_branding_upload_tests():
         
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://agent-tracker-20.preview.emergentagent.com"
+            "origin_url": "https://agent-finance.preview.emergentagent.com"
         }
         
         print("   Step 1: Creating checkout session...")

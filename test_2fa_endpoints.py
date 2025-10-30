@@ -13,7 +13,7 @@ import re
 from typing import Dict, Any, Tuple
 
 class TwoFactorTester:
-    def __init__(self, base_url="https://agent-tracker-20.preview.emergentagent.com"):
+    def __init__(self, base_url="https://agent-finance.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = requests.Session()
         self.tests_run = 0
