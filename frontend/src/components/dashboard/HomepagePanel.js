@@ -607,6 +607,17 @@ const HomepagePanel = () => {
         capProgress={capProgress}
         user={user}
       />
+
+      {/* Fairy AI Coach (Onboarding Wizard) */}
+      {showFairyAICoach && user?.plan === 'PRO' && (
+        <ProOnboardingWizard 
+          isOpen={showFairyAICoach}
+          onClose={() => setShowFairyAICoach(false)}
+        />
+      )}
+
+      {/* Bug Tracker */}
+      <BugTracker context="Dashboard Overview" />
     </div>
   );
 };
