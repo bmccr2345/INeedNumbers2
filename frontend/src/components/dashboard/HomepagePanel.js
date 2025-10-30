@@ -355,6 +355,38 @@ const HomepagePanel = () => {
             {/* AI Coach Banner for PRO users */}
             <AICoachBanner />
 
+            {/* Fairy AI Coach for PRO users */}
+            {user?.plan === 'PRO' && (
+              <Card className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-xl">Fairy AI Coach</h3>
+                        <p className="text-emerald-100 text-sm">Your 3-Day Pro Success Guide</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-emerald-50 mb-4">
+                    Get the most out of your Pro tools with our guided 3-day onboarding journey. 
+                    Track your progress, set goals, and master I Need Numbers!
+                  </p>
+                  
+                  <Button 
+                    onClick={() => setShowFairyAICoach(true)}
+                    className="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-semibold"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Your Journey
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Active Deals Card - PRO users only */}
             {user?.plan === 'PRO' && (
               <ActiveDealsCard 
