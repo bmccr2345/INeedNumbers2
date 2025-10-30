@@ -2,22 +2,10 @@ import React, { useState } from 'react';
 import { X, Save, Calendar } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import Cookies from 'js-cookie';
 
 const ReflectionModal = ({ isOpen, onClose, onReflectionSaved }) => {
   const [reflection, setReflection] = useState('');
   const [isLogging, setIsLogging] = useState(false);
-
-  // Helper function for API headers
-  const getHeaders = () => {
-    const token = Cookies.get('access_token');
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
 
   const handleSubmit = async () => {
     if (!reflection.trim()) {
@@ -29,7 +17,8 @@ const ReflectionModal = ({ isOpen, onClose, onReflectionSaved }) => {
       setIsLogging(true);
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log`, {
         method: 'POST',
-        headers: getHeaders(),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reflection: reflection.trim()
         })
