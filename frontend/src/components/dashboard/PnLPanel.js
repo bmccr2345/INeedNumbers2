@@ -102,8 +102,8 @@ const PnLPanel = () => {
       // Use cookie-based authentication - no token needed
       // Load categories and lead sources
       const [categoriesResponse, leadSourcesResponse] = await Promise.all([
-        axios.get(`${backendUrl}/api/pnl/categories`).catch(() => ({ data: [] })),
-        axios.get(`${backendUrl}/api/pnl/lead-sources`).catch(() => ({ data: [] }))
+        axios.get(`${backendUrl}/api/pnl/categories`, { withCredentials: true }).catch(() => ({ data: [] })),
+        axios.get(`${backendUrl}/api/pnl/lead-sources`, { withCredentials: true }).catch(() => ({ data: [] }))
       ]);
 
       setExpenseCategories(categoriesResponse.data);
@@ -123,7 +123,8 @@ const PnLPanel = () => {
       setError(null);
 
       const response = await axios.get(`${backendUrl}/api/pnl/summary`, {
-        params: { month: selectedMonth }
+        params: { month: selectedMonth },
+        withCredentials: true
       });
 
       setPnlSummary(response.data);
