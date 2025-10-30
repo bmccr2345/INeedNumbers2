@@ -24339,14 +24339,22 @@ def main_pnl_calculation_test():
             'response': expense_mgmt_response
         }
         
+        # 6. Check backend logs for mobile dashboard errors
+        logs_success, logs_response = self.check_backend_logs_for_mobile_errors()
+        results['backend_logs'] = {
+            'success': logs_success,
+            'response': logs_response
+        }
+        
         # Calculate overall success
-        total_tests = 5
+        total_tests = 6
         successful_tests = sum([
             auth_success,
             dashboard_success,
             activity_success,
             deal_mgmt_success,
-            expense_mgmt_success
+            expense_mgmt_success,
+            logs_success
         ])
         
         overall_success = successful_tests >= 4  # Allow one failure
