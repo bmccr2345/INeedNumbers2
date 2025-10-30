@@ -457,7 +457,9 @@ const PnLPanel = () => {
 
     const loadCapProgress = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`);
+        const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`, {
+          withCredentials: true
+        });
         setCapProgress(response.data);
       } catch (error) {
         // Cap progress is optional, don't show error if not configured
