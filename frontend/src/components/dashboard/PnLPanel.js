@@ -257,7 +257,9 @@ const PnLPanel = () => {
         budget: parseFloat(newExpense.budget) || 0
       };
 
-      await axios.post(`${backendUrl}/api/pnl/expenses`, expenseData);
+      await axios.post(`${backendUrl}/api/pnl/expenses`, expenseData, {
+        withCredentials: true
+      });
       
       // Reset form
       setNewExpense({
@@ -285,7 +287,9 @@ const PnLPanel = () => {
   // Delete deal
   const deleteDeal = async (dealId) => {
     try {
-      await axios.delete(`${backendUrl}/api/pnl/deals/${dealId}`);
+      await axios.delete(`${backendUrl}/api/pnl/deals/${dealId}`, {
+        withCredentials: true
+      });
       await loadPnLData();
       await loadActiveDeals(); // Refresh active deals
     } catch (error) {
@@ -301,7 +305,9 @@ const PnLPanel = () => {
   // Delete expense
   const deleteExpense = async (expenseId) => {
     try {
-      await axios.delete(`${backendUrl}/api/pnl/expenses/${expenseId}`);
+      await axios.delete(`${backendUrl}/api/pnl/expenses/${expenseId}`, {
+        withCredentials: true
+      });
       await loadPnLData();
     } catch (error) {
       console.error('Failed to delete expense:', error);
