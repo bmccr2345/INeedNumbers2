@@ -101,7 +101,8 @@ const GoalSettingsPanel = () => {
 
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`, {
         method: 'POST',
-        headers: getHeaders(),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(goalData)
       });
 
