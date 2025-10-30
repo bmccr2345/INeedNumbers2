@@ -24413,6 +24413,105 @@ def main_pnl_calculation_test():
             print(f"   ❌ Error in mobile authentication test: {e}")
             return False, {"error": str(e)}
     
+    def check_backend_logs_for_mobile_errors(self):
+        """Check backend logs for errors during mobile dashboard loading"""
+        print("\n📋 CHECKING BACKEND LOGS FOR MOBILE DASHBOARD ERRORS...")
+        
+        try:
+            # Check supervisor backend logs
+            import subprocess
+            
+            # Try to get recent backend logs
+            log_files = [
+                "/var/log/supervisor/backend.err.log",
+                "/var/log/supervisor/backend.out.log"
+            ]
+            
+            logs_found = False
+            mobile_related_errors = []
+            
+            # Patterns to look for mobile dashboard related errors
+            mobile_error_patterns = [
+                "mobile", "Mobile", "MOBILE",
+                "dashboard", "Dashboard", "DASHBOARD", 
+                "pnl/summary", "cap-tracker", "tracker/daily",
+                "ai-coach/generate", "Loading your dashboard"
+            ]
+            
+            general_error_patterns = [
+                "error", "Error", "ERROR",
+                "exception", "Exception", "EXCEPTION",
+                "failed", "Failed", "FAILED",
+                "timeout", "Timeout", "TIMEOUT"
+            ]
+            
+            for log_file in log_files:
+                try:
+                    result = subprocess.run(
+                        ["tail", "-n", "100", log_file],
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                    
+                    if result.returncode == 0 and result.stdout:
+                        logs_found = True
+                        print(f"   ✅ Found logs in {log_file}")
+                        
+                        log_content = result.stdout
+                        lines = log_content.split('\n')
+                        
+                        # Check for mobile-related errors first
+                        for line in lines:
+                            for mobile_pattern in mobile_error_patterns:
+                                if mobile_pattern in line:
+                                    for error_pattern in general_error_patterns:
+                                        if error_pattern in line:
+                                            mobile_related_errors.append(line.strip())
+                                            break
+                        
+                        # Also check for recent general errors
+                        recent_errors = []
+                        for line in lines[-20:]:  # Last 20 lines
+                            for error_pattern in general_error_patterns:
+                                if error_pattern in line:
+                                    recent_errors.append(line.strip())
+                                    break
+                        
+                        if mobile_related_errors:
+                            print(f"   ⚠️  Found {len(mobile_related_errors)} mobile-related error(s):")
+                            for error in mobile_related_errors[-5:]:  # Show last 5
+                                print(f"      📱 {error[:150]}...")
+                        
+                        if recent_errors and not mobile_related_errors:
+                            print(f"   ⚠️  Found {len(recent_errors)} recent error(s):")
+                            for error in recent_errors[-3:]:  # Show last 3
+                                print(f"      ⚠️  {error[:150]}...")
+                        
+                        if not mobile_related_errors and not recent_errors:
+                            print(f"   ✅ No obvious errors found in recent logs")
+                    
+                except subprocess.TimeoutExpired:
+                    print(f"   ⚠️  Timeout reading {log_file}")
+                except FileNotFoundError:
+                    print(f"   ⚠️  Log file not found: {log_file}")
+                except Exception as e:
+                    print(f"   ⚠️  Error reading {log_file}: {e}")
+            
+            if not logs_found:
+                print("   ⚠️  No backend logs found - may not have access or different log location")
+                return True, {"status": "no_logs_found", "message": "Cannot access backend logs"}
+            
+            return True, {
+                "status": "logs_checked", 
+                "mobile_errors_found": len(mobile_related_errors),
+                "mobile_errors": mobile_related_errors[-3:] if mobile_related_errors else []
+            }
+            
+        except Exception as e:
+            print(f"   ❌ Error checking backend logs: {e}")
+            return False, {"error": str(e)}
+    
     def test_dashboard_data_apis(self):
         """Test Dashboard Data APIs"""
         print("\n📊 TESTING DASHBOARD DATA APIS...")
