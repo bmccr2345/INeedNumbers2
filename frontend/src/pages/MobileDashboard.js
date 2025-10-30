@@ -245,68 +245,7 @@ const MobileDashboard = () => {
 
       {/* Fairy AI Coach - PRO users only */}
       {user?.plan === 'PRO' && (
-        <Card className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
-          <div 
-            className="p-4 cursor-pointer"
-            onClick={() => setIsFairyCoachExpanded(!isFairyCoachExpanded)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-white bg-opacity-20 p-2 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg">Fairy AI Coach</h3>
-                  <p className="text-emerald-100 text-xs">Your 3-Day Pro Success Guide</p>
-                </div>
-              </div>
-              <button className="text-white hover:text-emerald-100 transition-colors">
-                {isFairyCoachExpanded ? (
-                  <ChevronUp className="w-6 h-6" />
-                ) : (
-                  <ChevronDown className="w-6 h-6" />
-                )}
-              </button>
-            </div>
-            
-            {isFairyCoachExpanded && (
-              <div className="mt-4 pt-4 border-t border-emerald-500 border-opacity-30 space-y-3 animate-slide-up">
-                <p className="text-sm text-emerald-50">
-                  Welcome to I Need Numbers Pro! Get the most out of your new tools with our guided 3-day onboarding journey.
-                </p>
-                
-                <div className="bg-white bg-opacity-10 rounded-lg p-3 space-y-2">
-                  <div className="flex items-center text-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-200" />
-                    <span>Day 1: Foundation & Setup</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-200" />
-                    <span>Day 2: Building Habits</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-200" />
-                    <span>Day 3: Mastery & Optimization</span>
-                  </div>
-                </div>
-                
-                <Button 
-                  className="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-semibold"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowOnboardingWizard(true);
-                  }}
-                >
-                  Start Your Journey →
-                </Button>
-                
-                <p className="text-xs text-emerald-100 text-center">
-                  Click anytime to continue where you left off
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
+        <AICoachBanner />
       )}
 
       {/* This Month's Net Card */}
