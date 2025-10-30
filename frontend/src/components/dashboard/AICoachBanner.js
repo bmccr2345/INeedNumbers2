@@ -68,8 +68,18 @@ const AICoachBanner = () => {
   };
 
   useEffect(() => {
-    loadCoachData();
-  }, []);
+    // Only load coach data if user is authenticated and is PRO
+    if (user && user.plan === 'PRO') {
+      loadCoachData();
+    } else {
+      setIsLoading(false);
+      if (!user) {
+        setError('Authentication required for AI Coach insights.');
+      } else if (user.plan !== 'PRO') {
+        setError('AI Coach requires a Pro plan. Upgrade to access personalized insights.');
+      }
+    }
+  }, [user]);
 
   const handleGenerateCoaching = async (force = false) => {
     try {
