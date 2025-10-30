@@ -369,7 +369,8 @@ const PnLPanel = () => {
         : { year: selectedMonth.split('-')[0] };
       
       const response = await axios.get(`${backendUrl}/api/pnl/export`, {
-        params: { ...params, format: 'excel' }
+        params: { ...params, format: 'excel' },
+        withCredentials: true
       });
       
       // This would handle the actual Excel download
