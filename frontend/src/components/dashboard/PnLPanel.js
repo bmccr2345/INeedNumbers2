@@ -227,7 +227,9 @@ const PnLPanel = () => {
   const handleUpdateDeal = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${backendUrl}/api/pnl/deals/${editingDeal.id}`, editingDeal);
+      await axios.put(`${backendUrl}/api/pnl/deals/${editingDeal.id}`, editingDeal, {
+        withCredentials: true
+      });
       
       setEditingDeal(null);
       setShowEditDeal(false);
