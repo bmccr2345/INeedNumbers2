@@ -66,13 +66,6 @@ const ActionTrackerPanel = () => {
       }));
     }
   };
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
 
   // Load data on mount
   useEffect(() => {
