@@ -158,6 +158,18 @@ backend:
         agent: "testing"
         comment: "🚨 CRITICAL MOBILE DASHBOARD LOADING ISSUE IDENTIFIED - AI COACH ENDPOINT CAUSING 500 ERRORS: Comprehensive testing reveals the root cause of mobile dashboard loading being stuck. ✅ ENDPOINT ACCESSIBILITY CONFIRMED: All mobile dashboard endpoints exist and are properly secured - GET /api/pnl/summary, GET /api/cap-tracker/progress, GET /api/tracker/daily all return 401 'Authentication required' as expected when accessed without credentials. ✅ BACKEND HEALTH VERIFIED: Backend is running correctly at https://agent-finance.preview.emergentagent.com/api/health returns proper JSON response. ❌ CRITICAL ISSUE FOUND: POST /api/ai-coach/generate returns 500 Internal Server Error instead of proper authentication error. This suggests the AI Coach endpoint has a server-side error that could be causing the mobile dashboard to hang during loading. ❌ BACKEND LOGS SHOW ERRORS: Found mobile-related errors in logs including 'POST /api/ai-coach/generate HTTP/1.1 500 Internal Server Error' and CSRF token missing errors. ❌ AUTHENTICATION CREDENTIALS INVALID: All test user credentials return 'Invalid email or password' - demo@demo.com, bmccr23@gmail.com, startertest@demo.com all fail authentication. 🎯 ROOT CAUSE IDENTIFIED: The mobile dashboard loading issue is likely caused by the AI Coach endpoint returning 500 errors instead of proper responses. When the mobile dashboard tries to load AI Coach data (even for non-PRO users), it encounters a server error that may cause the loading to hang on 'Loading your dashboard...'. 🔧 IMMEDIATE ACTION REQUIRED: Fix the AI Coach endpoint 500 error and investigate CSRF token issues in backend logs. The mobile dashboard should handle AI Coach errors gracefully for non-PRO users."
 
+  - task: "AI Coach Generate Endpoint 500 Error - Mobile Dashboard Loading Issue"
+    implemented: true
+    working: false
+    file: "/app/backend/app/routes/ai_coach.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL AI COACH ENDPOINT ERROR IDENTIFIED - CAUSING MOBILE DASHBOARD LOADING ISSUES: Testing reveals POST /api/ai-coach/generate returns 500 Internal Server Error instead of proper authentication/authorization responses. ❌ 500 ERROR CONFIRMED: When testing AI Coach endpoint without authentication, it returns 500 Internal Server Error instead of expected 401 'Authentication required' or 403 'Forbidden' responses. ❌ BACKEND LOGS SHOW ERRORS: Backend logs contain 'POST /api/ai-coach/generate HTTP/1.1 500 Internal Server Error' and CSRF token missing errors. ❌ MOBILE DASHBOARD IMPACT: This 500 error is likely causing the mobile dashboard to hang on 'Loading your dashboard...' because the frontend may be trying to check AI Coach availability and encountering server errors instead of proper responses. ✅ OTHER ENDPOINTS WORKING: All other mobile dashboard endpoints (P&L summary, cap tracker, daily tracker) properly return 401 authentication errors as expected. 🎯 ROOT CAUSE: The AI Coach endpoint has a server-side error (possibly related to CSRF token handling or authentication middleware) that prevents it from returning proper HTTP status codes. This causes the mobile dashboard loading to fail or hang. 🔧 IMMEDIATE FIX REQUIRED: The AI Coach endpoint must be fixed to return proper 401/403 responses instead of 500 errors. The mobile dashboard frontend should also handle AI Coach errors gracefully to prevent loading from hanging."
+
   - task: "2FA Endpoints Implementation - Phase 2 Critical Security Fixes"
     implemented: true
     working: true
