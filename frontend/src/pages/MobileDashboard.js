@@ -53,8 +53,12 @@ const MobileDashboard = () => {
   useEffect(() => {
     if (user?.id) {
       fetchDashboardData();
+    } else if (user === null) {
+      // User authentication completed but no user found (not logged in)
+      setLoading(false);
     }
-  }, [user?.id]);
+    // If user is still loading (undefined), keep loading state
+  }, [user?.id, user]);
 
   // Check if PRO user needs onboarding wizard
   useEffect(() => {
