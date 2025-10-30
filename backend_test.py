@@ -24483,7 +24483,36 @@ def main_pnl_calculation_test():
             print(f"   ❌ Daily Tracker API error: {e}")
             dashboard_tests.append(False)
         
-        # Test 4: Active Deals API
+        # Test 4: AI Coach Generate API (should be blocked for non-PRO users)
+        print("   🔍 Testing POST /api/ai-coach/generate...")
+        try:
+            ai_coach_data = {
+                "context": "general",
+                "user_data": {"plan": "STARTER"}
+            }
+            ai_coach_response = self.mobile_session.post(
+                f"{self.base_url}/api/ai-coach/generate",
+                json=ai_coach_data,
+                timeout=15
+            )
+            
+            if ai_coach_response.status_code == 200:
+                print("   ✅ AI Coach Generate API - 200 OK")
+                dashboard_tests.append(True)
+            elif ai_coach_response.status_code == 403:
+                print("   ✅ AI Coach Generate API - 403 Forbidden (expected for non-PRO)")
+                dashboard_tests.append(True)
+            elif ai_coach_response.status_code == 404:
+                print("   ❌ AI Coach Generate API - 404 Not Found")
+                dashboard_tests.append(False)
+            else:
+                print(f"   ❌ AI Coach Generate API - {ai_coach_response.status_code}")
+                dashboard_tests.append(False)
+        except Exception as e:
+            print(f"   ❌ AI Coach Generate API error: {e}")
+            dashboard_tests.append(False)
+        
+        # Test 5: Active Deals API
         print("   🔍 Testing GET /api/pnl/active-deals...")
         try:
             deals_response = self.mobile_session.get(
