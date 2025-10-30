@@ -177,7 +177,9 @@ const PnLPanel = () => {
         team_brokerage_split_percent: parseFloat(newDeal.team_brokerage_split_percent) || 0
       };
 
-      await axios.post(`${backendUrl}/api/pnl/deals`, dealData);
+      await axios.post(`${backendUrl}/api/pnl/deals`, dealData, {
+        withCredentials: true
+      });
       
       // Reset form
       setNewDeal({
