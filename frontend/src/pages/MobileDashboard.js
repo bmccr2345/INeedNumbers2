@@ -85,7 +85,10 @@ const MobileDashboard = () => {
       try {
         const financialResponse = await axios.get(
           `${backendUrl}/api/pnl/summary?month=${currentMonth}`,
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            timeout: 8000 // 8 second timeout
+          }
         );
         
         const data = financialResponse.data || {};
@@ -110,15 +113,27 @@ const MobileDashboard = () => {
           totalExpenses: data.total_expenses || 0,
           budgetUtilization: budgetUtilizationPercent
         }));
+        console.log('[MobileDashboard] Financial data loaded successfully');
       } catch (error) {
         console.error('[MobileDashboard] Financial data error:', error);
+        // Set default values on error to prevent loading hang
+        setDashboardData(prev => ({
+          ...prev,
+          monthlyNet: 0,
+          totalIncome: 0,
+          totalExpenses: 0,
+          budgetUtilization: 0
+        }));
       }
       
       // Fetch cap tracker progress
       try {
         const capResponse = await axios.get(
           `${backendUrl}/api/cap-tracker/progress`,
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            timeout: 8000 // 8 second timeout
+          }
         );
         
         // Try different field names
@@ -131,10 +146,15 @@ const MobileDashboard = () => {
           ...prev,
           capProgress: capValue
         }));
+        console.log('[MobileDashboard] Cap tracker data loaded successfully');
       } catch (error) {
         console.error('[MobileDashboard] Cap tracker error:', error);
         console.error('[MobileDashboard] Cap error response:', error.response?.data);
-        // Cap might not be configured, that's okay
+        // Cap might not be configured, that's okay - set default
+        setDashboardData(prev => ({
+          ...prev,
+          capProgress: 0
+        }));
       }
       
       // Fetch action tracker count - use today's date
@@ -142,7 +162,10 @@ const MobileDashboard = () => {
         const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
         const actionsResponse = await axios.get(
           `${backendUrl}/api/tracker/daily?date=${today}`,
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            timeout: 8000 // 8 second timeout
+          }
         );
         
         // Count incomplete actions from completed object
@@ -153,18 +176,39 @@ const MobileDashboard = () => {
           ...prev,
           openActions: openCount
         }));
+        console.log('[MobileDashboard] Action tracker data loaded successfully');
       } catch (error) {
         console.error('[MobileDashboard] Actions error:', error);
+        // Set default on error
+        setDashboardData(prev => ({
+          ...prev,
+          openActions: 0
+        }));
       }
 
+      // Set AI Coach message (not needed for now)
       setDashboardData(prev => ({
         ...prev,
         aiCoachMessage: null // Will be implemented with AI Coach integration
       }));
+
+      console.log('[MobileDashboard] All data fetching completed successfully');
     } catch (error) {
       console.error('[MobileDashboard] Error fetching data:', error);
+      // Set all default values on general error
+      setDashboardData({
+        monthlyNet: 0,
+        capProgress: 0,
+        openActions: 0,
+        aiCoachMessage: null,
+        totalIncome: 0,
+        totalExpenses: 0,
+        budgetUtilization: 0
+      });
     } finally {
+      // ALWAYS set loading to false, regardless of success or failure
       setLoading(false);
+      console.log('[MobileDashboard] Loading state set to false');
     }
   };
 
