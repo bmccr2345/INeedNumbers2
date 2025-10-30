@@ -70,16 +70,35 @@ const MobileDashboard = () => {
       userIsUndefined: user === undefined 
     });
     
+    // TEMPORARY: Force loading false after 3 seconds regardless of auth state
+    const forceTimeout = setTimeout(() => {
+      console.log('[MobileDashboard] Forcing loading false after 3 seconds');
+      setLoading(false);
+      setDashboardData({
+        monthlyNet: 0,
+        capProgress: 0,
+        openActions: 0,
+        aiCoachMessage: null,
+        totalIncome: 0,
+        totalExpenses: 0,
+        budgetUtilization: 0
+      });
+    }, 3000);
+    
     if (user?.id) {
       console.log('[MobileDashboard] User authenticated, fetching data...');
+      clearTimeout(forceTimeout);
       fetchDashboardData();
     } else if (user === null) {
       // User authentication completed but no user found (not logged in)
       console.log('[MobileDashboard] No user authenticated, setting loading false');
+      clearTimeout(forceTimeout);
       setLoading(false);
     } else {
       console.log('[MobileDashboard] User state still loading...');
     }
+    
+    return () => clearTimeout(forceTimeout);
     // If user is still loading (undefined), keep loading state
   }, [user?.id, user]);
 
