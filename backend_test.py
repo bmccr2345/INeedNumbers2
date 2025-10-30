@@ -25,6 +25,9 @@ class DealPackAPITester:
         # Specific user credentials from review request
         self.specific_user_email = "bmccr23@gmail.com"
         self.specific_user_password = "Goosey23!!23"
+        # Non-PRO user for mobile dashboard testing
+        self.starter_user_email = "startertest@demo.com"
+        self.starter_user_password = "demo123"
         self.sample_agent_info = {
             "agent_name": "Sarah Johnson",
             "brokerage": "Premier Real Estate Group",
