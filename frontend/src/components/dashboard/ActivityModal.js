@@ -52,7 +52,8 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
       setIsLogging(true);
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log`, {
         method: 'POST',
-        headers: getHeaders(),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activities: currentEntry.activities,
           hours: currentEntry.hours,
