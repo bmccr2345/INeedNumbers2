@@ -51,11 +51,22 @@ const MobileDashboard = () => {
 
   // Fetch dashboard data on mount
   useEffect(() => {
+    console.log('[MobileDashboard] useEffect triggered - user state:', { 
+      userId: user?.id, 
+      userExists: !!user, 
+      userIsNull: user === null,
+      userIsUndefined: user === undefined 
+    });
+    
     if (user?.id) {
+      console.log('[MobileDashboard] User authenticated, fetching data...');
       fetchDashboardData();
     } else if (user === null) {
       // User authentication completed but no user found (not logged in)
+      console.log('[MobileDashboard] No user authenticated, setting loading false');
       setLoading(false);
+    } else {
+      console.log('[MobileDashboard] User state still loading...');
     }
     // If user is still loading (undefined), keep loading state
   }, [user?.id, user]);
