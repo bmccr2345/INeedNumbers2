@@ -38,20 +38,29 @@ const AICoachBanner = () => {
       // Check authentication using AuthContext (not cookies)
       if (!user) {
         setError('Authentication required');
+        setIsLoading(false);
         return;
       }
 
       const response = await axios.post(`${backendUrl}/api/ai-coach/generate`, {}, {
-        withCredentials: true  // Use HttpOnly cookies instead of Bearer token
+        withCredentials: true,  // Use HttpOnly cookies instead of Bearer token
+        timeout: 10000 // 10 second timeout to prevent hanging
       });
 
       setCoachData(response.data);
     } catch (error) {
       console.error('Failed to load coach data:', error);
+      // Handle specific error cases without causing mobile dashboard to hang
       if (error.response?.status === 402) {
         setError('AI Coach requires a Pro plan. Upgrade to access personalized insights.');
+      } else if (error.response?.status === 401) {
+        setError('Authentication required for AI Coach insights.');
+      } else if (error.response?.status === 500) {
+        setError('AI Coach is temporarily unavailable. Please try again later.');
+      } else if (error.code === 'ECONNABORTED') {
+        setError('AI Coach is taking too long to respond. Please try again.');
       } else {
-        setError('Unable to load coaching insights');
+        setError('Unable to load coaching insights. Please try again.');
       }
     } finally {
       setIsLoading(false);
