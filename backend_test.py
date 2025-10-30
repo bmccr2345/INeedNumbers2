@@ -4559,10 +4559,10 @@ class DealPackAPITester:
         """Test authentication for mobile API testing"""
         print("\n🔐 TESTING MOBILE AUTHENTICATION...")
         
-        # Use demo user account credentials (will check plan after login)
+        # Use specific user account credentials from review request
         login_data = {
-            "email": self.demo_email,
-            "password": self.demo_password,
+            "email": self.specific_user_email,
+            "password": self.specific_user_password,
             "remember_me": False
         }
         
