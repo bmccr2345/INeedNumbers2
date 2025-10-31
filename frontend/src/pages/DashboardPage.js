@@ -371,7 +371,9 @@ const DashboardPage = () => {
   };
 
   // Show loading state while user data is being fetched
-  if (loading) {
+  // TEMPORARY: Bypass loading for debugging
+  // if (loading) {
+  if (false) { // Force disable DashboardPage loading screen
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
