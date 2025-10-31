@@ -99,6 +99,9 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
         remember_me: rememberMe
+      }, {
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
       });
       
       if (response.data && response.data.user) {
