@@ -373,7 +373,7 @@ const FreeCalculator = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
       
       // Prepare data for the backend
       const payload = {
@@ -484,7 +484,7 @@ const FreeCalculator = () => {
 
     setIsSaving(true);
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
       const response = await fetch(`${backendUrl}/api/investor/save`, {
         method: 'POST',
