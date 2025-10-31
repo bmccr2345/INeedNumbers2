@@ -42,18 +42,6 @@ const MobileDashboard = () => {
     totalExpenses: null,
     budgetUtilization: null
   });
-  
-  // Failsafe: Force loading to false after 15 seconds to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('[MobileDashboard] Loading timeout reached, forcing loading to false');
-        setLoading(false);
-      }
-    }, 15000);
-    
-    return () => clearTimeout(timeout);
-  }, [loading]);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
   const [showAddDealModal, setShowAddDealModal] = useState(false);
