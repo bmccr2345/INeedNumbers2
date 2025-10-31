@@ -1353,6 +1353,655 @@ class DealPackAPITester:
             print(f"   ❌ Error testing CSRF protection: {e}")
             return False, {"error": str(e)}
 
+    # ========== PRODUCTION AUTHENTICATION TIMEOUT TESTS ==========
+    
+    def test_production_authentication_timeout_issue(self):
+        """Test production authentication timeout issue as reported by user"""
+        print("\n🚨 TESTING PRODUCTION AUTHENTICATION TIMEOUT ISSUE...")
+        print("   User Report: Login attempts take a very long time before failing")
+        print("   Symptoms: Site loading, correct credentials, but timeout/networking issues")
+        print("   Testing: Response times, timeout issues, backend reachability")
+        print("   Testing: Both current domain and production domain")
+        print("   Testing: CORS configuration, basic endpoints")
+        
+        results = {}
+        
+        # 1. Test basic health endpoint first
+        health_success, health_response = self.test_production_health_endpoint()
+        results['health_endpoint'] = {
+            'success': health_success,
+            'response': health_response
+        }
+        
+        # 2. Test authentication endpoint response times
+        auth_timing_success, auth_timing_response = self.test_authentication_response_times()
+        results['auth_timing'] = {
+            'success': auth_timing_success,
+            'response': auth_timing_response
+        }
+        
+        # 3. Test CORS configuration
+        cors_success, cors_response = self.test_production_cors_configuration()
+        results['cors_config'] = {
+            'success': cors_success,
+            'response': cors_response
+        }
+        
+        # 4. Test with production domain
+        prod_domain_success, prod_domain_response = self.test_production_domain_authentication()
+        results['production_domain'] = {
+            'success': prod_domain_success,
+            'response': prod_domain_response
+        }
+        
+        # 5. Test network connectivity and DNS resolution
+        network_success, network_response = self.test_network_connectivity()
+        results['network_connectivity'] = {
+            'success': network_success,
+            'response': network_response
+        }
+        
+        # 6. Test authentication with proper credentials and timeout monitoring
+        timeout_success, timeout_response = self.test_authentication_timeout_monitoring()
+        results['timeout_monitoring'] = {
+            'success': timeout_success,
+            'response': timeout_response
+        }
+        
+        # Calculate overall success
+        total_tests = 6
+        successful_tests = sum([
+            health_success,
+            auth_timing_success,
+            cors_success,
+            prod_domain_success,
+            network_success,
+            timeout_success
+        ])
+        
+        overall_success = successful_tests >= 4  # Allow some failures for network issues
+        
+        print(f"\n🚨 PRODUCTION AUTHENTICATION TIMEOUT TESTING SUMMARY:")
+        print(f"   ✅ Successful tests: {successful_tests}/{total_tests}")
+        print(f"   📈 Success rate: {(successful_tests/total_tests)*100:.1f}%")
+        
+        if overall_success:
+            print("   🎉 Production Authentication - TESTING COMPLETED")
+        else:
+            print("   ❌ Production Authentication - CRITICAL TIMEOUT ISSUES FOUND")
+            
+        return overall_success, results
+    
+    def test_production_health_endpoint(self):
+        """Test basic health endpoint to verify backend is reachable"""
+        print("\n🏥 TESTING PRODUCTION HEALTH ENDPOINT...")
+        
+        try:
+            import requests
+            import time
+            
+            # Test current domain health
+            print(f"   🔍 Testing health endpoint: {self.base_url}/api/health")
+            start_time = time.time()
+            
+            health_response = requests.get(
+                f"{self.base_url}/api/health",
+                timeout=30  # Longer timeout for production
+            )
+            
+            response_time = time.time() - start_time
+            print(f"   ⏱️  Response time: {response_time:.2f} seconds")
+            
+            if health_response.status_code == 200:
+                print("   ✅ Health endpoint accessible")
+                health_data = health_response.json()
+                
+                # Check health response structure
+                if health_data.get('ok'):
+                    print("   ✅ Backend reports healthy status")
+                    print(f"   ✅ Version: {health_data.get('version', 'unknown')}")
+                    print(f"   ✅ Environment: {health_data.get('environment', 'unknown')}")
+                    
+                    # Check service status
+                    services = health_data.get('services', {})
+                    if services:
+                        print("   📊 Service Status:")
+                        for service, status in services.items():
+                            if isinstance(status, dict):
+                                service_status = status.get('status', 'unknown')
+                                print(f"      {service}: {service_status}")
+                            else:
+                                print(f"      {service}: {status}")
+                    
+                    return True, {
+                        "response_time": response_time,
+                        "health_data": health_data,
+                        "status_code": health_response.status_code
+                    }
+                else:
+                    print("   ⚠️  Backend reports unhealthy status")
+                    return False, {"error": "Backend unhealthy", "data": health_data}
+            else:
+                print(f"   ❌ Health endpoint failed - Status: {health_response.status_code}")
+                return False, {"error": "Health check failed", "status": health_response.status_code}
+                
+        except requests.exceptions.Timeout:
+            print("   ❌ Health endpoint timeout - Backend may be unreachable")
+            return False, {"error": "Health endpoint timeout"}
+        except requests.exceptions.ConnectionError as e:
+            print(f"   ❌ Connection error to health endpoint: {e}")
+            return False, {"error": "Connection error", "details": str(e)}
+        except Exception as e:
+            print(f"   ❌ Error testing health endpoint: {e}")
+            return False, {"error": str(e)}
+    
+    def test_authentication_response_times(self):
+        """Test authentication endpoint response times to identify timeout issues"""
+        print("\n⏱️  TESTING AUTHENTICATION RESPONSE TIMES...")
+        
+        try:
+            import requests
+            import time
+            
+            # Test with valid credentials
+            login_data = {
+                "email": self.demo_email,
+                "password": self.demo_password,
+                "remember_me": False
+            }
+            
+            print(f"   🔍 Testing login timing with: {login_data['email']}")
+            
+            # Measure response time
+            start_time = time.time()
+            
+            login_response = requests.post(
+                f"{self.base_url}/api/auth/login",
+                json=login_data,
+                timeout=60  # Extended timeout to catch slow responses
+            )
+            
+            response_time = time.time() - start_time
+            print(f"   ⏱️  Login response time: {response_time:.2f} seconds")
+            
+            # Analyze response time
+            if response_time > 30:
+                print("   🚨 CRITICAL: Login response time > 30 seconds (timeout issue)")
+                timeout_issue = True
+            elif response_time > 10:
+                print("   ⚠️  WARNING: Login response time > 10 seconds (slow response)")
+                timeout_issue = True
+            elif response_time > 5:
+                print("   ⚠️  Login response time > 5 seconds (acceptable but slow)")
+                timeout_issue = False
+            else:
+                print("   ✅ Login response time acceptable")
+                timeout_issue = False
+            
+            # Check response status
+            if login_response.status_code == 200:
+                print("   ✅ Login successful")
+                login_data_response = login_response.json()
+                
+                # Test /api/auth/me response time
+                me_start_time = time.time()
+                
+                # Use session to maintain cookies
+                session = requests.Session()
+                session.cookies.update(login_response.cookies)
+                
+                me_response = session.get(
+                    f"{self.base_url}/api/auth/me",
+                    timeout=30
+                )
+                
+                me_response_time = time.time() - me_start_time
+                print(f"   ⏱️  /api/auth/me response time: {me_response_time:.2f} seconds")
+                
+                if me_response.status_code == 200:
+                    print("   ✅ /api/auth/me successful")
+                    me_data = me_response.json()
+                    
+                    return not timeout_issue, {
+                        "login_response_time": response_time,
+                        "me_response_time": me_response_time,
+                        "login_status": login_response.status_code,
+                        "me_status": me_response.status_code,
+                        "timeout_issue": timeout_issue,
+                        "login_data": login_data_response,
+                        "me_data": me_data
+                    }
+                else:
+                    print(f"   ❌ /api/auth/me failed - Status: {me_response.status_code}")
+                    return False, {
+                        "error": "/api/auth/me failed",
+                        "login_response_time": response_time,
+                        "me_status": me_response.status_code
+                    }
+            else:
+                print(f"   ❌ Login failed - Status: {login_response.status_code}")
+                try:
+                    error_response = login_response.json()
+                    print(f"   ❌ Error: {error_response.get('detail', 'Unknown error')}")
+                except:
+                    print(f"   ❌ Response: {login_response.text[:200]}")
+                
+                return False, {
+                    "error": "Login failed",
+                    "response_time": response_time,
+                    "status": login_response.status_code,
+                    "timeout_issue": timeout_issue
+                }
+                
+        except requests.exceptions.Timeout:
+            print("   🚨 CRITICAL: Authentication timeout - This matches user report")
+            return False, {"error": "Authentication timeout", "timeout_confirmed": True}
+        except requests.exceptions.ConnectionError as e:
+            print(f"   ❌ Connection error during authentication: {e}")
+            return False, {"error": "Connection error", "details": str(e)}
+        except Exception as e:
+            print(f"   ❌ Error testing authentication timing: {e}")
+            return False, {"error": str(e)}
+    
+    def test_production_cors_configuration(self):
+        """Test CORS configuration for production domains"""
+        print("\n🌐 TESTING PRODUCTION CORS CONFIGURATION...")
+        
+        try:
+            import requests
+            
+            # Test CORS preflight for login endpoint
+            print("   🔍 Testing CORS preflight for /api/auth/login")
+            
+            # Test with production domain origin
+            cors_headers = {
+                'Origin': self.production_domain,
+                'Access-Control-Request-Method': 'POST',
+                'Access-Control-Request-Headers': 'Content-Type'
+            }
+            
+            options_response = requests.options(
+                f"{self.base_url}/api/auth/login",
+                headers=cors_headers,
+                timeout=15
+            )
+            
+            print(f"   ⏱️  CORS preflight status: {options_response.status_code}")
+            
+            if options_response.status_code in [200, 204]:
+                print("   ✅ CORS preflight successful")
+                
+                # Check CORS headers
+                cors_origin = options_response.headers.get('Access-Control-Allow-Origin')
+                cors_methods = options_response.headers.get('Access-Control-Allow-Methods')
+                cors_headers_allowed = options_response.headers.get('Access-Control-Allow-Headers')
+                cors_credentials = options_response.headers.get('Access-Control-Allow-Credentials')
+                
+                print(f"   🔍 Access-Control-Allow-Origin: {cors_origin}")
+                print(f"   🔍 Access-Control-Allow-Methods: {cors_methods}")
+                print(f"   🔍 Access-Control-Allow-Headers: {cors_headers_allowed}")
+                print(f"   🔍 Access-Control-Allow-Credentials: {cors_credentials}")
+                
+                # Verify CORS configuration
+                cors_issues = []
+                
+                if not cors_origin:
+                    cors_issues.append("Missing Access-Control-Allow-Origin")
+                elif cors_origin == '*' and cors_credentials == 'true':
+                    cors_issues.append("Wildcard origin with credentials not allowed")
+                
+                if not cors_methods or 'POST' not in cors_methods:
+                    cors_issues.append("POST method not allowed")
+                
+                if not cors_headers_allowed or 'content-type' not in cors_headers_allowed.lower():
+                    cors_issues.append("Content-Type header not allowed")
+                
+                if cors_credentials != 'true':
+                    cors_issues.append("Credentials not allowed (needed for cookies)")
+                
+                if cors_issues:
+                    print("   ⚠️  CORS configuration issues found:")
+                    for issue in cors_issues:
+                        print(f"      - {issue}")
+                    return False, {
+                        "cors_issues": cors_issues,
+                        "headers": dict(options_response.headers)
+                    }
+                else:
+                    print("   ✅ CORS configuration looks correct")
+                    return True, {
+                        "cors_headers": dict(options_response.headers),
+                        "status": options_response.status_code
+                    }
+            else:
+                print(f"   ❌ CORS preflight failed - Status: {options_response.status_code}")
+                return False, {
+                    "error": "CORS preflight failed",
+                    "status": options_response.status_code
+                }
+                
+        except Exception as e:
+            print(f"   ❌ Error testing CORS configuration: {e}")
+            return False, {"error": str(e)}
+    
+    def test_production_domain_authentication(self):
+        """Test authentication with production domain"""
+        print("\n🌍 TESTING PRODUCTION DOMAIN AUTHENTICATION...")
+        
+        # Test with production domain if different from current base_url
+        if self.production_domain in self.base_url:
+            print("   ℹ️  Already testing production domain")
+            return True, {"message": "Already testing production domain"}
+        
+        try:
+            import requests
+            import time
+            
+            print(f"   🔍 Testing with production domain: {self.production_domain}")
+            
+            # Test health endpoint on production domain
+            prod_health_url = f"{self.production_domain}/api/health"
+            print(f"   🏥 Testing health: {prod_health_url}")
+            
+            start_time = time.time()
+            health_response = requests.get(prod_health_url, timeout=30)
+            health_time = time.time() - start_time
+            
+            print(f"   ⏱️  Production health response time: {health_time:.2f} seconds")
+            
+            if health_response.status_code == 200:
+                print("   ✅ Production domain health check successful")
+                
+                # Test login on production domain
+                login_data = {
+                    "email": self.demo_email,
+                    "password": self.demo_password,
+                    "remember_me": False
+                }
+                
+                print(f"   🔐 Testing login on production domain...")
+                
+                start_time = time.time()
+                login_response = requests.post(
+                    f"{self.production_domain}/api/auth/login",
+                    json=login_data,
+                    timeout=60
+                )
+                login_time = time.time() - start_time
+                
+                print(f"   ⏱️  Production login response time: {login_time:.2f} seconds")
+                
+                if login_response.status_code == 200:
+                    print("   ✅ Production domain login successful")
+                    return True, {
+                        "health_time": health_time,
+                        "login_time": login_time,
+                        "production_domain": self.production_domain,
+                        "login_data": login_response.json()
+                    }
+                else:
+                    print(f"   ❌ Production domain login failed - Status: {login_response.status_code}")
+                    return False, {
+                        "error": "Production login failed",
+                        "status": login_response.status_code,
+                        "login_time": login_time
+                    }
+            else:
+                print(f"   ❌ Production domain health check failed - Status: {health_response.status_code}")
+                return False, {
+                    "error": "Production health check failed",
+                    "status": health_response.status_code
+                }
+                
+        except requests.exceptions.Timeout:
+            print("   🚨 Production domain timeout - Network/DNS issue")
+            return False, {"error": "Production domain timeout"}
+        except requests.exceptions.ConnectionError as e:
+            print(f"   ❌ Production domain connection error: {e}")
+            return False, {"error": "Production connection error", "details": str(e)}
+        except Exception as e:
+            print(f"   ❌ Error testing production domain: {e}")
+            return False, {"error": str(e)}
+    
+    def test_network_connectivity(self):
+        """Test network connectivity and DNS resolution"""
+        print("\n🌐 TESTING NETWORK CONNECTIVITY...")
+        
+        try:
+            import requests
+            import socket
+            import time
+            from urllib.parse import urlparse
+            
+            # Parse current base URL
+            parsed_url = urlparse(self.base_url)
+            hostname = parsed_url.hostname
+            port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 80)
+            
+            print(f"   🔍 Testing connectivity to: {hostname}:{port}")
+            
+            # Test DNS resolution
+            try:
+                start_time = time.time()
+                ip_address = socket.gethostbyname(hostname)
+                dns_time = time.time() - start_time
+                print(f"   ✅ DNS resolution successful: {hostname} -> {ip_address}")
+                print(f"   ⏱️  DNS resolution time: {dns_time:.3f} seconds")
+            except socket.gaierror as e:
+                print(f"   ❌ DNS resolution failed: {e}")
+                return False, {"error": "DNS resolution failed", "details": str(e)}
+            
+            # Test TCP connection
+            try:
+                start_time = time.time()
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(10)
+                result = sock.connect_ex((hostname, port))
+                tcp_time = time.time() - start_time
+                sock.close()
+                
+                if result == 0:
+                    print(f"   ✅ TCP connection successful to {hostname}:{port}")
+                    print(f"   ⏱️  TCP connection time: {tcp_time:.3f} seconds")
+                else:
+                    print(f"   ❌ TCP connection failed to {hostname}:{port}")
+                    return False, {"error": "TCP connection failed", "result": result}
+            except Exception as e:
+                print(f"   ❌ TCP connection error: {e}")
+                return False, {"error": "TCP connection error", "details": str(e)}
+            
+            # Test HTTP/HTTPS connectivity with timing
+            try:
+                start_time = time.time()
+                response = requests.get(f"{self.base_url}/api/health", timeout=30)
+                http_time = time.time() - start_time
+                
+                print(f"   ✅ HTTP/HTTPS connectivity successful")
+                print(f"   ⏱️  HTTP response time: {http_time:.3f} seconds")
+                
+                # Check for any redirect issues
+                if response.history:
+                    print(f"   ℹ️  Redirects detected: {len(response.history)} redirect(s)")
+                    for i, redirect in enumerate(response.history):
+                        print(f"      {i+1}. {redirect.status_code} -> {redirect.url}")
+                
+                return True, {
+                    "dns_time": dns_time,
+                    "tcp_time": tcp_time,
+                    "http_time": http_time,
+                    "ip_address": ip_address,
+                    "redirects": len(response.history) if response.history else 0
+                }
+                
+            except requests.exceptions.Timeout:
+                print("   ❌ HTTP request timeout")
+                return False, {"error": "HTTP timeout"}
+            except Exception as e:
+                print(f"   ❌ HTTP connectivity error: {e}")
+                return False, {"error": "HTTP error", "details": str(e)}
+                
+        except Exception as e:
+            print(f"   ❌ Error testing network connectivity: {e}")
+            return False, {"error": str(e)}
+    
+    def test_authentication_timeout_monitoring(self):
+        """Test authentication with detailed timeout monitoring"""
+        print("\n⏰ TESTING AUTHENTICATION WITH TIMEOUT MONITORING...")
+        
+        try:
+            import requests
+            import time
+            
+            # Test multiple authentication attempts with timing
+            test_credentials = [
+                {"email": self.demo_email, "password": self.demo_password, "name": "Demo Admin"},
+                {"email": self.specific_user_email, "password": self.specific_user_password, "name": "Specific User"}
+            ]
+            
+            results = []
+            
+            for cred in test_credentials:
+                print(f"\n   🔍 Testing {cred['name']}: {cred['email']}")
+                
+                login_data = {
+                    "email": cred["email"],
+                    "password": cred["password"],
+                    "remember_me": False
+                }
+                
+                # Measure detailed timing
+                timing_data = {}
+                
+                try:
+                    # DNS + Connection time
+                    start_time = time.time()
+                    
+                    session = requests.Session()
+                    
+                    # Make the login request
+                    login_response = session.post(
+                        f"{self.base_url}/api/auth/login",
+                        json=login_data,
+                        timeout=90  # Very long timeout to catch slow responses
+                    )
+                    
+                    total_time = time.time() - start_time
+                    timing_data['total_time'] = total_time
+                    
+                    print(f"   ⏱️  Total login time: {total_time:.2f} seconds")
+                    
+                    if total_time > 30:
+                        print("   🚨 CRITICAL TIMEOUT: Login took > 30 seconds")
+                        timeout_severity = "critical"
+                    elif total_time > 15:
+                        print("   ⚠️  SLOW RESPONSE: Login took > 15 seconds")
+                        timeout_severity = "warning"
+                    elif total_time > 5:
+                        print("   ⚠️  Slow login: > 5 seconds")
+                        timeout_severity = "slow"
+                    else:
+                        print("   ✅ Normal response time")
+                        timeout_severity = "normal"
+                    
+                    timing_data['severity'] = timeout_severity
+                    
+                    if login_response.status_code == 200:
+                        print(f"   ✅ Login successful for {cred['name']}")
+                        
+                        # Test follow-up request timing
+                        me_start_time = time.time()
+                        me_response = session.get(f"{self.base_url}/api/auth/me", timeout=30)
+                        me_time = time.time() - me_start_time
+                        
+                        timing_data['me_time'] = me_time
+                        print(f"   ⏱️  /api/auth/me time: {me_time:.2f} seconds")
+                        
+                        if me_response.status_code == 200:
+                            me_data = me_response.json()
+                            print(f"   ✅ User data retrieved: {me_data.get('email')}")
+                            
+                            results.append({
+                                "credential": cred['name'],
+                                "email": cred['email'],
+                                "success": True,
+                                "timing": timing_data,
+                                "login_status": login_response.status_code,
+                                "me_status": me_response.status_code,
+                                "user_data": me_data
+                            })
+                        else:
+                            print(f"   ❌ /api/auth/me failed: {me_response.status_code}")
+                            results.append({
+                                "credential": cred['name'],
+                                "email": cred['email'],
+                                "success": False,
+                                "error": "/api/auth/me failed",
+                                "timing": timing_data,
+                                "me_status": me_response.status_code
+                            })
+                    else:
+                        print(f"   ❌ Login failed: {login_response.status_code}")
+                        try:
+                            error_data = login_response.json()
+                            error_detail = error_data.get('detail', 'Unknown error')
+                        except:
+                            error_detail = login_response.text[:200]
+                        
+                        print(f"   ❌ Error: {error_detail}")
+                        
+                        results.append({
+                            "credential": cred['name'],
+                            "email": cred['email'],
+                            "success": False,
+                            "error": error_detail,
+                            "timing": timing_data,
+                            "login_status": login_response.status_code
+                        })
+                
+                except requests.exceptions.Timeout:
+                    print(f"   🚨 TIMEOUT: {cred['name']} login timed out")
+                    results.append({
+                        "credential": cred['name'],
+                        "email": cred['email'],
+                        "success": False,
+                        "error": "Request timeout",
+                        "timeout_confirmed": True
+                    })
+                
+                except Exception as e:
+                    print(f"   ❌ Error testing {cred['name']}: {e}")
+                    results.append({
+                        "credential": cred['name'],
+                        "email": cred['email'],
+                        "success": False,
+                        "error": str(e)
+                    })
+            
+            # Analyze results
+            successful_logins = sum(1 for r in results if r['success'])
+            timeout_issues = sum(1 for r in results if 'timeout_confirmed' in r or 
+                               (r.get('timing', {}).get('severity') in ['critical', 'warning']))
+            
+            print(f"\n   📊 TIMEOUT MONITORING SUMMARY:")
+            print(f"   ✅ Successful logins: {successful_logins}/{len(results)}")
+            print(f"   ⚠️  Timeout issues detected: {timeout_issues}")
+            
+            if timeout_issues > 0:
+                print("   🚨 TIMEOUT ISSUES CONFIRMED - This matches user report")
+            
+            overall_success = successful_logins > 0 and timeout_issues == 0
+            
+            return overall_success, {
+                "results": results,
+                "successful_logins": successful_logins,
+                "timeout_issues": timeout_issues,
+                "total_tests": len(results)
+            }
+            
+        except Exception as e:
+            print(f"   ❌ Error in timeout monitoring: {e}")
+            return False, {"error": str(e)}
+
     # ========== AUDIT LOGS ENDPOINT TESTS ==========
     
     def test_audit_logs_endpoint(self):
