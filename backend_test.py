@@ -22415,12 +22415,52 @@ def main_mobile_api_tests():
     print("=" * 80)
     return mobile_success
 
+def main_production_timeout_tests():
+    """Main function for production authentication timeout testing"""
+    tester = DealPackAPITester()
+    
+    print("🚨 PRODUCTION AUTHENTICATION TIMEOUT TESTING")
+    print(f"🌐 Base URL: {tester.base_url}")
+    print(f"🌍 Production Domain: {tester.production_domain}")
+    print("=" * 80)
+    
+    # Run production timeout tests
+    timeout_success, timeout_results = tester.test_production_authentication_timeout_issue()
+    
+    print("\n" + "=" * 80)
+    print("🎯 PRODUCTION TIMEOUT TESTING SUMMARY")
+    print("=" * 80)
+    
+    if timeout_success:
+        print("✅ PRODUCTION AUTHENTICATION - NO TIMEOUT ISSUES DETECTED")
+        print("   The backend is responding normally to authentication requests")
+    else:
+        print("❌ PRODUCTION AUTHENTICATION - TIMEOUT ISSUES CONFIRMED")
+        print("   This matches the user's reported symptoms")
+        
+        # Analyze specific issues
+        if 'timeout_monitoring' in timeout_results:
+            timeout_data = timeout_results['timeout_monitoring']['response']
+            timeout_issues = timeout_data.get('timeout_issues', 0)
+            if timeout_issues > 0:
+                print(f"   🚨 {timeout_issues} timeout issue(s) detected")
+                
+        if 'network_connectivity' in timeout_results and not timeout_results['network_connectivity']['success']:
+            print("   🌐 Network connectivity issues detected")
+            
+        if 'cors_config' in timeout_results and not timeout_results['cors_config']['success']:
+            print("   🔒 CORS configuration issues detected")
+    
+    return timeout_success
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1:
         test_type = sys.argv[1].lower()
         
-        if test_type == "pdf":
+        if test_type == "timeout" or test_type == "production":
+            main_production_timeout_tests()
+        elif test_type == "pdf":
             main_pdf_generation_tests()
         elif test_type == "affordability":
             main_affordability_calculator_pdf_tests()
@@ -22437,8 +22477,8 @@ if __name__ == "__main__":
         elif test_type == "mobile":
             main_mobile_api_tests()
         else:
-            print("Available tests: pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile")
+            print("Available tests: timeout, production, pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile")
             sys.exit(1)
     else:
-        # Default: run mobile API tests as requested in review
-        main_mobile_api_tests()
+        # Default: run production timeout tests as requested in review
+        main_production_timeout_tests()
