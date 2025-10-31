@@ -70,17 +70,21 @@ const MobileLayout = ({ children }) => {
   const searchParams = new URLSearchParams(location.search);
   const panelParam = searchParams.get('panel');
   
+  const shouldShowMobileDashboard = true; // TEMPORARY: Force show mobile dashboard
+  /*
   const shouldShowMobileDashboard = 
     location.pathname === '/dashboard' && 
     !panelParam && 
     activeTab === 'overview';
+  */
 
   // Debug logging
   console.log('[MobileLayout] Render conditions:', {
     pathname: location.pathname,
     panelParam,
     activeTab,
-    shouldShowMobileDashboard
+    shouldShowMobileDashboard,
+    originalCondition: location.pathname === '/dashboard' && !panelParam && activeTab === 'overview'
   });
 
   return (
