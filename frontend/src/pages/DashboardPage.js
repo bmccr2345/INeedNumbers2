@@ -379,6 +379,7 @@ const DashboardPage = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
+          <p className="text-red-500 text-xs mt-2">DEBUG: DashboardPage loading disabled</p>
         </div>
       </div>
     );
