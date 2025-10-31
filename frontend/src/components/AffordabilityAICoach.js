@@ -82,7 +82,12 @@ const AffordabilityAICoach = ({ isOpen, onClose, inputs, results }) => {
       const qualified = results.qualified;
       
       // Call the AI Coach API with cookie-based authentication
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`, {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error('Backend URL not configured');
+      }
+      
+      const response = await fetch(`${backendUrl}/api/ai-coach-v2/generate`, {
         method: 'POST',
         headers: getHeaders(),
         credentials: 'include',  // Include HttpOnly cookies
