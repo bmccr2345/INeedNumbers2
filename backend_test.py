@@ -1853,9 +1853,13 @@ class DealPackAPITester:
             import time
             
             # Test multiple authentication attempts with timing
+            # Using various credentials that might exist in production
             test_credentials = [
-                {"email": self.demo_email, "password": self.demo_password, "name": "Demo Admin"},
-                {"email": self.specific_user_email, "password": self.specific_user_password, "name": "Specific User"}
+                {"email": "demo@demo.com", "password": "demo123", "name": "Demo User (old password)"},
+                {"email": "demo@demo.com", "password": "Goosey23!!23", "name": "Demo User (new password)"},
+                {"email": "bmccr23@gmail.com", "password": "Goosey23!!23", "name": "Specific User"},
+                {"email": "startertest@demo.com", "password": "demo123", "name": "Starter Test User"},
+                {"email": "test@example.com", "password": "password123", "name": "Generic Test User"}
             ]
             
             results = []
