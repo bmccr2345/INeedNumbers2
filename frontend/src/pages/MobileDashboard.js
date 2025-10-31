@@ -305,9 +305,7 @@ const MobileDashboard = () => {
     }).format(value);
   };
 
-  // TEMPORARY: Force show dashboard content without authentication
-  // if (loading) {
-  if (false) { // Force disable loading screen
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full p-8">
         <div className="text-center">
