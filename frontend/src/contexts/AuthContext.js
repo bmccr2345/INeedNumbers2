@@ -206,7 +206,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       // Call server logout to clear HttpOnly cookies
-      await axios.post(`${backendUrl}/api/auth/logout`);
+      await axios.post(`${backendUrl}/api/auth/logout`, {}, {
+        withCredentials: true,
+        timeout: 8000
+      });
     } catch (error) {
       console.error('Logout API call failed:', error);
     }
