@@ -353,7 +353,7 @@ const AffordabilityCalculator = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
       
       // Prepare data for the backend (same format as investor calculator)
       const payload = {
