@@ -172,6 +172,9 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
         full_name: fullName
+      }, {
+        withCredentials: true,
+        timeout: 10000
       });
 
       // Auto-login after registration
