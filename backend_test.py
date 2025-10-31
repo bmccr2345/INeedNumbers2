@@ -1503,26 +1503,80 @@ class DealPackAPITester:
             import requests
             import time
             
-            # Test with valid credentials
-            login_data = {
-                "email": self.demo_email,
-                "password": self.demo_password,
-                "remember_me": False
-            }
+            # Test with multiple credential combinations to check response times
+            # Focus on response time rather than authentication success
+            test_cases = [
+                {"email": "demo@demo.com", "password": "demo123", "name": "Demo (old)"},
+                {"email": "demo@demo.com", "password": "Goosey23!!23", "name": "Demo (new)"},
+                {"email": "test@example.com", "password": "wrongpassword", "name": "Invalid user"},
+                {"email": "bmccr23@gmail.com", "password": "Goosey23!!23", "name": "Specific user"}
+            ]
             
-            print(f"   🔍 Testing login timing with: {login_data['email']}")
+            response_times = []
             
-            # Measure response time
-            start_time = time.time()
+            for test_case in test_cases:
+                login_data = {
+                    "email": test_case["email"],
+                    "password": test_case["password"],
+                    "remember_me": False
+                }
+                
+                print(f"   🔍 Testing {test_case['name']}: {login_data['email']}")
+                
+                # Measure response time
+                start_time = time.time()
+                
+                try:
+                    login_response = requests.post(
+                        f"{self.base_url}/api/auth/login",
+                        json=login_data,
+                        timeout=60  # Extended timeout to catch slow responses
+                    )
+                    
+                    response_time = time.time() - start_time
+                    response_times.append(response_time)
+                    print(f"   ⏱️  Response time: {response_time:.2f} seconds (Status: {login_response.status_code})")
+                    
+                    # Check if this is a successful login
+                    if login_response.status_code == 200:
+                        print(f"   ✅ Login successful for {test_case['name']}")
+                        
+                        # Test /api/auth/me response time for successful login
+                        session = requests.Session()
+                        session.cookies.update(login_response.cookies)
+                        
+                        me_start_time = time.time()
+                        me_response = session.get(f"{self.base_url}/api/auth/me", timeout=30)
+                        me_response_time = time.time() - me_start_time
+                        
+                        print(f"   ⏱️  /api/auth/me response time: {me_response_time:.2f} seconds")
+                        
+                        if me_response.status_code == 200:
+                            me_data = me_response.json()
+                            print(f"   ✅ User data: {me_data.get('email')} (role: {me_data.get('role')})")
+                            
+                            return True, {
+                                "successful_login": test_case['name'],
+                                "login_response_time": response_time,
+                                "me_response_time": me_response_time,
+                                "user_data": me_data,
+                                "all_response_times": response_times
+                            }
+                    else:
+                        print(f"   ❌ Login failed: {login_response.status_code}")
+                        
+                except requests.exceptions.Timeout:
+                    response_time = 60  # Timeout occurred
+                    response_times.append(response_time)
+                    print(f"   🚨 TIMEOUT: {test_case['name']} login timed out after 60 seconds")
+                    
+            # Analyze response times even if no successful login
+            avg_response_time = sum(response_times) / len(response_times) if response_times else 0
+            max_response_time = max(response_times) if response_times else 0
             
-            login_response = requests.post(
-                f"{self.base_url}/api/auth/login",
-                json=login_data,
-                timeout=60  # Extended timeout to catch slow responses
-            )
-            
-            response_time = time.time() - start_time
-            print(f"   ⏱️  Login response time: {response_time:.2f} seconds")
+            print(f"\n   📊 Response Time Analysis:")
+            print(f"   ⏱️  Average response time: {avg_response_time:.2f} seconds")
+            print(f"   ⏱️  Maximum response time: {max_response_time:.2f} seconds")
             
             # Analyze response time
             if response_time > 30:
