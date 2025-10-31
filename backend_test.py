@@ -28,6 +28,8 @@ class DealPackAPITester:
         # Non-PRO user for mobile dashboard testing
         self.starter_user_email = "startertest@demo.com"
         self.starter_user_password = "demo123"
+        # Production domain for testing
+        self.production_domain = "https://ineednumbers.com"
         self.sample_agent_info = {
             "agent_name": "Sarah Johnson",
             "brokerage": "Premier Real Estate Group",
