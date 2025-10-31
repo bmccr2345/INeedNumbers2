@@ -288,6 +288,9 @@ const SellerNetSheetCalculator = () => {
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error('Backend URL not configured');
+      }
       
       // Prepare data for the backend (same format as other calculators)
       const payload = {
