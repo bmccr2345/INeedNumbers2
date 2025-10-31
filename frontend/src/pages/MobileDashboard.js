@@ -311,7 +311,6 @@ const MobileDashboard = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
-          <p className="text-red-500 text-xs mt-2">DEBUG: MobileDashboard loading disabled</p>
           {/* Debug info */}
           <div className="mt-4 text-xs text-gray-500">
             <p>User state: {user === undefined ? 'undefined' : user === null ? 'null' : 'exists'}</p>
