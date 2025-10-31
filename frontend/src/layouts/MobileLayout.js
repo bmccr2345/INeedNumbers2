@@ -108,13 +108,12 @@ const MobileLayout = ({ children }) => {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-auto" style={{ paddingBottom: '80px' }}>
-        {/* TEMPORARY: Always show MobileDashboard to debug */}
-        <MobileDashboard />
-        {/* Original logic: {shouldShowMobileDashboard ? (
+        {/* Show MobileDashboard for overview tab, otherwise show passed children (DashboardPage) */}
+        {shouldShowMobileDashboard ? (
           <MobileDashboard />
         ) : (
           children
-        )} */}
+        )}
       </main>
 
       {/* Bottom Tab Navigation */}
