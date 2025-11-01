@@ -3281,6 +3281,11 @@ async def login(request: Request, response: Response, login_data: LoginRequest):
         )
     
     if not verify_password(login_data.password, user.hashed_password):
+        # Add detailed logging for production debugging
+        logger.error(f"Password verification failed for user {user.email}")
+        logger.error(f"Hash starts with: {user.hashed_password[:20] if user.hashed_password else 'None'}")
+        logger.error(f"Password length: {len(login_data.password) if login_data.password else 0}")
+        
         await log_audit_event(user, AuditAction.LOGIN, {"success": False, "reason": "invalid_password"}, request)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
