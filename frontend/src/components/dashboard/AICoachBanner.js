@@ -68,6 +68,11 @@ const AICoachBanner = () => {
   };
 
   useEffect(() => {
+    // TEMPORARY: Disable AI Coach auto-load to prevent login issues
+    console.log('[AICoachBanner] AI Coach temporarily disabled due to 500 error');
+    setIsLoading(false);
+    setError('AI Coach temporarily disabled for maintenance');
+    /*
     // Only load coach data if user is authenticated and is PRO
     if (user && user.plan === 'PRO') {
       loadCoachData();
@@ -79,6 +84,7 @@ const AICoachBanner = () => {
         setError('AI Coach requires a Pro plan. Upgrade to access personalized insights.');
       }
     }
+    */
   }, [user]);
 
   const handleGenerateCoaching = async (force = false) => {
