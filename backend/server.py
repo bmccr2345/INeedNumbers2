@@ -3306,6 +3306,20 @@ async def login(request: Request, response: Response, login_data: LoginRequest):
             logger.error(f"Failed to migrate password hash for user {user.email}: {e}")
             # Don't fail login if migration fails
     
+    # Check if Argon2id hash needs parameter update
+    elif user.hashed_password.startswith('$argon2') and check_needs_rehash(user.hashed_password):
+        try:
+            logger.info(f"Rehashing Argon2id password for user {user.email} with current parameters")
+            new_hash = hash_password(login_data.password)
+            await db.users.update_one(
+                {"_id": user.id}, 
+                {"$set": {"hashed_password": new_hash, "updated_at": datetime.now(timezone.utc)}}
+            )
+            logger.info(f"Successfully rehashed password for user {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to rehash password for user {user.email}: {e}")
+            # Don't fail login if rehashing fails
+    
     access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS if login_data.remember_me else 1)
     access_token = create_access_token(
         data={"sub": user.id},
