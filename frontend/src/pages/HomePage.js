@@ -312,7 +312,7 @@ const HomePage = () => {
             <div className="space-y-8 text-center lg:text-left">
               <div className="relative">
                 <h1 className="text-4xl lg:text-6xl font-bold text-deep-forest mb-6 font-poppins leading-tight">
-                  Ever catch yourself saying, "I just need the numbers"?
+                  Run your real-estate business with clarity, not guesswork.
                 </h1>
                 {/* Small Fairy Logo Accent near headline */}
                 <div className="absolute -top-4 -right-8 lg:-right-16">
@@ -322,16 +322,21 @@ const HomePage = () => {
               
               <div className="text-xl lg:text-2xl text-neutral-dark space-y-6">
                 <p className="leading-relaxed" style={{ lineHeight: '1.7' }}>
-                  From commission splits to ROI calculators, seller net sheets to your profit & loss, <span className="font-semibold text-primary">I Need Numbers</span> helps real estate agents cut the guesswork and see the truth behind every deal.
+                  Free tools to crunch your numbers. A simple upgrade to track your deals, know your profit, and get guided by your AI coach.
                 </p>
                 
-                <p className="leading-relaxed text-green-600 font-medium" style={{ lineHeight: '1.7' }}>
-                  All powered by A.I.
-                </p>
-                
-                <p className="leading-relaxed" style={{ lineHeight: '1.7' }}>
-                  You don't need another CRM — you need clarity.
-                </p>
+                <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-100">
+                  <h2 className="text-2xl font-semibold text-deep-forest mb-4">What It Does</h2>
+                  <p className="leading-relaxed text-lg" style={{ lineHeight: '1.7' }}>
+                    <span className="font-semibold text-primary">I Need Numbers</span> helps real-estate agents finally get a clear picture of their business.
+                  </p>
+                  <p className="leading-relaxed text-lg mt-3" style={{ lineHeight: '1.7' }}>
+                    Start free with quick calculators that make every deal easier.
+                  </p>
+                  <p className="leading-relaxed text-lg mt-3" style={{ lineHeight: '1.7' }}>
+                    When you're ready, upgrade to turn those numbers into real insights—daily, weekly, and yearly.
+                  </p>
+                </div>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-8">
