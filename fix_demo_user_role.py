@@ -107,7 +107,7 @@ async def verify_fix():
     try:
         import requests
         
-        base_url = "https://agent-finance.preview.emergentagent.com"
+        base_url = "https://debug-ineednumbers.preview.emergentagent.com"
         
         # Login and check role
         login_data = {

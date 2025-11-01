@@ -1,66 +1,103 @@
 <analysis>
-The trajectory outlines an AI engineer's comprehensive efforts to stabilize and enhance the I Need Numbers application. The work was highly iterative, frequently addressing recurring infrastructure issues like WeasyPrint dependencies, which impacted login and PDF generation. Initial phases focused on production readiness, including Admin Console data integrity, 2FA implementation, and UI/UX refinements. Key challenges revolved around establishing a stable PDF generation pipeline (transitioning from WeasyPrint to Playwright due to environment constraints), resolving complex templating issues (Jinja2 vs. Mustache), and ensuring persistent login functionality amidst code changes and environment restarts. Each feature, from dashboard navigation redesign to AI coach output formatting and branding integration into PDFs, involved multiple debugging cycles. The trajectory concludes with the immediate task of resolving a saved error message on the Action Tracker, highlighting the continuous nature of development in a complex codebase.
+The trajectory details an extensive debugging and development process for the I Need Numbers application. Initially, the AI engineer addressed a misintegration of the Fairy AI Coach on the mobile dashboard, mistakenly using an onboarding wizard instead of the actual AI component. This led to a series of frontend fixes to ensure consistent data loading and authentication, which uncovered persistent issues related to cross-domain cookies and environment variable configurations.
+
+The debugging cycle then pivoted to resolving critical production login failures, which manifested as timeouts. This involved deep dives into Argon2id password hashing parameters, MongoDB Atlas connectivity issues (including SSL handshake problems requiring dependency upgrades), and ultimately, a complex frontend-to-backend URL mismatch. The AI engineer also tackled GitHub push protection errors caused by secrets in commit history and documentation, necessitating a temporary clean-up and a new repository.
+
+The work culminated in successfully connecting the backend to MongoDB Atlas and confirming local health, but the core production login failures persisted due to unaddressed routing issues at the Emergent platform level. The AI engineer systematically investigated Nginx configurations, only to find them not directly applicable, indicating a higher-level proxy system is in play. The immediate challenge is diagnosing the exact mechanism preventing frontend API calls from reaching the backend despite successful backend health checks.
 </analysis>
 
 <product_requirements>
-The I Need Numbers application provides real estate agents with financial tools, including an Agent P&L Tracker, Recurring Expenses & Inline Editing, and a Commission Cap Tracker. A key feature is the Fairy AI Coach, exclusive to PRO users, which offers personalized insights, action plans, risk assessments, and P&L trend analysis, with outputs converted from raw JSON to human-readable format. Action Tracker functionality was enhanced with improved inputs and a Goals tab. The application prioritizes Backend Security Hardening (Argon2id, HttpOnly/Secure cookies, CSRF, MongoDB rate limits, upload validation) and Production Readiness (secure defaults, PDF branding, structured logging, comprehensive tests).
+The I Need Numbers application serves real estate agents with financial management tools, including P&L tracking, expense management, a Commission Cap Tracker, an Action Tracker, and a Fairy AI Coach for PRO users. The application is built with React, FastAPI, and MongoDB. Key features include a mobile dashboard redesign with specific layouts, bottom tab navigation (Overview, Calculators, Actions, More), P&L summary cards, and Active Deals tracking.
 
-Work completed so far includes fixing admin login, implementing 2FA for admins, making Admin Console user management and billing production-ready by integrating real data, humanizing AI Coach JSON output, correctly gating features for Free Calculator users, integrating the Action Tracker's Completed column, and developing a Pro Onboarding Wizard. A major dashboard UI and navigation redesign was implemented, and persistent issues with PDF branding and login stability have been addressed, primarily by migrating PDF generation to Playwright and ensuring correct templating with pre-computed data.
+Recent development has focused on ensuring production readiness and fixing environment-specific data loading and authentication issues. This involved a temporary transition to a subdomain () for the backend, which was later abandoned for a path-based API routing strategy. A critical, recurring task has been to correct the mobile Fairy AI Coach to use the ChatGPT-powered version (), replacing the mistakenly integrated . The most pressing issue has been a production login failure, manifesting as a 14-second timeout, which has been traced through various potential causes, including Argon2id parameter mismatches, MongoDB Atlas connectivity, and persistent frontend-to-backend URL and routing misconfigurations.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-Stack**: React.js (frontend), FastAPI (Python backend).
--   **Database**: MongoDB (with caching).
--   **Authentication**: JWT, Argon2id, HttpOnly cookies, 2FA (, ).
--   **AI Integration**: OpenAI GPT via .
--   **UI/Styling**: Tailwind CSS, Shadcn UI components.
--   **PDF Generation**: Playwright (current), previously WeasyPrint, ReportLab, html2pdf.
--   **Templating**: Mustache-style (for PDFs).
--   **Deployment**: Kubernetes container, Supervisor.
+-   **Full-Stack**: React.js (frontend), FastAPI (Python backend), MongoDB (with Atlas for production).
+-   **Authentication**: JWT, Argon2id (password hashing), HttpOnly/Secure cookies, , .
+-   **AI Integration**: OpenAI GPT via  (Fairy AI Coach).
+-   **Deployment**: Kubernetes, Supervisor, Emergent platform, environment variables, Nginx (proxy investigation).
+-   **Database Connectivity**: PyMongo, Motor (async driver), SSL/TLS (OpenSSL, Certifi).
 </key_technical_concepts>
 
 <code_architecture>
 **High-Level Architecture:**
-The application uses a React.js frontend and a FastAPI Python backend, with MongoDB for data and caching. Authentication is handled by JWTs and HttpOnly cookies, secured with Argon2id. AI features integrate with OpenAI via .
+The application comprises a React.js frontend, a FastAPI Python backend, and MongoDB for data persistence and caching. Authentication uses JWTs and HttpOnly cookies, secured with Argon2id. AI functionalities are integrated via  with OpenAI. The application is deployed on Kubernetes, managed by the Emergent platform.
 
 **Directory Structure:**
 
 
 **File Summaries & Changes:**
 -   ****: Central FastAPI application.
-    -   **Importance**: Defines all API routes, handles authentication, user data, PDF generation, and core business logic.
-    -   **Changes**: Implemented password reset and change endpoints, including admin-initiated resets. Added  check for health endpoint. Significantly refactored PDF generation to use Playwright for maintaining HTML/CSS design, explicitly setting browser path. Reverted  to use a Mustache-style parser for PDF templates and pre-compute branding colors. Removed redundant  statements.
--   ****: AI Coach API logic.
-    -   **Importance**: Manages the generation and formatting of AI coaching insights.
-    -   **Changes**: Added specific context handling for  to ensure AI outputs are formatted into human-readable text instead of raw JSON.
--   ****: Security middleware and utilities.
-    -   **Importance**: Enforces security policies, including CSRF protection.
-    -   **Changes**: Modified  to include password reset and all PDF generation routes () using a  check for flexible exemption.
--   ****: Seller Net Sheet PDF template.
-    -   **Importance**: Defines the visual layout and content for the Seller Net Sheet PDF, including agent branding.
-    -   **Changes**: Updated to incorporate dynamic branding elements (primary color, logo) passed as simple Mustache-style variables (e.g., ) after moving complex Jinja2 conditional logic for branding and color calculation to the Python backend to resolve template parsing errors.
--   ****: Main dashboard component.
-    -   **Importance**: Orchestrates the dashboard UI and navigation.
-    -   **Changes**: Underwent a major refactor to implement a new collapsible, categorized sidebar navigation structure for both desktop and mobile, replacing the previous flat tab system.
--   ****: PRO user onboarding wizard component.
-    -   **Importance**: Guides new PRO users through initial setup and feature discovery.
-    -   **Changes**: Updated all internal links and references to align with the newly redesigned dashboard navigation structure.
--   ****: AI Coach display banner on the dashboard.
-    -   **Importance**: Presents AI insights to the user.
-    -   **Changes**: Modified to be minimized by default on initial render by changing its  initial value for  to .
--   ****: Branding and Profile settings page.
-    -   **Importance**: Allows users to manage their branding assets.
-    -   **Changes**: Ensured proper display by fixing a backend Storage Error related to  not being defined when S3 isn't configured, thus correctly falling back to local storage.
--   ****: Frontend for initiating password reset.
-    -   **Importance**: Provides the interface for users to request password reset emails.
-    -   **Changes**: Updated to interact with the new backend  endpoint.
--   ****: **New file**.
-    -   **Importance**: Frontend component allowing users to set a new password using a reset token received via email.
--   ****: Main React application file.
-    -   **Importance**: Defines the main routing structure of the application.
-    -   **Changes**: Added a new route for the  page to integrate the password reset functionality.
--   ****: **New file**.
-    -   **Importance**: Documentation detailing the password security, reset, and management procedures for the application.
+    -   **Summary**: Handles main application logic, API routing, and security.
+    -   **Changes**:  for  cookie changed from  to  with .  for  updated to . Added temporary  endpoint for user migration (later intended to be removed). Added detailed logging for login endpoint debugging.
+-   ****: Backend configuration.
+    -   **Summary**: Manages backend environment variables and settings.
+    -   **Changes**: , ,  made optional. Added  field.  and  instantiation added.  calls corrected to .
+-   ****: AI Coach API routes.
+    -   **Summary**: Defines endpoints for AI Coach interactions.
+    -   **Changes**: Added  and  to API calls. Added  for better error handling. Temporarily commented out direct  call to prevent 500 errors.
+-   ****: Password hashing utilities.
+    -   **Summary**: Provides functions for password hashing and verification using Argon2id.
+    -   **Changes**: Ensured  configuration matches . Added post-login rehash functionality for Argon2id.
+-   ****: Mobile dashboard.
+    -   **Summary**: Main page for mobile users, displaying various panels and features.
+    -   **Changes**: Initially integrated  as a collapsible card, then replaced with  (the actual AI Coach). Fixed  dependency to properly handle authentication state and ensure  state resolves. Reverted multiple debug/forced rendering changes.
+-   ****: Fairy AI Coach UI component.
+    -   **Summary**: Renders the ChatGPT-powered Fairy AI Coach banner.
+    -   **Changes**: Modified to handle errors gracefully, and only make API calls () when the user is explicitly authenticated to prevent 500 errors from empty requests.
+-   ****: Onboarding wizard.
+    -   **Summary**: A 3-day onboarding tutorial component.
+    -   **Changes**: This component was identified as incorrect for the Fairy AI Coach and subsequently removed from .
+-   ****: Desktop dashboard homepage.
+    -   **Summary**: Displays panels for desktop users.
+    -   **Changes**: Removed  and updated  calls to use . Added  and  (desktop Fairy AI Coach).
+-   ****: Action tracker.
+    -   **Summary**: Manages and displays user action items.
+    -   **Changes**: Removed orphaned  code. Updated  calls to use .
+-   ****: Log activity modal.
+    -   **Summary**: Modal for logging new activities.
+    -   **Changes**: Updated  to use .
+-   ****: Log reflection modal.
+    -   **Summary**: Modal for logging user reflections.
+    -   **Changes**: Updated  to use .
+-   ****: Goal settings.
+    -   **Summary**: Panel for managing user goals.
+    -   **Changes**: Updated  calls to include .
+-   ****: P&L tracker functionality.
+    -   **Summary**: Displays profit and loss statements.
+    -   **Changes**: Ensured all  calls use . Added .
+-   ** (NEW)**: Debugging component.
+    -   **Summary**: Provides a UI to display and copy debug information.
+    -   **Changes**: Created and integrated into  and .
+-   ****: Authentication context.
+    -   **Summary**: Manages user authentication state and provides login/logout functions.
+    -   **Changes**: Added  and  to all  calls (login, register, logout, etc.) to ensure cookies are sent and requests don't hang indefinitely.
+-   **, **: Calculator pages.
+    -   **Summary**: Calculator utilities.
+    -   **Changes**: Noted  still in use, deferred fix.
+-   ****: Desktop dashboard.
+    -   **Summary**: The main desktop dashboard component.
+    -   **Changes**: Fixed an issue where its internal loading state could prevent content from rendering.
+-   ****: User login page.
+    -   **Summary**: Handles user login.
+    -   **Changes**: No direct code changes, but its interaction with  was a point of focus.
+-   ** files (backend and frontend)**: Environment variables.
+    -   **Summary**: Stores configuration like , .
+    -   **Changes**:  and  were toggled between local and Atlas configurations for debugging.  was changed multiple times between preview, custom subdomain, and main domain, then reverted and fixed to .  files were created with fake values to address GitHub secret scanning.
+-   ****: Git ignore file.
+    -   **Summary**: Specifies files and directories to be ignored by Git.
+    -   **Changes**: Cleaned up duplicated entries, properly configured to ignore  files and build artifacts.
+-   ** (backend)**: Python dependencies.
+    -   **Summary**: Lists all Python packages required by the backend.
+    -   **Changes**: Updated to include , , , ,  to resolve MongoDB Atlas SSL and Motor compatibility issues.
+-   **, **: Documentation files.
+    -   **Summary**: Provide guidance on production environment setup.
+    -   **Changes**: Removed actual API keys (OpenAI, Stripe) and replaced with placeholders to resolve GitHub secret scanning.
+-   ** (NEW - temporary)**: User migration script.
+    -   **Summary**: A temporary script created to migrate users from local MongoDB to Atlas.
+    -   **Changes**: Created, but its direct execution failed due to SSL issues.
+
 </code_architecture>
 
 <pending_tasks>
@@ -69,18 +106,24 @@ The application uses a React.js frontend and a FastAPI Python backend, with Mong
 -   **Frontend Security Updates**: Validate build-time environment variables, and confirm no secrets in production build.
 -   **Documentation Updates**: Update  and create .
 -   **Action Tracker Error**: Investigate and fix the saved error message on the Action Tracker.
+-   **Action Tracker Completed Column**: Implement the input mechanism for the Completed column.
+-   **Recent History Accuracy/Download**: Verify accuracy and add download functions for calculator history.
+-   **Activity Progress Calculation**: Further investigate and fix the Activity Progress calculation in the backend ().
+-   **Calculator Authentication**: Fix  usage in  and .
+-   **Migration Execution**: Execute the user migration from local to Atlas once the routing issue is resolved or via direct backend access.
+-   **Remove Migration Endpoint**: Remove the temporary  endpoint from  after successful migration.
+-   **Final Production Routing Fix**: Diagnose and fix the root cause of production routing timeouts.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was tasked with resolving a user-reported issue on the **Action Tracker** page. The user explicitly stated, For the ACtion tracker I get a saved error message here, and provided screenshots detailing the error.
+Immediately before this summary request, the AI engineer was focused on diagnosing and fixing a critical production routing issue. Despite the frontend being configured to call  and the backend's  endpoint being directly accessible at  (returning ), all frontend SPA calls to  were timing out.
 
-Prior to this specific issue, the engineer successfully completed two tasks:
-1.  **AI Fairy Coach Minimization**: The Fairy AI coach banner on the Dashboard Overview page was configured to be minimized by default. This was achieved by modifying , specifically changing the initial state of the  variable from  to .
-2.  **AI Coach Functionality Verification**: The functionality of the AI Coach was double-checked and confirmed to be working correctly. The frontend component  was verified to be using the appropriate backend endpoint () via . Login was also verified to be working correctly.
+The backend service is confirmed to be running and listening on port  internally. Prior efforts successfully resolved MongoDB Atlas connectivity issues by upgrading PyMongo and Motor libraries, and ensuring correct Atlas credentials and IP whitelisting. The backend is now connected to Atlas and running with .
 
-Therefore, the current active task is to investigate the saved error message occurring on the Action Tracker and implement a fix to ensure its proper functionality.
+The AI engineer's most recent action was to inspect the Nginx configuration files (, , ). However, it was determined that the Nginx instances observed locally were default, and no application-specific routing rules were present. Furthermore, the absence of Nginx listening on ports 80 or 443 strongly suggested that the production routing is handled by a higher-level proxy system within the Emergent platform, not directly via these Nginx configurations. The current state is that backend is healthy, but the frontend's requests are not reaching it due to an unknown proxy/routing configuration.
 </current_work>
 
 <optional_next_step>
-Investigate the saved error message on the Action Tracker by examining .
+Investigate Emergent platform's routing configuration to resolve frontend-to-backend API call timeouts.
 </optional_next_step>
+
