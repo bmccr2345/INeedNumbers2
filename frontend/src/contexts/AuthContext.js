@@ -149,7 +149,9 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      const duration = Date.now() - startTime;
+      console.error(`[AuthContext] Login failed after ${duration}ms:`, error);
+      console.error('[AuthContext] Error details:', error.response?.data || error.message);
       
       // Handle Pydantic validation errors (array of error objects)
       let errorMessage = 'Login failed. Please try again.';
