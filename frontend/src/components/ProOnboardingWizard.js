@@ -275,99 +275,99 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
       ]
     },
     3: {
-      title: "Day 3: Mastery & Optimization",
+      title: "Day 3: Make It a Habit",
       icon: <Trophy className="w-6 h-6 text-purple-600" />,
-      description: "You're ready to master time blocking and leverage advanced features.",
+      description: "Small daily actions create predictable months. Let's build your rhythm.",
       tasks: [
         {
           id: 'timeBlocking',
-          title: 'Implement Time Blocking',
-          description: 'Structure your day for maximum productivity',
+          title: 'Block the Same Times Each Week',
+          description: 'Consistency makes tracking automatic',
           content: (
             <div className="space-y-3 text-sm">
               <p className="font-medium">Time Blocking Framework for Real Estate Agents:</p>
               <div className="space-y-2">
                 <div className="bg-emerald-50 p-2 rounded">
-                  <p className="font-medium text-emerald-900">🌅 Morning (8-10 AM): Lead Generation</p>
+                  <p className="font-medium text-emerald-900">🌅 Morning (8-10 AM): Lead Gen & Follow-Up</p>
                   <p className="text-xs text-emerald-800">Prospecting calls, follow-ups, sphere outreach</p>
                 </div>
                 <div className="bg-blue-50 p-2 rounded">
-                  <p className="font-medium text-blue-900">☀️ Mid-Day (10 AM-2 PM): Appointments</p>
-                  <p className="text-xs text-blue-800">Showings, buyer consultations, listing presentations</p>
+                  <p className="font-medium text-blue-900">☀️ Mid-Day (10 AM-2 PM): Appointments & Showings</p>
+                  <p className="text-xs text-blue-800">Buyer consultations, listing presentations, showings</p>
                 </div>
                 <div className="bg-purple-50 p-2 rounded">
                   <p className="font-medium text-purple-900">🌆 Afternoon (2-5 PM): Admin & Marketing</p>
                   <p className="text-xs text-purple-800">Paperwork, social media, email, transaction management</p>
                 </div>
                 <div className="bg-amber-50 p-2 rounded">
-                  <p className="font-medium text-amber-900">🌙 Evening (5-6 PM): Review & Planning</p>
+                  <p className="font-medium text-amber-900">🌙 Evening (5-6 PM): Review & Plan</p>
                   <p className="text-xs text-amber-800">Log activities, daily reflection, plan tomorrow</p>
                 </div>
               </div>
               <div className="bg-emerald-50 p-3 rounded-lg mt-3">
                 <p className="text-emerald-900 font-medium">⚡ Power Tip:</p>
-                <p className="text-emerald-800 text-xs">Block the same time slots each week for consistency. Your brain adapts to the routine, making it easier to focus. Sunday evening plan + daily morning review = unstoppable momentum!</p>
+                <p className="text-emerald-800 text-xs">Block the same times each week for consistency. Sunday reviews + daily logging = unstoppable momentum.</p>
               </div>
             </div>
           )
         },
         {
           id: 'weeklyReview',
-          title: 'Plan Your Weekly Review Process',
-          description: 'Set up your rhythm for long-term success',
+          title: 'Set Up Your Weekly Review Routine',
+          description: 'Every Sunday, take 20 minutes to review',
           content: (
             <div className="space-y-3 text-sm">
               <p className="font-medium">Weekly Review Checklist (Every Sunday):</p>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li>Review last week's activity totals vs. goals in Action Tracker</li>
-                <li>Check P&L: deals closed, profit margins, expense trends</li>
-                <li>Read AI Coach insights for the week</li>
-                <li>Identify patterns: What days/activities were most productive?</li>
-                <li>Set next week's priorities based on gaps</li>
+                <li>Review last week's activity totals in Action Tracker</li>
+                <li>Check P&L and see your net profit (not just commission)</li>
+                <li>Read AI insights from the week</li>
+                <li>Identify what worked best (patterns in productive days)</li>
+                <li>Set next week's top 3 priorities based on gaps</li>
               </ol>
-              <div className="bg-emerald-50 p-3 rounded-lg mt-3">
-                <p className="text-emerald-900 font-medium">📊 Data-Driven Decisions:</p>
-                <p className="text-emerald-800 text-xs">Weekly reviews reveal trends daily tracking misses. Maybe Tuesdays are your best prospecting days, or certain expense categories are creeping up.</p>
+              <div className="bg-blue-50 p-3 rounded-lg mt-3">
+                <p className="text-blue-900 font-medium">📊 Why Weekly Reviews Matter:</p>
+                <p className="text-blue-800 text-xs">They reveal trends daily tracking misses. Maybe Tuesdays are your best prospecting days, or certain expenses are creeping up.</p>
               </div>
             </div>
           )
         },
         {
           id: 'customizeDashboard',
-          title: 'Customize Your Dashboard',
-          description: 'Make the platform work for YOUR workflow',
+          title: 'Understand What AI is Watching',
+          description: 'How Fairy AI learns from your patterns',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Dashboard Customization:</p>
+              <p className="font-medium">As Fairy AI learns from your patterns, it'll highlight:</p>
               <ul className="space-y-2 ml-4">
-                <li>• Pin your most-used tools from the Work Deals section</li>
-                <li>• Set up recurring expenses in Manage Finances → P&L Tracker</li>
-                <li>• Customize activity categories in Action Tracker to match your business</li>
-                <li>• Generate professional PDF reports for your clients</li>
+                <li>• <strong>What's slipping:</strong> "Your appointment rate dropped this week"</li>
+                <li>• <strong>What's improving:</strong> "Conversion from showings to offers is up 15%"</li>
+                <li>• <strong>Where to focus next:</strong> "You're behind on conversations—prioritize lead gen tomorrow"</li>
               </ul>
-              <div className="bg-blue-50 p-3 rounded-lg mt-3">
-                <p className="text-blue-900 font-medium">⚡ Power User Tip:</p>
-                <p className="text-blue-800 text-xs">The platform adapts to you. The more you customize and use it, the more valuable it becomes. Make it YOUR business command center.</p>
+              <p className="mt-3 font-medium">The AI needs 2-3 weeks of consistent tracking to spot these patterns.</p>
+              <div className="bg-purple-50 p-3 rounded-lg mt-3">
+                <p className="text-purple-900 font-medium">🧠 AI Feedback Loop:</p>
+                <p className="text-purple-800 text-xs">Track activities → AI spots patterns → Suggests improvements → You test them → Track results → AI refines. It's your personal business analyst.</p>
               </div>
             </div>
           )
         },
         {
           id: 'masterAI',
-          title: 'Master the Fairy AI Coach',
-          description: 'Unlock the full power of AI insights',
+          title: 'Small Daily Actions = Predictable Months',
+          description: 'The compounding effect of consistency',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Getting the Most from Fairy AI:</p>
+              <p className="font-medium">You've built your 1-year plan. Now execute it daily:</p>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li><strong>Be Consistent:</strong> AI needs 2-3 weeks of data to spot patterns</li>
-                <li><strong>Be Detailed:</strong> More context = better insights</li>
-                <li><strong>Act on Insights:</strong> AI learns what works when you try its suggestions</li>
-                <li><strong>Ask Questions:</strong> Use AI Coach on calculators for deal-specific advice</li>
+                <li><strong>Daily:</strong> Log activities (10 min at end of day)</li>
+                <li><strong>Weekly:</strong> Review progress, read AI insights, set priorities (20 min Sunday)</li>
+                <li><strong>Monthly:</strong> Check P&L, adjust goals if needed (30 min end of month)</li>
               </ol>
-              <div className="bg-purple-50 p-3 rounded-lg mt-3">
-                <p className="text-purple-900 font-medium">🧠 AI Feedback Loop:</p>
-                <p className="text-purple-800 text-xs">Track activities → AI spots patterns → Suggests improvements → You test them → Track results → AI refines suggestions. It's your personal business analyst!</p>
+              <p className="mt-3 font-medium">That's it. Simple rhythm. Big results.</p>
+              <div className="bg-emerald-50 p-3 rounded-lg mt-3">
+                <p className="text-emerald-900 font-medium">🎯 You're Ready:</p>
+                <p className="text-emerald-800 text-xs">You have a 1-year plan, a system to track it, and an AI coach to keep you focused. Now just stay consistent. The app handles the rest.</p>
               </div>
             </div>
           )
