@@ -93,7 +93,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, rememberMe = false) => {
+    console.log('[AuthContext] Login attempt started for:', email);
+    const startTime = Date.now();
+    
     try {
+      console.log('[AuthContext] Making login API call...');
       // Use real backend API for all authentication (including demo)
       const response = await axios.post(`${backendUrl}/api/auth/login`, {
         email,
@@ -103,6 +107,8 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
         timeout: 30000 // Increase to 30 seconds
       });
+      
+      console.log(`[AuthContext] Login API response received after ${Date.now() - startTime}ms`);
       
       if (response.data && response.data.user) {
         const { user } = response.data;
