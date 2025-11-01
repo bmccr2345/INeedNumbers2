@@ -74,118 +74,104 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
 
   const dayContent = {
     1: {
-      title: "Day 1: Foundation & Setup",
+      title: "Day 1: Plan Your Year (Start Simple)",
       icon: <Target className="w-6 h-6 text-emerald-600" />,
-      description: "Let's get you set up for success! Today we'll establish your foundation.",
+      description: "Let's build your 1-year game plan. We'll set your income goal, figure out how many homes you need to sell, and show how daily activity keeps you on track.",
       tasks: [
         {
           id: 'welcome',
-          title: 'Welcome to I Need Numbers Pro! 🎉',
-          description: 'Understanding your new tools',
+          title: 'Let\'s Build Your 1-Year Game Plan',
+          description: 'A simple approach to annual planning',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium text-emerald-700">You now have access to powerful tools that work together:</p>
+              <p className="font-medium text-emerald-700">You don't need a 10-year vision. Just one clear year.</p>
+              <p>Here's how I Need Numbers helps you build it:</p>
               <ul className="space-y-2 ml-4">
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Activity Tracker:</strong> Log your daily actions (calls, appointments, listings)</span>
+                  <span><strong>Set Your Annual Income Goal</strong> – One number, no guesswork</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>P&L Tracker:</strong> Track income and expenses to understand your profitability</span>
+                  <span><strong>Calculate Deals Needed</strong> – The app does the math for you</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Fairy AI Coach:</strong> Your personal AI that learns from your data to give tailored insights</span>
+                  <span><strong>Break It Into Weekly Targets</strong> – Bite-sized, achievable goals</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Goals Tab:</strong> Set targets and track progress toward your income goals</span>
+                  <span><strong>Fairy AI Coach</strong> – Keeps you on track when you fall behind</span>
                 </li>
               </ul>
               <div className="bg-emerald-50 p-3 rounded-lg mt-3">
                 <p className="text-emerald-900 font-medium">🔑 Key Insight:</p>
-                <p className="text-emerald-800 text-xs">These tools feed each other. Your activity logs help AI understand your patterns. Your P&L shows what's working. Your goals keep you focused.</p>
+                <p className="text-emerald-800 text-xs">You don't need a 10-year vision. Just one clear year. The app will handle the math.</p>
               </div>
             </div>
           )
         },
         {
           id: 'setupGoals',
-          title: 'Set Your Monthly Goals',
-          description: 'Define your targets for income and activities',
+          title: 'Set Your Annual Income Goal',
+          description: 'One simple number that drives everything',
           content: (
             <div className="space-y-3 text-sm">
               <p className="font-medium">Navigate to Plan and Track → Goal Settings</p>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li>Set your <strong>Monthly Income Goal</strong> (e.g., $8,000)</li>
-                <li>Set <strong>Activity Targets</strong>:
+                <li>Enter <strong>How much you want to earn this year</strong> (e.g., $120,000)</li>
+                <li>The app auto-calculates:
                   <ul className="ml-4 mt-1 space-y-1">
-                    <li>• Conversations: 12/day (360/month)</li>
-                    <li>• Appointments: 2/day (60/month)</li>
-                    <li>• New Listings: 1/week (4/month)</li>
+                    <li>• Homes needed (based on your average commission)</li>
+                    <li>• Deals per month (e.g., 24 homes = 2 per month)</li>
+                    <li>• Weekly activity targets to hit that goal</li>
                   </ul>
                 </li>
-                <li>Review your daily/monthly targets</li>
+                <li>Example: <strong>$120,000 = about 24 homes = 2 per month</strong></li>
               </ol>
               <div className="bg-blue-50 p-3 rounded-lg mt-3">
-                <p className="text-blue-900 font-medium">💡 Pro Tip:</p>
-                <p className="text-blue-800 text-xs">Start with realistic numbers. You can always adjust as you learn your capacity.</p>
+                <p className="text-blue-900 font-medium">💡 Does That Feel Doable?</p>
+                <p className="text-blue-800 text-xs">You can always adjust your pace. Start with a realistic number. The app will track your progress and help you course-correct.</p>
               </div>
             </div>
           )
         },
         {
           id: 'logFirstActivity',
-          title: 'Log Your First Activities',
-          description: 'Record today\'s conversations and appointments',
+          title: 'See How Daily Actions Connect',
+          description: 'Understand how today\'s work builds your year',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Navigate to Plan and Track → Action Tracker → Click "Log Activity"</p>
-              <ol className="space-y-2 ml-4 list-decimal">
-                <li>Enter the activities you completed today:
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• How many conversations did you have?</li>
-                    <li>• How many appointments?</li>
-                    <li>• Any new listings or offers?</li>
-                  </ul>
-                </li>
-                <li>Log the hours spent on different tasks</li>
-                <li>Add a brief reflection (optional for now)</li>
-                <li>Click "Save" to log your activities</li>
-              </ol>
+              <p className="font-medium">I Need Numbers turns your goal into weekly targets:</p>
+              <ul className="space-y-2 ml-4">
+                <li>• <strong>Conversations:</strong> How many calls/texts to hit your pipeline</li>
+                <li>• <strong>Appointments:</strong> Showings and consultations needed</li>
+                <li>• <strong>Listings:</strong> How many homes you need to list each month</li>
+              </ul>
+              <p className="mt-3 font-medium">The app tracks your progress and gives AI coaching when you fall off pace.</p>
               <div className="bg-purple-50 p-3 rounded-lg mt-3">
                 <p className="text-purple-900 font-medium">🎯 Why This Matters:</p>
-                <p className="text-purple-800 text-xs">Tracking activities shows you what leads to results. The AI uses this data to spot patterns and give you personalized recommendations.</p>
+                <p className="text-purple-800 text-xs">Most agents focus on the wrong numbers. I Need Numbers shows you exactly what daily actions lead to your annual goal.</p>
               </div>
             </div>
           )
         },
         {
           id: 'explorePnL',
-          title: 'Explore the P&L Tracker',
-          description: 'Add your first deal and expenses',
+          title: 'Understand the Purpose',
+          description: 'What I Need Numbers actually does for you',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Navigate to Manage Finances → P&L Tracker</p>
+              <p className="font-medium">Here's what happens next:</p>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li><strong>Add a Deal:</strong> Enter a recent closed transaction
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• Sale price, commission split, GCI earned</li>
-                    <li>• Deal costs (photos, staging, etc.)</li>
-                  </ul>
-                </li>
-                <li><strong>Add Expenses:</strong> Track your business costs
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• MLS dues, insurance, marketing</li>
-                    <li>• Set recurring expenses to auto-track</li>
-                  </ul>
-                </li>
-                <li>Review your profitability dashboard</li>
+                <li><strong>Activity Tracker</strong> logs your daily actions (calls, appointments, listings)</li>
+                <li><strong>P&L Tracker</strong> shows your true take-home profit (not just commission)</li>
+                <li><strong>Fairy AI Coach</strong> reads your data and gives guidance when you need it</li>
+                <li><strong>Goal Settings</strong> tracks your progress toward your annual target</li>
               </ol>
               <div className="bg-amber-50 p-3 rounded-lg mt-3">
-                <p className="text-amber-900 font-medium">💰 Business Insight:</p>
-                <p className="text-amber-800 text-xs">Most agents focus on GCI, but profit is what matters. P&L tracking shows your real take-home and helps AI identify areas to improve margins.</p>
+                <p className="text-amber-900 font-medium">🎓 Key Insight:</p>
+                <p className="text-amber-800 text-xs">You don't need a 10-year vision. Just one clear year. The app will handle the math and keep you focused on what matters today.</p>
               </div>
             </div>
           )
