@@ -7804,6 +7804,110 @@ async def admin_change_user_status(
         logger.error(f"Error changing user status: {e}")
         raise HTTPException(status_code=500, detail="Failed to change user status")
 
+# TEMPORARY MIGRATION ENDPOINT - REMOVE AFTER USE
+@api_router.post("/migrate/users")
+async def migrate_users_to_atlas(request: Request):
+    """
+    ONE-TIME MIGRATION: Copy users from local MongoDB to Atlas
+    Protected by admin key in header
+    """
+    # Security check - require admin migration key
+    migration_key = request.headers.get("X-Migration-Key")
+    expected_key = "MIGRATE_USERS_2024_SECURE_KEY"
+    
+    if migration_key != expected_key:
+        raise HTTPException(
+            status_code=403, 
+            detail="Unauthorized: Invalid migration key"
+        )
+    
+    try:
+        from pymongo import MongoClient
+        import os
+        
+        logger.info("Starting user migration from local to Atlas")
+        
+        # Connect to local MongoDB (source)
+        local_client = MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=5000)
+        local_db = local_client["test_database"]
+        local_users = local_db.users
+        
+        # Count users in local
+        local_count = local_users.count_documents({})
+        logger.info(f"Found {local_count} users in local database")
+        
+        if local_count == 0:
+            return {
+                "success": False,
+                "message": "No users found in local database",
+                "local_users": 0,
+                "atlas_users_before": 0,
+                "migrated": 0
+            }
+        
+        # Get all users from local
+        users_to_migrate = list(local_users.find({}))
+        
+        # Count users in Atlas before migration
+        atlas_count_before = await db.users.count_documents({})
+        logger.info(f"Atlas users before migration: {atlas_count_before}")
+        
+        # Convert _id to string to avoid conflicts
+        migrated_users = []
+        for user in users_to_migrate:
+            user_copy = user.copy()
+            # Keep original ID structure but ensure no conflicts
+            migrated_users.append(user_copy)
+        
+        # Insert users into Atlas (using backend's db connection)
+        if atlas_count_before == 0:
+            # Fresh database - insert all users
+            result = await db.users.insert_many(migrated_users, ordered=False)
+            migrated_count = len(result.inserted_ids)
+            logger.info(f"Inserted {migrated_count} users into Atlas")
+        else:
+            # Database has users - check for duplicates and insert new ones
+            migrated_count = 0
+            for user in migrated_users:
+                existing = await db.users.find_one({"email": user["email"]})
+                if not existing:
+                    await db.users.insert_one(user)
+                    migrated_count += 1
+                    logger.info(f"Inserted user: {user['email']}")
+                else:
+                    logger.info(f"User already exists: {user['email']}")
+        
+        # Verify migration
+        atlas_count_after = await db.users.count_documents({})
+        
+        # Get migrated user emails for verification
+        migrated_emails = [user["email"] for user in migrated_users]
+        
+        # Verify specific test user exists
+        test_user = await db.users.find_one({"email": "bmccr@msn.com"})
+        test_user_found = test_user is not None
+        
+        logger.info(f"Migration completed: {migrated_count} users migrated")
+        logger.info(f"Atlas users after migration: {atlas_count_after}")
+        
+        # Close local connection
+        local_client.close()
+        
+        return {
+            "success": True,
+            "message": "User migration completed successfully",
+            "local_users": local_count,
+            "atlas_users_before": atlas_count_before,
+            "atlas_users_after": atlas_count_after,
+            "migrated": migrated_count,
+            "migrated_emails": migrated_emails,
+            "test_user_bmccr_found": test_user_found
+        }
+        
+    except Exception as e:
+        logger.error(f"Migration failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
