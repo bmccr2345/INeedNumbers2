@@ -179,86 +179,95 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
       ]
     },
     2: {
-      title: "Day 2: Building Habits",
+      title: "Day 2: Bring Your Plan to Life",
       icon: <Calendar className="w-6 h-6 text-blue-600" />,
-      description: "Let's establish your daily routine and explore AI insights.",
+      description: "Your plan only works if you track what you do. Each part of I Need Numbers helps you stay focused and improve.",
       tasks: [
         {
           id: 'logActivity',
-          title: 'Log Today\'s Activities',
-          description: 'Make activity logging a daily habit',
+          title: 'Log One Conversation, One Appointment, One Expense',
+          description: 'Try each tracking tool today',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Plan and Track → Action Tracker → Log Activity</p>
-              <p>Today, focus on being thorough:</p>
-              <ul className="space-y-2 ml-4">
-                <li>• Record ALL conversations (not just promising ones)</li>
-                <li>• Track appointments, showings, and listings</li>
-                <li>• Note the hours spent in each activity category</li>
-              </ul>
+              <p className="font-medium">Let's use the system:</p>
+              <ol className="space-y-2 ml-4 list-decimal">
+                <li><strong>Activity Tracker</strong> → Log conversations, appointments, listings
+                  <ul className="ml-4 mt-1 space-y-1">
+                    <li>• Navigate to Plan and Track → Action Tracker</li>
+                    <li>• Click "Log Activity" and enter today's numbers</li>
+                  </ul>
+                </li>
+                <li><strong>P&L Tracker</strong> → Shows true take-home profit
+                  <ul className="ml-4 mt-1 space-y-1">
+                    <li>• Navigate to Manage Finances → P&L Tracker</li>
+                    <li>• Add one deal or expense to see how it works</li>
+                  </ul>
+                </li>
+              </ol>
               <div className="bg-emerald-50 p-3 rounded-lg mt-3">
-                <p className="text-emerald-900 font-medium">⏰ Time Blocking Tip:</p>
-                <p className="text-emerald-800 text-xs">Block 10 minutes at end of day to log activities. Consistency beats perfection. Even rough numbers are better than none!</p>
+                <p className="text-emerald-900 font-medium">💡 Consistency Beats Perfection:</p>
+                <p className="text-emerald-800 text-xs">Even rough numbers build insight. The AI learns from patterns, not precision. Start tracking today, refine as you go.</p>
               </div>
             </div>
           )
         },
         {
           id: 'dailyReflection',
-          title: 'Complete Your First Daily Reflection',
-          description: 'Review your day and learn from it',
+          title: 'Understand How Fairy AI Coach Works',
+          description: 'AI reads your data and gives guidance',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Why Daily Reflection Matters</p>
-              <p>Reflection turns experience into wisdom. Answer these:</p>
-              <ol className="space-y-2 ml-4 list-decimal">
-                <li>What worked well today?</li>
-                <li>What would you do differently?</li>
-                <li>Any insights or lessons learned?</li>
-                <li>How did you feel about your productivity?</li>
-              </ol>
+              <p className="font-medium">Fairy AI uses your daily actions to spot patterns and keep you focused.</p>
+              <p>As you log activities and track deals, the AI will:</p>
+              <ul className="space-y-2 ml-4">
+                <li>• Identify what's working (and what's not)</li>
+                <li>• Alert you when you're falling behind pace</li>
+                <li>• Suggest where to focus next</li>
+                <li>• Give deal-specific advice on calculators</li>
+              </ul>
               <div className="bg-blue-50 p-3 rounded-lg mt-3">
-                <p className="text-blue-900 font-medium">🧠 AI Learning:</p>
-                <p className="text-blue-800 text-xs">Your reflections help Fairy AI understand context. When you note "struggled with follow-ups," AI can suggest time management strategies.</p>
+                <p className="text-blue-900 font-medium">🧠 AI Gets Smarter Over Time:</p>
+                <p className="text-blue-800 text-xs">The more you log, the better AI's insights become. It learns YOUR patterns, not generic advice.</p>
               </div>
             </div>
           )
         },
         {
           id: 'checkAICoach',
-          title: 'Get Your First AI Insights',
-          description: 'See what Fairy AI has learned about you',
+          title: 'Try the Fairy AI Coach Today',
+          description: 'Ask a question or get insights',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Try AI Coach in Multiple Places:</p>
+              <p className="font-medium">Find Fairy AI Coach in multiple places:</p>
               <ul className="space-y-2 ml-4">
                 <li>• <strong>Dashboard Overview:</strong> Click AI Coach banner for daily insights</li>
                 <li>• <strong>Work Deals Calculators:</strong> Get deal analysis with AI recommendations</li>
-                <li>• <strong>Manage Finances → P&L Tracker:</strong> Ask AI about expense patterns</li>
+                <li>• <strong>P&L Tracker:</strong> Ask AI about expense patterns or profit margins</li>
               </ul>
+              <p className="mt-3 font-medium">Try asking: "How am I tracking this week?" or "What should I focus on?"</p>
               <div className="bg-purple-50 p-3 rounded-lg mt-3">
-                <p className="text-purple-900 font-medium">✨ AI Gets Smarter:</p>
-                <p className="text-purple-800 text-xs">The more you use the platform (log activities, track deals, reflect), the better AI's insights become. It learns YOUR patterns, not generic advice.</p>
+                <p className="text-purple-900 font-medium">✨ Real-Time Guidance:</p>
+                <p className="text-purple-800 text-xs">Fairy AI uses your data to spot patterns. The more you track, the more helpful it becomes.</p>
               </div>
             </div>
           )
         },
         {
           id: 'reviewGoals',
-          title: 'Review Your Goal Progress',
-          description: 'Check how you\'re tracking against targets',
+          title: 'Review Your Progress',
+          description: 'See how you\'re tracking vs. your annual goal',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Plan and Track → Goal Settings → Review Progress</p>
-              <ol className="space-y-2 ml-4 list-decimal">
-                <li>Compare actual activities vs. targets</li>
-                <li>Check your income projection based on current pace</li>
-                <li>Note any gaps (e.g., "need 3 more appointments")</li>
-                <li>Adjust tomorrow's focus based on gaps</li>
-              </ol>
+              <p className="font-medium">Navigate to Plan and Track → Goal Settings → Review Progress</p>
+              <ul className="space-y-2 ml-4">
+                <li>• Check actual activities vs. weekly targets</li>
+                <li>• See your projected annual income based on current pace</li>
+                <li>• Identify gaps (e.g., "need 3 more appointments this week")</li>
+                <li>• Adjust tomorrow's focus based on what's missing</li>
+              </ul>
               <div className="bg-amber-50 p-3 rounded-lg mt-3">
-                <p className="text-amber-900 font-medium">🎯 Course Correction:</p>
-                <p className="text-amber-800 text-xs">Daily reviews let you adjust before falling behind. If you're short on conversations, tomorrow you know to prioritize prospecting.</p>
+                <p className="text-amber-900 font-medium">🎯 Stay On Track:</p>
+                <p className="text-amber-800 text-xs">Small daily checks keep you from falling behind. If you're short on conversations, you know to prioritize prospecting tomorrow.</p>
               </div>
             </div>
           )
