@@ -3265,8 +3265,14 @@ async def set_password(request: dict):
         logger.error(f"Error setting password: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/auth/test-login")
+async def test_login():
+    """Simple test endpoint to verify POST routing works"""
+    return {"status": "ok", "message": "Login endpoint is reachable"}
+
 @api_router.post("/auth/login")
 async def login(request: Request, response: Response, login_data: LoginRequest):
+    logger.info(f"Login attempt for: {login_data.email}")
     user = await get_user_by_email(login_data.email)
     if not user:
         raise HTTPException(
