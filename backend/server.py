@@ -139,10 +139,11 @@ app = FastAPI(
     redoc_url="/redoc" if not config.is_production() else None
 )
 
-# HTTPS redirect in production ONLY
-if config.is_production():
-    app.add_middleware(HTTPSRedirectMiddleware)
-    logger.info("HTTPS redirect enabled for production")
+# HTTPS redirect DISABLED - HTTPS termination handled at gateway level (Kubernetes Ingress)
+# If enabled, this causes internal HTTP requests from the cluster to fail
+# if config.is_production():
+#     app.add_middleware(HTTPSRedirectMiddleware)
+#     logger.info("HTTPS redirect enabled for production")
 
 # Security headers middleware (ALWAYS enabled)
 app.add_middleware(SecurityHeadersMiddleware)
