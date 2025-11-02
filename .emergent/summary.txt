@@ -1,103 +1,58 @@
 <analysis>
-The trajectory details an extensive debugging and development process for the I Need Numbers application. Initially, the AI engineer addressed a misintegration of the Fairy AI Coach on the mobile dashboard, mistakenly using an onboarding wizard instead of the actual AI component. This led to a series of frontend fixes to ensure consistent data loading and authentication, which uncovered persistent issues related to cross-domain cookies and environment variable configurations.
-
-The debugging cycle then pivoted to resolving critical production login failures, which manifested as timeouts. This involved deep dives into Argon2id password hashing parameters, MongoDB Atlas connectivity issues (including SSL handshake problems requiring dependency upgrades), and ultimately, a complex frontend-to-backend URL mismatch. The AI engineer also tackled GitHub push protection errors caused by secrets in commit history and documentation, necessitating a temporary clean-up and a new repository.
-
-The work culminated in successfully connecting the backend to MongoDB Atlas and confirming local health, but the core production login failures persisted due to unaddressed routing issues at the Emergent platform level. The AI engineer systematically investigated Nginx configurations, only to find them not directly applicable, indicating a higher-level proxy system is in play. The immediate challenge is diagnosing the exact mechanism preventing frontend API calls from reaching the backend despite successful backend health checks.
+The AI engineer's work trajectory encompassed a series of critical bug fixes, feature enhancements, and a major architectural shift. Initially, the focus was on resolving production login failures, which led to identifying and fixing a backend HTTPS redirect middleware issue and pinpointing a platform-level routing problem that remained outside the engineer's direct control. Concurrently, the mobile Fairy AI Coach was debugged, involving fixing misconfigurations, frontend URL mismatches, and critical cookie domain issues that caused 401 errors. A significant effort was also directed towards enhancing the I Need Numbers application's onboarding experience, updating its content to reflect a new 1-year business planning approach, implementing local storage persistence for user inputs, and refining the UI text and styling. The AI coach's display of raw JSON and later Objects not valid React child errors necessitated further frontend display logic fixes. The trajectory culminated in a partial resolution of a MongoDB Atlas connection issue in the preview environment (encountering persistent SSL handshake problems) and the initiation of a major authentication migration to Auth0, marking a significant architectural pivot.
 </analysis>
 
 <product_requirements>
-The I Need Numbers application serves real estate agents with financial management tools, including P&L tracking, expense management, a Commission Cap Tracker, an Action Tracker, and a Fairy AI Coach for PRO users. The application is built with React, FastAPI, and MongoDB. Key features include a mobile dashboard redesign with specific layouts, bottom tab navigation (Overview, Calculators, Actions, More), P&L summary cards, and Active Deals tracking.
+The I Need Numbers application empowers real estate agents with financial and activity management tools, including P&L tracking, expense management, a Commission Cap Tracker, and an Action Tracker. A key PRO feature is the Fairy AI Coach for personalized insights. The application features a React frontend, FastAPI backend, and MongoDB.
 
-Recent development has focused on ensuring production readiness and fixing environment-specific data loading and authentication issues. This involved a temporary transition to a subdomain () for the backend, which was later abandoned for a path-based API routing strategy. A critical, recurring task has been to correct the mobile Fairy AI Coach to use the ChatGPT-powered version (), replacing the mistakenly integrated . The most pressing issue has been a production login failure, manifesting as a 14-second timeout, which has been traced through various potential causes, including Argon2id parameter mismatches, MongoDB Atlas connectivity, and persistent frontend-to-backend URL and routing misconfigurations.
+Recent efforts aimed at production readiness and fixing environment-specific issues. This involved addressing a misconfigured mobile Fairy AI Coach (replacing  with ), and resolving persistent production login failures caused by routing issues (backend's  and a higher-level platform proxy). The onboarding wizard content was rewritten for a 1-year business planning focus, including goal setting, activity tracking, and AI coaching, with local storage persistence for user inputs. UI updates were made to the homepage and onboarding flow, including text adjustments and styling. The AI Coach's functionality and display were thoroughly debugged, fixing API endpoint mismatches, cookie domain issues, and several frontend rendering errors. The current major undertaking is migrating the entire authentication system from a custom Argon2id/MongoDB setup to Auth0, while retaining MongoDB for core user application data.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-Stack**: React.js (frontend), FastAPI (Python backend), MongoDB (with Atlas for production).
--   **Authentication**: JWT, Argon2id (password hashing), HttpOnly/Secure cookies, , .
+-   **Full-Stack Development**: React.js (frontend), FastAPI (Python backend), MongoDB (with Atlas).
+-   **Authentication**: Custom (JWT, Argon2id, HttpOnly cookies) transitioning to Auth0 (JWT, OAuth 2.0).
 -   **AI Integration**: OpenAI GPT via  (Fairy AI Coach).
--   **Deployment**: Kubernetes, Supervisor, Emergent platform, environment variables, Nginx (proxy investigation).
--   **Database Connectivity**: PyMongo, Motor (async driver), SSL/TLS (OpenSSL, Certifi).
+-   **Deployment**: Kubernetes, Supervisor, Nginx (investigation), Emergent Platform (proxy/routing).
+-   **Database**: PyMongo, Motor, SSL/TLS for MongoDB Atlas connectivity.
+-   **Frontend State/Persistence**: React Context, .
 </key_technical_concepts>
 
 <code_architecture>
 **High-Level Architecture:**
-The application comprises a React.js frontend, a FastAPI Python backend, and MongoDB for data persistence and caching. Authentication uses JWTs and HttpOnly cookies, secured with Argon2id. AI functionalities are integrated via  with OpenAI. The application is deployed on Kubernetes, managed by the Emergent platform.
+The application uses a standard MERN-like stack (MongoDB, Express/FastAPI, React, Node.js/Python). The React frontend communicates with the FastAPI backend, which handles business logic and interfaces with MongoDB for data storage. AI functionalities are provided through OpenAI via . Deployment occurs on a Kubernetes cluster managed by the Emergent platform, utilizing supervisor for service management.
 
 **Directory Structure:**
 
 
 **File Summaries & Changes:**
--   ****: Central FastAPI application.
-    -   **Summary**: Handles main application logic, API routing, and security.
-    -   **Changes**:  for  cookie changed from  to  with .  for  updated to . Added temporary  endpoint for user migration (later intended to be removed). Added detailed logging for login endpoint debugging.
--   ****: Backend configuration.
-    -   **Summary**: Manages backend environment variables and settings.
-    -   **Changes**: , ,  made optional. Added  field.  and  instantiation added.  calls corrected to .
--   ****: AI Coach API routes.
-    -   **Summary**: Defines endpoints for AI Coach interactions.
-    -   **Changes**: Added  and  to API calls. Added  for better error handling. Temporarily commented out direct  call to prevent 500 errors.
--   ****: Password hashing utilities.
-    -   **Summary**: Provides functions for password hashing and verification using Argon2id.
-    -   **Changes**: Ensured  configuration matches . Added post-login rehash functionality for Argon2id.
--   ****: Mobile dashboard.
-    -   **Summary**: Main page for mobile users, displaying various panels and features.
-    -   **Changes**: Initially integrated  as a collapsible card, then replaced with  (the actual AI Coach). Fixed  dependency to properly handle authentication state and ensure  state resolves. Reverted multiple debug/forced rendering changes.
--   ****: Fairy AI Coach UI component.
-    -   **Summary**: Renders the ChatGPT-powered Fairy AI Coach banner.
-    -   **Changes**: Modified to handle errors gracefully, and only make API calls () when the user is explicitly authenticated to prevent 500 errors from empty requests.
--   ****: Onboarding wizard.
-    -   **Summary**: A 3-day onboarding tutorial component.
-    -   **Changes**: This component was identified as incorrect for the Fairy AI Coach and subsequently removed from .
--   ****: Desktop dashboard homepage.
-    -   **Summary**: Displays panels for desktop users.
-    -   **Changes**: Removed  and updated  calls to use . Added  and  (desktop Fairy AI Coach).
--   ****: Action tracker.
-    -   **Summary**: Manages and displays user action items.
-    -   **Changes**: Removed orphaned  code. Updated  calls to use .
--   ****: Log activity modal.
-    -   **Summary**: Modal for logging new activities.
-    -   **Changes**: Updated  to use .
--   ****: Log reflection modal.
-    -   **Summary**: Modal for logging user reflections.
-    -   **Changes**: Updated  to use .
--   ****: Goal settings.
-    -   **Summary**: Panel for managing user goals.
-    -   **Changes**: Updated  calls to include .
--   ****: P&L tracker functionality.
-    -   **Summary**: Displays profit and loss statements.
-    -   **Changes**: Ensured all  calls use . Added .
--   ** (NEW)**: Debugging component.
-    -   **Summary**: Provides a UI to display and copy debug information.
-    -   **Changes**: Created and integrated into  and .
--   ****: Authentication context.
-    -   **Summary**: Manages user authentication state and provides login/logout functions.
-    -   **Changes**: Added  and  to all  calls (login, register, logout, etc.) to ensure cookies are sent and requests don't hang indefinitely.
--   **, **: Calculator pages.
-    -   **Summary**: Calculator utilities.
-    -   **Changes**: Noted  still in use, deferred fix.
--   ****: Desktop dashboard.
-    -   **Summary**: The main desktop dashboard component.
-    -   **Changes**: Fixed an issue where its internal loading state could prevent content from rendering.
--   ****: User login page.
-    -   **Summary**: Handles user login.
-    -   **Changes**: No direct code changes, but its interaction with  was a point of focus.
--   ** files (backend and frontend)**: Environment variables.
-    -   **Summary**: Stores configuration like , .
-    -   **Changes**:  and  were toggled between local and Atlas configurations for debugging.  was changed multiple times between preview, custom subdomain, and main domain, then reverted and fixed to .  files were created with fake values to address GitHub secret scanning.
--   ****: Git ignore file.
-    -   **Summary**: Specifies files and directories to be ignored by Git.
-    -   **Changes**: Cleaned up duplicated entries, properly configured to ignore  files and build artifacts.
--   ** (backend)**: Python dependencies.
-    -   **Summary**: Lists all Python packages required by the backend.
-    -   **Changes**: Updated to include , , , ,  to resolve MongoDB Atlas SSL and Motor compatibility issues.
--   **, **: Documentation files.
-    -   **Summary**: Provide guidance on production environment setup.
-    -   **Changes**: Removed actual API keys (OpenAI, Stripe) and replaced with placeholders to resolve GitHub secret scanning.
--   ** (NEW - temporary)**: User migration script.
-    -   **Summary**: A temporary script created to migrate users from local MongoDB to Atlas.
-    -   **Changes**: Created, but its direct execution failed due to SSL issues.
 
+-   ****:
+    -   **Summary**: Main FastAPI application.
+    -   **Changes**:  commented out to resolve internal routing issues.  cookie domain made dynamic to support preview environments, preventing 401 errors for AI Coach. Login function was examined for timeouts, but changes were eventually focused on Auth0 migration.
+-   ****:
+    -   **Summary**: Backend environment variables.
+    -   **Changes**:  added to allow dynamic cookie domain configuration.
+-   ****:
+    -   **Summary**: AI Coach API endpoints.
+    -   **Changes**:  field added to the AI response extraction and structured for display. A critical fix was implemented to properly  content that was incorrectly wrapped in markdown, preventing raw JSON display issues.
+-   ****:
+    -   **Summary**: System prompts for AI Coach.
+    -   **Changes**: Updated  to request a longer, 4+ sentence  paragraph for the AI Coach output.
+-   ****:
+    -   **Summary**: Desktop landing page.
+    -   **Changes**: Updated headline, sub-headline, and added a What It Does section with specific marketing copy, aligning with user's content requests.  import and usage removed to address a user request.
+-   ****:
+    -   **Summary**: Mobile dashboard.
+    -   **Changes**:  import and usage removed to address a user request.
+-   ****:
+    -   **Summary**: UI component for Fairy AI Coach.
+    -   **Changes**: Previously  was mistakenly used here. Re-enabled  function and updated API endpoint from  to . Implemented logic to correctly render  by only displaying primitive values and skipping nested objects, resolving Objects are not valid as a React child errors. Incorporated a new  section to display a multi-sentence paragraph. The Your Numbers card logic was restored after being mistakenly removed.
+-   ****:
+    -   **Summary**: 3-day onboarding wizard component.
+    -   **Changes**: Extensively updated  objects to implement the new 1-year business planning approach, including new prompts, steps, tips, and insights. Implemented  persistence for Day 1 interactive inputs (, , ) to retain user progress. Removed duplicate phrases and updated a header as per user feedback (Pick one simple number... removed, Try the Fairy AI Coach Today changed to The Fairy AI Coach is everywhere!). Instances of I Need Numbers were styled to be bold and green within JSX. The component was removed from  and .
+-   ****:
+    -   **Summary**: Backend environment variables.
+    -   **Changes**:  and  updated to production MongoDB Atlas connection string and database name () for preview environment debugging.
 </code_architecture>
 
 <pending_tasks>
@@ -110,20 +65,24 @@ The application comprises a React.js frontend, a FastAPI Python backend, and Mon
 -   **Recent History Accuracy/Download**: Verify accuracy and add download functions for calculator history.
 -   **Activity Progress Calculation**: Further investigate and fix the Activity Progress calculation in the backend ().
 -   **Calculator Authentication**: Fix  usage in  and .
--   **Migration Execution**: Execute the user migration from local to Atlas once the routing issue is resolved or via direct backend access.
+-   **Migration Execution**: Execute the user migration from local to Atlas once the routing issue is resolved or via direct backend access. (This task is now potentially superseded by Auth0 migration, requiring a new user migration strategy).
 -   **Remove Migration Endpoint**: Remove the temporary  endpoint from  after successful migration.
--   **Final Production Routing Fix**: Diagnose and fix the root cause of production routing timeouts.
+-   **Final Production Routing Fix**: Diagnose and fix the root cause of production routing timeouts (specifically ).
+-   **MongoDB Atlas SSL Handshake Issue**: Resolve container-level TLS/SSL issues preventing full connectivity to Atlas in preview.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was focused on diagnosing and fixing a critical production routing issue. Despite the frontend being configured to call  and the backend's  endpoint being directly accessible at  (returning ), all frontend SPA calls to  were timing out.
+Immediately before this summary request, the AI engineer was focused on a major architectural change: migrating the entire authentication system from a custom Argon2id/MongoDB setup to Auth0. This was explicitly requested and confirmed by the user after persistent issues with the existing authentication and MongoDB Atlas connectivity.
 
-The backend service is confirmed to be running and listening on port  internally. Prior efforts successfully resolved MongoDB Atlas connectivity issues by upgrading PyMongo and Motor libraries, and ensuring correct Atlas credentials and IP whitelisting. The backend is now connected to Atlas and running with .
+The user provided the necessary Auth0 credentials: , , and . The strategy chosen is a **hybrid approach**: Auth0 will handle user identity and login, while the existing MongoDB will continue to store application-specific user data (plans, settings, P&L, etc.). Existing user passwords will not be migrated; all users will create new Auth0 accounts. The implementation is to occur first in the preview environment, then deployed to production.
 
-The AI engineer's most recent action was to inspect the Nginx configuration files (, , ). However, it was determined that the Nginx instances observed locally were default, and no application-specific routing rules were present. Furthermore, the absence of Nginx listening on ports 80 or 443 strongly suggested that the production routing is handled by a higher-level proxy system within the Emergent platform, not directly via these Nginx configurations. The current state is that backend is healthy, but the frontend's requests are not reaching it due to an unknown proxy/routing configuration.
+The work has just begun, with the AI engineer laying out a high-level implementation plan:
+*   **Backend Changes**: Install Auth0 JWT validation libraries, replace Argon2id authentication with Auth0 JWT verification, update all protected endpoints to use Auth0 JWTs, and keep MongoDB for existing user app data.
+*   **Frontend Changes**: Install the  SDK, replace the existing  with Auth0's provider, remove the local login UI, and integrate Auth0's Universal Login.
+
+The very first step planned is to **update backend dependencies** to support Auth0 JWT validation. This is a significant undertaking that will require changes across multiple frontend and backend files, replacing core authentication logic.
 </current_work>
 
 <optional_next_step>
-Investigate Emergent platform's routing configuration to resolve frontend-to-backend API call timeouts.
+Install Auth0 JWT validation libraries on the backend and begin replacing the custom authentication logic with Auth0 JWT verification.
 </optional_next_step>
-

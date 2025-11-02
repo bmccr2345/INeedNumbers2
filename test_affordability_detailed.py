@@ -9,7 +9,7 @@ import json
 import sys
 
 class DetailedAffordabilityTester:
-    def __init__(self, base_url="https://debug-ineednumbers.preview.emergentagent.com"):
+    def __init__(self, base_url="https://realestate-numbers.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_cookies = None
         

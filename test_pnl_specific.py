@@ -18,7 +18,7 @@ def test_pnl_analysis_context():
     }
     
     login_response = requests.post(
-        "https://debug-ineednumbers.preview.emergentagent.com/api/auth/login",
+        "https://realestate-numbers.preview.emergentagent.com/api/auth/login",
         json=login_data,
         timeout=15
     )
@@ -87,7 +87,7 @@ def test_pnl_analysis_context():
     print(f"🎯 Analysis Focus: {', '.join(pnl_data['pnl_data']['analysis_focus'])}")
     
     response = requests.post(
-        "https://debug-ineednumbers.preview.emergentagent.com/api/ai-coach-v2/generate",
+        "https://realestate-numbers.preview.emergentagent.com/api/ai-coach-v2/generate",
         json=pnl_data,
         headers=headers,
         timeout=30
@@ -161,7 +161,7 @@ def test_fallback_response():
     }
     
     login_response = requests.post(
-        "https://debug-ineednumbers.preview.emergentagent.com/api/auth/login",
+        "https://realestate-numbers.preview.emergentagent.com/api/auth/login",
         json=login_data,
         timeout=15
     )
@@ -194,7 +194,7 @@ def test_fallback_response():
     print("\n🧪 Testing P&L Fallback Response...")
     
     response = requests.post(
-        "https://debug-ineednumbers.preview.emergentagent.com/api/ai-coach-v2/generate",
+        "https://realestate-numbers.preview.emergentagent.com/api/ai-coach-v2/generate",
         json=empty_pnl_data,
         headers=headers,
         timeout=30
