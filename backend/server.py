@@ -3760,6 +3760,142 @@ async def delete_account(request: Request, confirmation: dict, current_user: Use
     
     return {"message": "Account deleted successfully"}
 
+# ============================================================================
+# Auth0 Authentication Endpoints (New Authentication System)
+# ============================================================================
+
+@api_router.get("/auth0/health")
+async def auth0_health():
+    """Check Auth0 authentication system health"""
+    from app.auth0_auth import get_auth0_verifier
+    
+    verifier = get_auth0_verifier()
+    return {
+        "enabled": verifier.enabled,
+        "domain": config.AUTH0_DOMAIN if verifier.enabled else None,
+        "status": "ready" if verifier.enabled else "not_configured"
+    }
+
+@api_router.get("/auth0/me")
+async def get_auth0_user_profile(request: Request):
+    """
+    Get current user profile using Auth0 JWT authentication.
+    This endpoint requires a valid Auth0 Bearer token.
+    """
+    from app.auth0_auth import get_current_user_auth0
+    
+    # Verify Auth0 token and get user info
+    user_info = await get_current_user_auth0(request, await verify_auth0_token(Depends(HTTPBearer(auto_error=False))))
+    
+    # Try to find user in MongoDB by Auth0 sub
+    auth0_sub = user_info.get("auth0_sub")
+    email = user_info.get("email")
+    
+    # Check if user exists in MongoDB
+    user_data = await db.users.find_one({"auth0_sub": auth0_sub})
+    
+    if not user_data:
+        # User doesn't exist in MongoDB yet - check by email
+        user_data = await db.users.find_one({"email": email})
+        
+        if user_data:
+            # User exists but doesn't have auth0_sub - link it
+            await db.users.update_one(
+                {"email": email},
+                {"$set": {"auth0_sub": auth0_sub, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            user_data["auth0_sub"] = auth0_sub
+        else:
+            # Create new user in MongoDB
+            new_user = {
+                "id": str(uuid.uuid4()),
+                "email": email,
+                "full_name": user_info.get("name", ""),
+                "auth0_sub": auth0_sub,
+                "plan": "FREE",
+                "role": "user",
+                "status": "active",
+                "deals_count": 0,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(new_user)
+            user_data = new_user
+    
+    # Return user profile in expected format
+    return UserResponse(
+        id=user_data["id"],
+        email=user_data["email"],
+        full_name=user_data.get("full_name", ""),
+        plan=PlanType(user_data.get("plan", "FREE")),
+        role=UserRole(user_data.get("role", "user")),
+        status=UserStatus(user_data.get("status", "active")),
+        created_at=user_data.get("created_at", datetime.now(timezone.utc).isoformat()),
+        updated_at=user_data.get("updated_at"),
+        deals_count=user_data.get("deals_count", 0)
+    )
+
+@api_router.post("/auth0/sync-user")
+async def sync_auth0_user(request: Request):
+    """
+    Sync Auth0 user profile with MongoDB application data.
+    Creates or updates user record in MongoDB.
+    """
+    from app.auth0_auth import get_current_user_auth0
+    
+    # Verify Auth0 token
+    user_info = await get_current_user_auth0(request, await verify_auth0_token(Depends(HTTPBearer(auto_error=False))))
+    
+    auth0_sub = user_info.get("auth0_sub")
+    email = user_info.get("email")
+    name = user_info.get("name", "")
+    
+    # Check if user exists
+    existing_user = await db.users.find_one({"auth0_sub": auth0_sub})
+    
+    if existing_user:
+        # Update existing user
+        await db.users.update_one(
+            {"auth0_sub": auth0_sub},
+            {
+                "$set": {
+                    "email": email,
+                    "full_name": name,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        return {"success": True, "message": "User profile updated", "user_id": existing_user["id"]}
+    else:
+        # Create new user
+        new_user_id = str(uuid.uuid4())
+        new_user = {
+            "id": new_user_id,
+            "email": email,
+            "full_name": name,
+            "auth0_sub": auth0_sub,
+            "plan": "FREE",
+            "role": "user",
+            "status": "active",
+            "deals_count": 0,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(new_user)
+        
+        logger.info(f"New Auth0 user created: {auth0_sub} ({email})")
+        return {"success": True, "message": "User profile created", "user_id": new_user_id}
+
+# Auth0 helper function for route dependencies
+async def verify_auth0_token(token = Depends(HTTPBearer(auto_error=False))):
+    """Helper to verify Auth0 token for route dependencies"""
+    from app.auth0_auth import verify_auth0_token as _verify
+    return await _verify(token)
+
+# ============================================================================
+# End Auth0 Authentication Endpoints
+# ============================================================================
+
 # Closing Date Calculator Models
 class ClosingDateCalculatorInput(BaseModel):
     underContractDate: str
