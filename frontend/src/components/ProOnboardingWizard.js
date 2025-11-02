@@ -30,6 +30,14 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
     }
   });
 
+  // Day 1 interactive inputs state
+  const [day1Inputs, setDay1Inputs] = useState({
+    whyGrow: '', // Coach Prompt: why do you want to grow
+    whyGrowCustom: '', // Custom text input
+    goalSentiment: '', // Coach Check-In: too high / just right / too low
+    whyMatters: '' // Reflection: why does this goal matter
+  });
+
   // Calculate progress
   const getDayProgress = (day) => {
     const tasks = Object.values(checklist[`day${day}`]);
@@ -47,18 +55,20 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
     }));
   };
 
-  // Save progress to localStorage
+  // Save progress and inputs to localStorage
   useEffect(() => {
     if (isOpen) {
       safeLocalStorage.setItem('pro_onboarding_checklist', JSON.stringify(checklist));
       safeLocalStorage.setItem('pro_onboarding_day', currentDay.toString());
+      safeLocalStorage.setItem('pro_onboarding_day1_inputs', JSON.stringify(day1Inputs));
     }
-  }, [checklist, currentDay, isOpen]);
+  }, [checklist, currentDay, isOpen, day1Inputs]);
 
-  // Load progress from localStorage
+  // Load progress and inputs from localStorage
   useEffect(() => {
     const savedChecklist = safeLocalStorage.getItem('pro_onboarding_checklist');
     const savedDay = safeLocalStorage.getItem('pro_onboarding_day');
+    const savedDay1Inputs = safeLocalStorage.getItem('pro_onboarding_day1_inputs');
     
     if (savedChecklist) {
       try {
@@ -70,7 +80,22 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
     if (savedDay) {
       setCurrentDay(parseInt(savedDay) || 1);
     }
+    if (savedDay1Inputs) {
+      try {
+        setDay1Inputs(JSON.parse(savedDay1Inputs));
+      } catch (e) {
+        console.warn('[ProOnboarding] Failed to parse saved Day 1 inputs:', e);
+      }
+    }
   }, []);
+
+  // Update Day 1 input values
+  const updateDay1Input = (field, value) => {
+    setDay1Inputs(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const dayContent = {
     1: {
