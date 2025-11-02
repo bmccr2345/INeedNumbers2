@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import safeLocalStorage from '../utils/safeStorage';
@@ -17,148 +18,111 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  
+  // Get Auth0 authentication state
+  const {
+    isAuthenticated: isAuth0Authenticated,
+    user: auth0User,
+    isLoading: isAuth0Loading,
+    getAccessTokenSilently,
+    loginWithRedirect,
+    logout: auth0Logout
+  } = useAuth0();
 
-  // Configure axios for cookie-based authentication
+  // Configure axios for cookie-based authentication (legacy)
   useEffect(() => {
-    // Use cookies for authentication, not Authorization headers
     axios.defaults.withCredentials = true;
-    // Remove any Authorization header as we use HttpOnly cookies
-    delete axios.defaults.headers.common['Authorization'];
   }, []);
 
-  // Check if user is authenticated on app load
+  // Check authentication status on app load
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [isAuth0Authenticated, auth0User]);
 
   const checkAuth = async () => {
     try {
-      console.log('[AuthContext] Checking authentication...');
-      
-      // Use cookie-based authentication - no token needed in JS
-      const response = await axios.get(`${backendUrl}/api/auth/me`);
-      const user = response.data;
-      
-      console.log('[AuthContext] User fetched:', {
-        exists: !!user,
-        id: user?.id,
-        email: user?.email,
-        name: user?.name,
-        plan: user?.plan,
-        role: user?.role
-      });
-      
-      // For master admin, check security setup status (keep in localStorage for UI state only)
-      // Use safe localStorage to prevent Safari blocking
-      if (user.role === 'master_admin') {
+      // If Auth0 is authenticated, sync with backend
+      if (isAuth0Authenticated && auth0User) {
+        console.log('[AuthContext] Auth0 user authenticated:', auth0User.email);
+        
         try {
-          // Check if password was changed in the last 365 days
-          const passwordChangedTimestamp = safeLocalStorage.getItem('admin_password_changed_time', Date.now().toString());
-          const oneYear = 365 * 24 * 60 * 60 * 1000; // 365 days in milliseconds
-          const now = Date.now();
+          // Get Auth0 access token
+          const token = await getAccessTokenSilently({
+            authorizationParams: {
+              audience: process.env.REACT_APP_AUTH0_AUDIENCE
+            }
+          });
           
-          // Set default timestamp if none exists, then check if still valid
-          if (!safeLocalStorage.getItem('admin_password_changed_time')) {
-            safeLocalStorage.setItem('admin_password_changed_time', passwordChangedTimestamp);
-          }
+          // Fetch user profile from backend using Auth0 token
+          const response = await axios.get(`${backendUrl}/api/auth0/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           
-          const hasChangedPassword = (now - parseInt(passwordChangedTimestamp)) < oneYear;
-            
-          const hasSetup2FA = safeLocalStorage.getItem('admin_2fa_setup', 'false') === 'true';
+          const userData = response.data;
+          console.log('[AuthContext] Auth0 user profile fetched:', userData.email);
           
-          // Only require password reset if it's been more than 365 days
-          user.requiresPasswordReset = !hasChangedPassword;
-          user.requires2FA = !hasSetup2FA;
-          user.firstLogin = !hasChangedPassword || !hasSetup2FA;
+          setUser(userData);
+          setLoading(false);
+          return;
         } catch (error) {
-          // If localStorage fails in Safari, use safe defaults
-          console.warn('Failed to check admin security status:', error);
-          user.requiresPasswordReset = false;
-          user.requires2FA = false;
-          user.firstLogin = false;
+          console.error('[AuthContext] Failed to fetch Auth0 user profile:', error);
+          // Fall through to try legacy auth
         }
       }
       
-      setUser(user);
-      console.log('[AuthContext] User set in state');
+      // Fallback to legacy cookie-based authentication
+      if (!isAuth0Authenticated || !auth0User) {
+        console.log('[AuthContext] Checking legacy authentication...');
+        try {
+          const response = await axios.get(`${backendUrl}/api/auth/me`);
+          const userData = response.data;
+          console.log('[AuthContext] Legacy user authenticated:', userData.email);
+          setUser(userData);
+        } catch (error) {
+          console.log('[AuthContext] No active session');
+          setUser(null);
+        }
+      }
     } catch (error) {
       console.error('[AuthContext] Auth check failed:', error);
-      console.error('[AuthContext] Error response:', error.response?.data);
-      // User is not authenticated
       setUser(null);
     } finally {
       setLoading(false);
-      console.log('[AuthContext] Auth check complete, loading=false');
     }
   };
 
+  // Legacy login function (for backward compatibility)
   const login = async (email, password, rememberMe = false) => {
-    console.log('[AuthContext] Login attempt started for:', email);
+    console.log('[AuthContext] Legacy login attempt for:', email);
     const startTime = Date.now();
     
     try {
-      console.log('[AuthContext] Making login API call...');
-      // Use real backend API for all authentication (including demo)
       const response = await axios.post(`${backendUrl}/api/auth/login`, {
         email,
         password,
         remember_me: rememberMe
       }, {
         withCredentials: true,
-        timeout: 30000 // Increase to 30 seconds
+        timeout: 30000
       });
       
       console.log(`[AuthContext] Login API response received after ${Date.now() - startTime}ms`);
       
       if (response.data && response.data.user) {
         const { user } = response.data;
-        // Authentication cookies are set by the server as HttpOnly
-        
-        // For master admin, check security setup status
-        // Use safe localStorage to prevent Safari blocking
-        if (user.role === 'master_admin') {
-          try {
-            // Check if password was changed in the last 365 days
-            const passwordChangedTimestamp = safeLocalStorage.getItem('admin_password_changed_time', Date.now().toString());
-            const oneYear = 365 * 24 * 60 * 60 * 1000; // 365 days in milliseconds
-            const now = Date.now();
-            
-            // Set default timestamp if none exists, then check if still valid
-            if (!safeLocalStorage.getItem('admin_password_changed_time')) {
-              safeLocalStorage.setItem('admin_password_changed_time', passwordChangedTimestamp);
-            }
-            
-            const hasChangedPassword = (now - parseInt(passwordChangedTimestamp)) < oneYear;
-              
-            const hasSetup2FA = safeLocalStorage.getItem('admin_2fa_setup', 'false') === 'true';
-            
-            // Only require password reset if it's been more than 365 days
-            user.requiresPasswordReset = !hasChangedPassword;
-            user.requires2FA = !hasSetup2FA;
-            user.firstLogin = !hasChangedPassword || !hasSetup2FA;
-          } catch (error) {
-            // If localStorage fails in Safari, use safe defaults
-            console.warn('Failed to check admin security status during login:', error);
-            user.requiresPasswordReset = false;
-            user.requires2FA = false;
-            user.firstLogin = false;
-          }
-        }
-        
         setUser(user);
         return { success: true };
       }
     } catch (error) {
       const duration = Date.now() - startTime;
       console.error(`[AuthContext] Login failed after ${duration}ms:`, error);
-      console.error('[AuthContext] Error details:', error.response?.data || error.message);
       
-      // Handle Pydantic validation errors (array of error objects)
       let errorMessage = 'Login failed. Please try again.';
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
         if (Array.isArray(detail)) {
-          // Pydantic validation errors
           errorMessage = detail.map(err => err.msg || JSON.stringify(err)).join(', ');
         } else if (typeof detail === 'string') {
           errorMessage = detail;
@@ -174,6 +138,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Auth0 login (new method)
+  const loginWithAuth0 = async (options = {}) => {
+    try {
+      await loginWithRedirect({
+        appState: { returnTo: options.returnTo || window.location.pathname },
+        ...options
+      });
+    } catch (error) {
+      console.error('[AuthContext] Auth0 login failed:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Legacy register function (deprecated with Auth0)
   const register = async (email, password, fullName = '') => {
     try {
       const response = await axios.post(`${backendUrl}/api/auth/register`, {
@@ -185,13 +163,11 @@ export const AuthProvider = ({ children }) => {
         timeout: 10000
       });
 
-      // Auto-login after registration
       const loginResult = await login(email, password, false);
       return loginResult;
     } catch (error) {
       console.error('Registration failed:', error);
       
-      // Handle Pydantic validation errors
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
@@ -211,24 +187,41 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Unified logout function
   const logout = async () => {
     try {
-      // Call server logout to clear HttpOnly cookies
-      await axios.post(`${backendUrl}/api/auth/logout`, {}, {
-        withCredentials: true,
-        timeout: 8000
-      });
+      // If using Auth0, logout from Auth0
+      if (isAuth0Authenticated) {
+        await auth0Logout({
+          logoutParams: {
+            returnTo: window.location.origin
+          }
+        });
+      } else {
+        // Legacy logout
+        await axios.post(`${backendUrl}/api/auth/logout`, {}, {
+          withCredentials: true,
+          timeout: 8000
+        });
+      }
     } catch (error) {
-      console.error('Logout API call failed:', error);
+      console.error('Logout failed:', error);
     }
-    // Clear local state
     setUser(null);
   };
 
   const deleteAccount = async (confirmation) => {
     try {
+      // Get token if using Auth0
+      let headers = {};
+      if (isAuth0Authenticated) {
+        const token = await getAccessTokenSilently();
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       await axios.delete(`${backendUrl}/api/auth/delete-account`, {
-        data: { confirmation }
+        data: { confirmation },
+        headers
       });
       
       logout();
@@ -236,7 +229,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Account deletion failed:', error);
       
-      // Handle Pydantic validation errors
       let errorMessage = 'Account deletion failed. Please try again.';
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
@@ -258,19 +250,46 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/api/auth/me`);
+      // Get token if using Auth0
+      let headers = {};
+      if (isAuth0Authenticated) {
+        const token = await getAccessTokenSilently();
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      const response = await axios.get(`${backendUrl}/api/auth/me`, { headers });
       setUser(response.data);
     } catch (error) {
       console.error('Failed to refresh user:', error);
     }
   };
 
+  // Helper to get auth headers for API calls
+  const getAuthHeaders = async () => {
+    if (isAuth0Authenticated) {
+      try {
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: process.env.REACT_APP_AUTH0_AUDIENCE
+          }
+        });
+        return { Authorization: `Bearer ${token}` };
+      } catch (error) {
+        console.error('Failed to get Auth0 token:', error);
+        return {};
+      }
+    }
+    // Legacy: cookies are sent automatically with withCredentials
+    return {};
+  };
+
   const createCheckoutSession = async (plan) => {
     try {
+      const headers = await getAuthHeaders();
       const response = await axios.post(`${backendUrl}/api/stripe/checkout`, {
         plan,
         origin_url: window.location.origin
-      });
+      }, { headers });
       
       return { success: true, url: response.data.url };
     } catch (error) {
@@ -284,7 +303,8 @@ export const AuthProvider = ({ children }) => {
 
   const createCustomerPortal = async () => {
     try {
-      const response = await axios.post(`${backendUrl}/api/stripe/portal`);
+      const headers = await getAuthHeaders();
+      const response = await axios.post(`${backendUrl}/api/stripe/portal`, {}, { headers });
       return { success: true, url: response.data.url };
     } catch (error) {
       console.error('Customer portal creation failed:', error);
@@ -297,7 +317,8 @@ export const AuthProvider = ({ children }) => {
 
   const exportUserData = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/api/user/export`);
+      const headers = await getAuthHeaders();
+      const response = await axios.get(`${backendUrl}/api/user/export`, { headers });
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Data export failed:', error);
@@ -308,19 +329,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Get plan limits
   const getPlanLimits = (plan) => {
     switch (plan) {
       case 'STARTER':
         return { deals: 10, portfolios: 1, branding: true };
       case 'PRO':
-        return { deals: -1, portfolios: -1, branding: true }; // -1 = unlimited
+        return { deals: -1, portfolios: -1, branding: true };
       default:
         return { deals: 0, portfolios: 0, branding: false };
     }
   };
 
-  // Check if user can perform action
   const canPerformAction = (action, plan = user?.plan) => {
     const limits = getPlanLimits(plan);
     
@@ -340,8 +359,9 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    loading,
+    loading: loading || isAuth0Loading,
     login,
+    loginWithAuth0,
     register,
     logout,
     deleteAccount,
@@ -350,8 +370,10 @@ export const AuthProvider = ({ children }) => {
     createCustomerPortal,
     exportUserData,
     isAuthenticated: !!user,
+    isAuth0: isAuth0Authenticated,
     getPlanLimits,
-    canPerformAction
+    canPerformAction,
+    getAuthHeaders // Export for use in components
   };
 
   return (
