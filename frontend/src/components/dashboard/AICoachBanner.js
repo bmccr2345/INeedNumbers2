@@ -42,9 +42,9 @@ const AICoachBanner = () => {
         return;
       }
 
-      const response = await axios.post(`${backendUrl}/api/ai-coach/generate`, {}, {
+      const response = await axios.post(`${backendUrl}/api/ai-coach-v2/generate`, {}, {
         withCredentials: true,  // Use HttpOnly cookies instead of Bearer token
-        timeout: 10000 // 10 second timeout to prevent hanging
+        timeout: 30000 // 30 second timeout for AI generation
       });
 
       setCoachData(response.data);
@@ -68,11 +68,6 @@ const AICoachBanner = () => {
   };
 
   useEffect(() => {
-    // TEMPORARY: Disable AI Coach auto-load to prevent login issues
-    console.log('[AICoachBanner] AI Coach temporarily disabled due to 500 error');
-    setIsLoading(false);
-    setError('AI Coach temporarily disabled for maintenance');
-    /*
     // Only load coach data if user is authenticated and is PRO
     if (user && user.plan === 'PRO') {
       loadCoachData();
@@ -84,7 +79,6 @@ const AICoachBanner = () => {
         setError('AI Coach requires a Pro plan. Upgrade to access personalized insights.');
       }
     }
-    */
   }, [user]);
 
   const handleGenerateCoaching = async (force = false) => {
