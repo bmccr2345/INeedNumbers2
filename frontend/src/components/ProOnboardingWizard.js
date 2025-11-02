@@ -197,7 +197,6 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
           description: 'Pick one number that drives everything',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Pick one simple number that drives everything.</p>
               <p className="text-gray-700">Example — you want to earn <strong>$120,000</strong> this year.</p>
               
               <p className="font-medium mt-4">Navigate to Plan and Track → Goal Settings</p>
