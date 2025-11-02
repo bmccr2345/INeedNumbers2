@@ -73,57 +73,59 @@ function App() {
       <HelmetProvider>
         <PerformanceMonitor />
         <Toaster position="top-right" richColors />
-        <AuthProvider>
-          <BrowserRouter future={{
+        <BrowserRouter future={{
           v7_relativeSplatPath: true,
           v7_startTransition: true,
           v7_fetcherPersist: true
         }}>
-            <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/landing" element={<LandingPage />} />
-            <Route path="/dashboard" element={<DashboardRoute />} />
-            <Route path="/calculator" element={<FreeCalculator />} />
-            <Route path="/glossary" element={<Glossary />} />
-            <Route path="/sample-pdf" element={<SamplePDF />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/welcome" element={<WelcomePage />} />
-            <Route path="/support" element={<SupportPage />} />
-            
-            {/* Tools Routes */}
-            <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/tools/commission-split" element={<CommissionSplitCalculator />} />
-            <Route path="/tools/net-sheet" element={<SellerNetSheetCalculator />} />
-            <Route path="/tools/affordability" element={<AffordabilityCalculator />} />
-            <Route path="/tools/closing-date" element={<ClosingDateCalculator />} />
-            <Route path="/affordability/shared/:calculationId" element={<AffordabilityCalculator />} />
-            <Route path="/tools/agent-pl-tracker" element={<PnLPanel />} />
-            <Route path="/tools/pnl-tracker" element={<PnLPanel />} />
-            {/* Redirect old P&L Tracker URL to correct path */}
-            <Route path="/agent-pnl-tracker" element={<Navigate to="/tools/agent-pl-tracker" replace />} />
-            <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-            <Route path="/app/branding" element={<BrandingProfilePage />} />
-            
-            {/* Auth Routes */}
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/auth/register" element={<RegisterPage />} />
-            <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/set-password" element={<SetPasswordPage />} />
-            <Route path="/account" element={<MyAccountPage />} />
-            
-            {/* Legal Routes */}
-            <Route path="/legal/terms" element={<TermsPage />} />
-            <Route path="/legal/privacy" element={<PrivacyPage />} />
-            <Route path="/legal/cookies" element={<CookiePolicyPage />} />
-            <Route path="/legal/accessibility" element={<AccessibilityPage />} />
-            
-            {/* Admin Routes */}
-            <Route path="/app/admin" element={<AdminConsolePage />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+          <Auth0ProviderWithNavigate>
+            <AuthProvider>
+              <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/dashboard" element={<DashboardRoute />} />
+              <Route path="/calculator" element={<FreeCalculator />} />
+              <Route path="/glossary" element={<Glossary />} />
+              <Route path="/sample-pdf" element={<SamplePDF />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/support" element={<SupportPage />} />
+              
+              {/* Tools Routes */}
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/tools/commission-split" element={<CommissionSplitCalculator />} />
+              <Route path="/tools/net-sheet" element={<SellerNetSheetCalculator />} />
+              <Route path="/tools/affordability" element={<AffordabilityCalculator />} />
+              <Route path="/tools/closing-date" element={<ClosingDateCalculator />} />
+              <Route path="/affordability/shared/:calculationId" element={<AffordabilityCalculator />} />
+              <Route path="/tools/agent-pl-tracker" element={<PnLPanel />} />
+              <Route path="/tools/pnl-tracker" element={<PnLPanel />} />
+              {/* Redirect old P&L Tracker URL to correct path */}
+              <Route path="/agent-pnl-tracker" element={<Navigate to="/tools/agent-pl-tracker" replace />} />
+              <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+              <Route path="/app/branding" element={<BrandingProfilePage />} />
+              
+              {/* Auth Routes */}
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/auth/register" element={<RegisterPage />} />
+              <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/set-password" element={<SetPasswordPage />} />
+              <Route path="/account" element={<MyAccountPage />} />
+              
+              {/* Legal Routes */}
+              <Route path="/legal/terms" element={<TermsPage />} />
+              <Route path="/legal/privacy" element={<PrivacyPage />} />
+              <Route path="/legal/cookies" element={<CookiePolicyPage />} />
+              <Route path="/legal/accessibility" element={<AccessibilityPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/app/admin" element={<AdminConsolePage />} />
+            </Routes>
+          </AuthProvider>
+        </Auth0ProviderWithNavigate>
+      </BrowserRouter>
       </HelmetProvider>
     </div>
   );
