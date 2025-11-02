@@ -10,7 +10,7 @@ import sys
 def test_markdown_parsing():
     """Test that backend correctly handles markdown wrapped JSON responses"""
     
-    base_url = "https://debug-ineednumbers.preview.emergentagent.com"
+    base_url = "https://realestate-numbers.preview.emergentagent.com"
     
     print("📝 TESTING MARKDOWN JSON PARSING FIX...")
     print(f"Base URL: {base_url}")

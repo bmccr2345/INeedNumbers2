@@ -6,7 +6,7 @@ import json
 def test_closing_date_pdf():
     """Test the closing date PDF generation endpoint specifically"""
     
-    base_url = "https://debug-ineednumbers.preview.emergentagent.com"
+    base_url = "https://realestate-numbers.preview.emergentagent.com"
     
     # Test data
     closing_date_data = {

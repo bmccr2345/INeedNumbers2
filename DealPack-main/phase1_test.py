@@ -11,7 +11,7 @@ import time
 from typing import Optional, Dict, Any
 
 class Phase1ProductionReadinessTests:
-    def __init__(self, base_url="https://debug-ineednumbers.preview.emergentagent.com"):
+    def __init__(self, base_url="https://realestate-numbers.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -211,7 +211,7 @@ class Phase1ProductionReadinessTests:
         try:
             # Test allowed origin
             allowed_headers = {
-                'Origin': 'https://debug-ineednumbers.preview.emergentagent.com',
+                'Origin': 'https://realestate-numbers.preview.emergentagent.com',
                 'Access-Control-Request-Method': 'GET'
             }
             
