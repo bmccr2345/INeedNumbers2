@@ -3337,6 +3337,14 @@ async def login(request: Request, response: Response, login_data: LoginRequest):
     # For subdomain setup (ineednumbers.com -> api.ineednumbers.com)
     # Use shared parent domain for cookie sharing
     is_production = config.NODE_ENV == "production" or "preview.emergentagent.com" in request.url.hostname or "emergent.host" in request.url.hostname
+    
+    # Determine appropriate cookie domain based on environment
+    cookie_domain = None  # Default: no domain restriction (same-origin only)
+    if "ineednumbers.com" in request.url.hostname:
+        cookie_domain = ".ineednumbers.com"  # Production: share across subdomains
+    elif "preview.emergentagent.com" in request.url.hostname or "emergent.host" in request.url.hostname:
+        cookie_domain = None  # Preview/Emergent: same-origin only
+    
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -3344,7 +3352,7 @@ async def login(request: Request, response: Response, login_data: LoginRequest):
         httponly=True,
         secure=True,  # REQUIRED for HTTPS
         samesite="none",  # Cross-site compatibility
-        domain=".ineednumbers.com"  # Shared parent domain - allows cookies between ineednumbers.com and api.ineednumbers.com
+        domain=cookie_domain
     )
     
     await log_audit_event(user, AuditAction.LOGIN, {"success": True}, request)
