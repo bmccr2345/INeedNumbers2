@@ -104,7 +104,7 @@ const AICoachBanner = () => {
         console.warn('New AI Coach API failed, falling back to legacy:', newApiError);
         
         // Fallback to legacy API
-        const response = await fetch(`${BACKEND_URL}/api/ai-coach/generate`, {
+        const response = await fetch(`${BACKEND_URL}/api/ai-coach-v2/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
