@@ -81,32 +81,57 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
         {
           id: 'welcome',
           title: 'Let\'s Build Your 1-Year Game Plan',
-          description: 'A simple approach to annual planning',
+          description: 'Define your goal and commit to it',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium text-emerald-700">You don't need a 10-year vision. Just one clear year.</p>
-              <p>Here's how I Need Numbers helps you build it:</p>
-              <ul className="space-y-2 ml-4">
+              <p className="font-medium text-emerald-700">You don't need a ten-year vision—just one clear year.</p>
+              <p>Let's set an income goal, see how many homes that means, and build small weekly targets that keep you on pace.</p>
+              
+              <div className="bg-purple-50/80 p-4 rounded-lg border border-purple-200 mt-4">
+                <p className="text-purple-900 font-medium mb-2">💬 Coach Prompt:</p>
+                <p className="text-purple-800 text-xs italic mb-3">Before we talk numbers, why do you want to grow this year?</p>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                    Freedom
+                  </button>
+                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                    Family
+                  </button>
+                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                    Stability
+                  </button>
+                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                    Challenge
+                  </button>
+                  <input 
+                    type="text" 
+                    placeholder="Something else..." 
+                    className="px-3 py-1 border border-purple-200 rounded-md text-xs flex-1 min-w-[120px]"
+                  />
+                </div>
+              </div>
+
+              <ul className="space-y-2 ml-4 mt-4">
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Set Your Annual Income Goal</strong> – One number, no guesswork</span>
+                  <span><strong>Set Your Annual Income Goal</strong> — one number, one purpose.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Calculate Deals Needed</strong> – The app does the math for you</span>
+                  <span><strong>See Your Math Instantly</strong> — the app shows how many deals it takes.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Break It Into Weekly Targets</strong> – Bite-sized, achievable goals</span>
+                  <span><strong>Break It Down</strong> — monthly and weekly goals you can actually hit.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-emerald-600 mr-2">•</span>
-                  <span><strong>Fairy AI Coach</strong> – Keeps you on track when you fall behind</span>
+                  <span><strong>Meet Your Coach</strong> — Fairy AI learns your pace and keeps you on track.</span>
                 </li>
               </ul>
               <div className="bg-emerald-50 p-3 rounded-lg mt-3">
-                <p className="text-emerald-900 font-medium">🔑 Key Insight:</p>
-                <p className="text-emerald-800 text-xs">You don't need a 10-year vision. Just one clear year. The app will handle the math.</p>
+                <p className="text-emerald-900 font-medium">🟩 Key Insight:</p>
+                <p className="text-emerald-800 text-xs">Most agents overestimate short-term goals and underestimate what steady focus does in a year. We'll keep you consistent; the numbers will follow.</p>
               </div>
             </div>
           )
@@ -114,24 +139,39 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
         {
           id: 'setupGoals',
           title: 'Set Your Annual Income Goal',
-          description: 'One simple number that drives everything',
+          description: 'Pick one number that drives everything',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Navigate to Plan and Track → Goal Settings</p>
+              <p className="font-medium">Pick one simple number that drives everything.</p>
+              <p className="text-gray-700">Example — you want to earn <strong>$120,000</strong> this year.</p>
+              
+              <p className="font-medium mt-4">Navigate to Plan and Track → Goal Settings</p>
               <ol className="space-y-2 ml-4 list-decimal">
-                <li>Enter <strong>How much you want to earn this year</strong> (e.g., $120,000)</li>
-                <li>The app auto-calculates:
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• Homes needed (based on your average commission)</li>
-                    <li>• Deals per month (e.g., 24 homes = 2 per month)</li>
-                    <li>• Weekly activity targets to hit that goal</li>
-                  </ul>
-                </li>
-                <li>Example: <strong>$120,000 = about 24 homes = 2 per month</strong></li>
+                <li>Enter your yearly income goal.</li>
+                <li>The app calculates approximate homes you need to sell.</li>
+                <li>You'll see it broken into monthly and weekly targets.</li>
+                <li>Adjust until it <em>feels</em> realistic.</li>
               </ol>
+
+              <div className="bg-blue-50/80 p-4 rounded-lg border border-blue-200 mt-4">
+                <p className="text-blue-900 font-medium mb-2">💬 Coach Check-In:</p>
+                <p className="text-blue-800 text-xs mb-3">Does this number excite you <em>and</em> feel doable?</p>
+                <div className="flex gap-2">
+                  <button className="px-4 py-2 bg-white border border-blue-200 rounded-md text-xs hover:bg-blue-100 transition-colors">
+                    Too high
+                  </button>
+                  <button className="px-4 py-2 bg-emerald-50 border border-emerald-300 rounded-md text-xs hover:bg-emerald-100 transition-colors font-medium">
+                    Just right
+                  </button>
+                  <button className="px-4 py-2 bg-white border border-blue-200 rounded-md text-xs hover:bg-blue-100 transition-colors">
+                    Too low
+                  </button>
+                </div>
+              </div>
+
               <div className="bg-blue-50 p-3 rounded-lg mt-3">
-                <p className="text-blue-900 font-medium">💡 Does That Feel Doable?</p>
-                <p className="text-blue-800 text-xs">You can always adjust your pace. Start with a realistic number. The app will track your progress and help you course-correct.</p>
+                <p className="text-blue-900 font-medium">💡 Pro Tip:</p>
+                <p className="text-blue-800 text-xs">You can always start smaller and raise your goal later. The habit matters more than the math.</p>
               </div>
             </div>
           )
@@ -139,39 +179,63 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
         {
           id: 'logFirstActivity',
           title: 'See How Daily Actions Connect',
-          description: 'Understand how today\'s work builds your year',
+          description: 'Every action moves you closer to your goal',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">I Need Numbers turns your goal into weekly targets:</p>
+              <p className="font-medium">Every conversation, showing, and follow-up moves you closer to your goal.</p>
+              <p>I Need Numbers turns your activity into insight:</p>
+              
+              <div className="bg-gray-50 p-3 rounded-lg my-3">
+                <p className="font-medium text-emerald-700">📊 The Flow:</p>
+                <p className="text-gray-700 text-sm mt-2">
+                  <strong>Conversations</strong> → <strong>Appointments</strong> → <strong>Listings</strong> → <strong>Closings</strong>
+                </p>
+                <p className="text-gray-600 text-xs mt-2">Each step shows progress toward your yearly income target.</p>
+              </div>
+
+              <p className="font-medium">Here's what happens next:</p>
               <ul className="space-y-2 ml-4">
-                <li>• <strong>Conversations:</strong> How many calls/texts to hit your pipeline</li>
-                <li>• <strong>Appointments:</strong> Showings and consultations needed</li>
-                <li>• <strong>Listings:</strong> How many homes you need to list each month</li>
+                <li>• <strong>Activity Tracker</strong> logs your daily actions (calls, appointments, listings)</li>
+                <li>• <strong>P&L Tracker</strong> shows your true take-home profit (not just commission)</li>
+                <li>• <strong>Fairy AI Coach</strong> reads your data and gives guidance when you need it</li>
+                <li>• <strong>Goal Settings</strong> tracks your progress toward your annual target</li>
               </ul>
-              <p className="mt-3 font-medium">The app tracks your progress and gives AI coaching when you fall off pace.</p>
+
               <div className="bg-purple-50 p-3 rounded-lg mt-3">
-                <p className="text-purple-900 font-medium">🎯 Why This Matters:</p>
-                <p className="text-purple-800 text-xs">Most agents focus on the wrong numbers. I Need Numbers shows you exactly what daily actions lead to your annual goal.</p>
+                <p className="text-purple-900 font-medium">💬 Coach Note:</p>
+                <p className="text-purple-800 text-xs">Most agents track the wrong numbers. You'll track <em>actions that create results</em>, not vanity metrics.</p>
               </div>
             </div>
           )
         },
         {
           id: 'explorePnL',
-          title: 'Understand the Purpose',
-          description: 'What I Need Numbers actually does for you',
+          title: 'Your "Why" Matters',
+          description: 'Anchor your goal emotionally',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Here's what happens next:</p>
-              <ol className="space-y-2 ml-4 list-decimal">
-                <li><strong>Activity Tracker</strong> logs your daily actions (calls, appointments, listings)</li>
-                <li><strong>P&L Tracker</strong> shows your true take-home profit (not just commission)</li>
-                <li><strong>Fairy AI Coach</strong> reads your data and gives guidance when you need it</li>
-                <li><strong>Goal Settings</strong> tracks your progress toward your annual target</li>
-              </ol>
-              <div className="bg-amber-50 p-3 rounded-lg mt-3">
-                <p className="text-amber-900 font-medium">🎓 Key Insight:</p>
-                <p className="text-amber-800 text-xs">You don't need a 10-year vision. Just one clear year. The app will handle the math and keep you focused on what matters today.</p>
+              <p className="font-medium text-emerald-700">Before you move to Day 2, let's make this personal.</p>
+              <p>Goals without emotional connection fade fast. Let's anchor yours.</p>
+
+              <div className="bg-amber-50/80 p-4 rounded-lg border border-amber-200 mt-4">
+                <p className="text-amber-900 font-medium mb-2">🎯 Reflection:</p>
+                <p className="text-amber-800 text-xs mb-3">In one sentence, why does hitting this goal matter to you?</p>
+                <textarea 
+                  placeholder="Type your answer here..."
+                  className="w-full p-3 border border-amber-200 rounded-md text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
+              </div>
+
+              <div className="bg-emerald-50 p-4 rounded-lg mt-4">
+                <p className="text-emerald-900 font-medium mb-2">💬 Coach Encouragement:</p>
+                <p className="text-emerald-800 text-sm">
+                  "Great start. Tomorrow we'll turn that goal into daily actions you can control."
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-3 rounded-lg mt-3">
+                <p className="text-blue-900 font-medium">✅ Day 1 Complete!</p>
+                <p className="text-blue-800 text-xs">You've set your annual goal and connected it to your purpose. That's more than most agents ever do. Keep going.</p>
               </div>
             </div>
           )
