@@ -299,8 +299,15 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
                 <p className="text-amber-800 text-xs mb-3">In one sentence, why does hitting this goal matter to you?</p>
                 <textarea 
                   placeholder="Type your answer here..."
+                  value={day1Inputs.whyMatters}
+                  onChange={(e) => updateDay1Input('whyMatters', e.target.value)}
                   className="w-full p-3 border border-amber-200 rounded-md text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-amber-300"
                 />
+                {day1Inputs.whyMatters && (
+                  <p className="text-amber-700 text-xs mt-2 italic">
+                    ✓ Saved
+                  </p>
+                )}
               </div>
 
               <div className="bg-emerald-50 p-4 rounded-lg mt-4">
