@@ -452,8 +452,18 @@ async def generate_coach(
                 return JSONResponse(content=analysis_response)
             else:
                 # Standard AI Coach processing
+                # Strip markdown code block syntax if present
+                clean_text = text.strip()
+                if clean_text.startswith("```json"):
+                    # Remove the opening ```json
+                    clean_text = clean_text[7:]
+                if clean_text.endswith("```"):
+                    # Remove the closing ```
+                    clean_text = clean_text[:-3]
+                clean_text = clean_text.strip()
+                
                 try:
-                    obj = json.loads(text)
+                    obj = json.loads(clean_text)
                     # Validate required keys
                     required_keys = ['summary', 'stats', 'actions', 'risks', 'next_inputs']
                     if not all(key in obj for key in required_keys):
@@ -461,7 +471,7 @@ async def generate_coach(
                 except (json.JSONDecodeError, ValueError):
                     # Fallback to structured response
                     obj = {
-                        "summary": text.strip()[:200],
+                        "summary": clean_text.strip()[:200],
                         "stats": {
                             "goals": goals,
                             "recent_activity": activity,
