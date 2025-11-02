@@ -4,7 +4,7 @@ Real Estate Investment Analysis Platform
 """
 
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request, Cookie, Query
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
