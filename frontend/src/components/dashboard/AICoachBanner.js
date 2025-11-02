@@ -256,17 +256,28 @@ const AICoachBanner = () => {
                   </div>
                 </div>
 
-                {/* Stats Section */}
+                {/* Stats Section - Only show primitive values */}
                 {coachData?.stats && Object.keys(coachData.stats).length > 0 && (
                   <div className="mb-4 p-4 bg-blue-50 rounded-lg">
                     <h4 className="font-semibold text-sm text-blue-900 mb-2">📊 Your Numbers</h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      {Object.entries(coachData.stats).map(([key, value]) => (
-                        <div key={key}>
-                          <span className="text-gray-600">{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>{' '}
-                          <span className="font-medium text-gray-900">{value}</span>
-                        </div>
-                      ))}
+                      {Object.entries(coachData.stats).map(([key, value]) => {
+                        // Only render primitive values (not objects or arrays)
+                        if (typeof value === 'object' || value === null || value === undefined) {
+                          return null;
+                        }
+                        
+                        return (
+                          <div key={key}>
+                            <span className="text-gray-600">
+                              {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                            </span>{' '}
+                            <span className="font-medium text-gray-900">
+                              {typeof value === 'number' ? value.toLocaleString() : value}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
