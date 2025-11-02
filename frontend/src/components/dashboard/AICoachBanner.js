@@ -249,19 +249,38 @@ const AICoachBanner = () => {
           <div className="mt-4 pt-4 border-t border-purple-300 border-opacity-50">
             <div className="bg-white rounded-lg p-6 border border-purple-100 shadow-sm">
               <div className="prose prose-sm max-w-none">
-                {/* Summary Section */}
-                <div className="mb-4">
-                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base">
-                    {coachData?.summary || coachData?.coaching_text || "No coaching insights available"}
-                  </div>
-                </div>
-
-                {/* Conversational Coaching Section */}
+                {/* Conversational Coaching Paragraph - 4+ sentences */}
                 {coachData?.coaching_advice && (
                   <div className="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                    <p className="text-sm text-gray-800 leading-relaxed italic">
+                    <p className="text-sm text-gray-800 leading-relaxed">
                       💬 {coachData.coaching_advice}
                     </p>
+                  </div>
+                )}
+
+                {/* Stats Section - Your Numbers */}
+                {coachData?.stats && Object.keys(coachData.stats).length > 0 && (
+                  <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-semibold text-sm text-blue-900 mb-2">📊 Your Numbers</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {Object.entries(coachData.stats).map(([key, value]) => {
+                        // Only render primitive values (not objects or arrays)
+                        if (typeof value === 'object' || value === null || value === undefined) {
+                          return null;
+                        }
+                        
+                        return (
+                          <div key={key}>
+                            <span className="text-gray-600">
+                              {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                            </span>{' '}
+                            <span className="font-medium text-gray-900">
+                              {typeof value === 'number' ? value.toLocaleString() : value}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
