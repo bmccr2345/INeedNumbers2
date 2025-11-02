@@ -1,43 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Checkbox } from '../components/ui/checkbox';
-import { Alert, AlertDescription } from '../components/ui/alert';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, Shield } from 'lucide-react';
 import { navigateToHome } from '../utils/navigation';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { login, user } = useAuth();
+  const { loginWithAuth0, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const result = await login(email, password, rememberMe);
-    
-    if (result.success) {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
       navigate(from, { replace: true });
-    } else {
-      setError(result.error);
     }
-    
-    setLoading(false);
+  }, [isAuthenticated, user, navigate, from]);
+
+  const handleAuth0Login = () => {
+    loginWithAuth0({ returnTo: from });
   };
 
   return (
@@ -66,106 +50,82 @@ const LoginPage = () => {
         </div>
 
         <Card className="shadow-xl border-0">
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
-              Enter your email and password to access your account
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl">Secure Sign In</CardTitle>
+            <CardDescription className="text-base">
+              We've upgraded to Auth0 for enhanced security
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800">{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  disabled={loading}
-                />
-              </div>
+          <CardContent className="space-y-6">
+            {/* Main Login Button */}
+            <Button
+              onClick={handleAuth0Login}
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-6 text-lg shadow-lg"
+            >
+              <Lock className="w-5 h-5 mr-2" />
+              Continue with Auth0
+            </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    disabled={loading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-500" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-500" />
-                    )}
-                  </Button>
+            {/* Security Features */}
+            <div className="space-y-3 pt-4 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-3">Why Auth0?</p>
+              
+              <div className="flex items-start space-x-3">
+                <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Bank-level Security</p>
+                  <p className="text-xs text-gray-600">Industry-leading authentication protection</p>
                 </div>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={setRememberMe}
-                  disabled={loading}
-                />
-                <Label htmlFor="remember" className="text-sm">
-                  Remember me for 30 days
-                </Label>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800"
-                disabled={loading}
-              >
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </form>
-
-            <div className="mt-6 space-y-4">
-              <div className="text-center">
-                <Link
-                  to="/auth/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Forgot your password?
-                </Link>
+              
+              <div className="flex items-start space-x-3">
+                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Single Sign-On</p>
+                  <p className="text-xs text-gray-600">One secure login for all your devices</p>
+                </div>
               </div>
               
-              <div className="text-center text-sm text-gray-600">
-                Don't have an account?{' '}
+              <div className="flex items-start space-x-3">
+                <Lock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Your Data Protected</p>
+                  <p className="text-xs text-gray-600">Passwords never stored on our servers</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-900">
+                <strong>New to Auth0?</strong> Don't worry! Click the button above and you'll be able to create an account or sign in securely.
+              </p>
+            </div>
+
+            {/* Footer Links */}
+            <div className="text-center text-sm text-gray-600 space-y-2 pt-4">
+              <p>
+                Need help?{' '}
                 <Link
-                  to="/auth/register"
+                  to="/support"
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Sign up
+                  Contact Support
                 </Link>
-              </div>
+              </p>
             </div>
           </CardContent>
         </Card>
+
+        {/* Additional Info */}
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>By signing in, you agree to our{' '}
+            <Link to="/legal/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link to="/legal/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
