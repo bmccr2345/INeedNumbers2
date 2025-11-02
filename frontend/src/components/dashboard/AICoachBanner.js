@@ -249,9 +249,63 @@ const AICoachBanner = () => {
           <div className="mt-4 pt-4 border-t border-purple-300 border-opacity-50">
             <div className="bg-white rounded-lg p-6 border border-purple-100 shadow-sm">
               <div className="prose prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                  {coachData.coaching_text || coachData.summary || "No coaching insights available"}
+                {/* Summary Section */}
+                <div className="mb-4">
+                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base">
+                    {coachData?.summary || coachData?.coaching_text || "No coaching insights available"}
+                  </div>
                 </div>
+
+                {/* Stats Section */}
+                {coachData?.stats && Object.keys(coachData.stats).length > 0 && (
+                  <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-semibold text-sm text-blue-900 mb-2">📊 Your Numbers</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {Object.entries(coachData.stats).map(([key, value]) => (
+                        <div key={key}>
+                          <span className="text-gray-600">{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>{' '}
+                          <span className="font-medium text-gray-900">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions Section */}
+                {coachData?.actions && coachData.actions.length > 0 && (
+                  <div className="mb-4 p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-semibold text-sm text-green-900 mb-2">✅ Recommended Actions</h4>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      {coachData.actions.map((action, idx) => (
+                        <li key={idx}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Risks Section */}
+                {coachData?.risks && coachData.risks.length > 0 && (
+                  <div className="mb-4 p-4 bg-amber-50 rounded-lg">
+                    <h4 className="font-semibold text-sm text-amber-900 mb-2">⚠️ Areas to Watch</h4>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      {coachData.risks.map((risk, idx) => (
+                        <li key={idx}>{risk}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Next Inputs Section */}
+                {coachData?.next_inputs && coachData.next_inputs.length > 0 && (
+                  <div className="mb-4 p-4 bg-purple-50 rounded-lg">
+                    <h4 className="font-semibold text-sm text-purple-900 mb-2">📝 Next Steps</h4>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      {coachData.next_inputs.map((input, idx) => (
+                        <li key={idx}>{input}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               
               {/* AI Disclaimer */}
