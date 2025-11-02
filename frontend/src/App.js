@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./contexts/AuthContext";
+import { Auth0ProviderWithNavigate } from "./auth/Auth0ProviderWithNavigate";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from 'sonner';
