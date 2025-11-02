@@ -116,24 +116,54 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
                 <p className="text-purple-900 font-medium mb-2">💬 Coach Prompt:</p>
                 <p className="text-purple-800 text-xs italic mb-3">Before we talk numbers, why do you want to grow this year?</p>
                 <div className="flex flex-wrap gap-2">
-                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                  <button 
+                    onClick={() => updateDay1Input('whyGrow', 'Freedom')}
+                    className={`px-3 py-1 border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors ${
+                      day1Inputs.whyGrow === 'Freedom' ? 'bg-purple-200 font-semibold' : 'bg-white'
+                    }`}
+                  >
                     Freedom
                   </button>
-                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                  <button 
+                    onClick={() => updateDay1Input('whyGrow', 'Family')}
+                    className={`px-3 py-1 border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors ${
+                      day1Inputs.whyGrow === 'Family' ? 'bg-purple-200 font-semibold' : 'bg-white'
+                    }`}
+                  >
                     Family
                   </button>
-                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                  <button 
+                    onClick={() => updateDay1Input('whyGrow', 'Stability')}
+                    className={`px-3 py-1 border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors ${
+                      day1Inputs.whyGrow === 'Stability' ? 'bg-purple-200 font-semibold' : 'bg-white'
+                    }`}
+                  >
                     Stability
                   </button>
-                  <button className="px-3 py-1 bg-white border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors">
+                  <button 
+                    onClick={() => updateDay1Input('whyGrow', 'Challenge')}
+                    className={`px-3 py-1 border border-purple-200 rounded-md text-xs hover:bg-purple-100 transition-colors ${
+                      day1Inputs.whyGrow === 'Challenge' ? 'bg-purple-200 font-semibold' : 'bg-white'
+                    }`}
+                  >
                     Challenge
                   </button>
                   <input 
                     type="text" 
                     placeholder="Something else..." 
+                    value={day1Inputs.whyGrowCustom}
+                    onChange={(e) => {
+                      updateDay1Input('whyGrowCustom', e.target.value);
+                      if (e.target.value) updateDay1Input('whyGrow', 'Custom');
+                    }}
                     className="px-3 py-1 border border-purple-200 rounded-md text-xs flex-1 min-w-[120px]"
                   />
                 </div>
+                {(day1Inputs.whyGrow || day1Inputs.whyGrowCustom) && (
+                  <p className="text-purple-700 text-xs mt-2 italic">
+                    ✓ {day1Inputs.whyGrow === 'Custom' ? day1Inputs.whyGrowCustom : day1Inputs.whyGrow}
+                  </p>
+                )}
               </div>
 
               <ul className="space-y-2 ml-4 mt-4">
