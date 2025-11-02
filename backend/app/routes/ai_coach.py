@@ -468,10 +468,23 @@ async def generate_coach(
                     required_keys = ['summary', 'stats', 'actions', 'risks', 'next_inputs']
                     if not all(key in obj for key in required_keys):
                         raise ValueError("Missing required keys")
+                    
+                    # Extract coaching_advice if present, otherwise create from summary
+                    if 'coaching_advice' not in obj:
+                        # Generate a conversational coaching paragraph from the summary
+                        summary = obj.get('summary', '')
+                        if summary:
+                            # Use first 2-3 sentences as coaching advice
+                            sentences = summary.split('. ')
+                            obj['coaching_advice'] = '. '.join(sentences[:2]) + '.' if len(sentences) > 1 else summary
+                        else:
+                            obj['coaching_advice'] = "Keep tracking your activities and reviewing your progress regularly."
+                            
                 except (json.JSONDecodeError, ValueError):
                     # Fallback to structured response
                     obj = {
                         "summary": clean_text.strip()[:200],
+                        "coaching_advice": "Keep logging your daily activities and reviewing your numbers. Consistency is key to reaching your goals.",
                         "stats": {
                             "goals": goals,
                             "recent_activity": activity,
