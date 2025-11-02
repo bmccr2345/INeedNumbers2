@@ -380,7 +380,7 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
         },
         {
           id: 'checkAICoach',
-          title: 'Try the Fairy AI Coach Today',
+          title: 'The Fairy AI Coach is everywhere!',
           description: 'Ask a question or get insights',
           content: (
             <div className="space-y-3 text-sm">
