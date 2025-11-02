@@ -258,8 +258,7 @@ const ProOnboardingWizard = ({ isOpen, onClose, onComplete }) => {
           description: 'Every action moves you closer to your goal',
           content: (
             <div className="space-y-3 text-sm">
-              <p className="font-medium">Every conversation, showing, and follow-up moves you closer to your goal.</p>
-              <p>I Need Numbers turns your activity into insight:</p>
+              <p className="font-medium">I Need Numbers turns your activity into insight:</p>
               
               <div className="bg-gray-50 p-3 rounded-lg my-3">
                 <p className="font-medium text-emerald-700">📊 The Flow:</p>
