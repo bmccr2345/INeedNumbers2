@@ -4136,11 +4136,12 @@ async def assign_plan_to_user(request: Request):
         clerk_plan_key = plan_mapping[plan]
         
         # Update Clerk metadata
+        # For now, all plans are active immediately (payment integration can be added later)
         updated_user = await clerk_billing_client.update_user_metadata(
             user_id=clerk_user_id,
             public_metadata={
                 "plan": clerk_plan_key,
-                "subscription_status": "inactive" if plan != "free" else "active",
+                "subscription_status": "active",  # All plans active for now
                 "assigned_at": datetime.now(timezone.utc).isoformat()
             }
         )
