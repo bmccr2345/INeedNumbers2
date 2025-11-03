@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from app.deps import get_settings
-from app.auth import get_current_user_unified, require_plan_unified
+from app.clerk_auth import get_current_user_unified, require_plan_unified
 from app.ai import make_cache_key, get_cache, set_cache, check_rate_limit
 from app.data_views import fetch_goal_settings, fetch_activity_log, fetch_reflection_log, fetch_pnl_summary
 from app.prompts import coach_system_prompt
