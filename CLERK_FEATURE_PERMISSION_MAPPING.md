@@ -3,6 +3,8 @@
 ## Overview
 This document maps "I Need Numbers" features to Clerk's permission/feature system for granular access control based on subscription plans.
 
+**IMPORTANT**: Clerk feature keys use underscores (`_`) not colons (`:`)
+
 ---
 
 ## Clerk Features/Permissions Structure
@@ -19,137 +21,137 @@ This document maps "I Need Numbers" features to Clerk's permission/feature syste
 
 ### 1. Calculator Access Features
 
-#### Feature: `calculator:basic`
+#### Feature: `calculator_basic`
 **Plans**: FREE, STARTER, PRO  
 **Description**: Access to view and use calculators  
-**Key**: `calculator:basic`  
+**Key**: `calculator_basic`  
 **Permissions**:
-- `calculator:commission_split:view`
-- `calculator:net_sheet:view`
-- `calculator:affordability:view`
-- `calculator:closing_date:view`
+- `calculator_commission_split_view`
+- `calculator_net_sheet_view`
+- `calculator_affordability_view`
+- `calculator_closing_date_view`
 
 ---
 
 ### 2. Deal Management Features
 
-#### Feature: `deals:save`
+#### Feature: `deals_save`
 **Plans**: STARTER, PRO  
 **Description**: Ability to save deal calculations  
-**Key**: `deals:save`  
+**Key**: `deals_save`  
 **Permissions**:
-- `deal:create`
-- `deal:read`
-- `deal:update`
-- `deal:delete`
+- `deal_create`
+- `deal_read`
+- `deal_update`
+- `deal_delete`
 
 **Limits**:
 - STARTER: max 10 deals
 - PRO: unlimited
 
-#### Feature: `deals:share`
+#### Feature: `deal_share`
 **Plans**: STARTER, PRO  
 **Description**: Share deals via links with clients  
-**Key**: `deals:share`  
+**Key**: `deal_share`  
 **Permissions**:
-- `deal:share:create_link`
-- `deal:share:view_shared`
+- `deal_share_create_link`
+- `deal_share_view_shared`
 
 ---
 
 ### 3. Portfolio Features
 
-#### Feature: `portfolio:basic`
+#### Feature: `portfolio_basic`
 **Plans**: STARTER  
 **Description**: Create and manage 1 portfolio  
-**Key**: `portfolio:basic`  
+**Key**: `portfolio_basic`  
 **Permissions**:
-- `portfolio:create` (max 1)
-- `portfolio:read`
-- `portfolio:update`
-- `portfolio:delete`
+- `portfolio_create` (max 1)
+- `portfolio_read`
+- `portfolio_update`
+- `portfolio_delete`
 
-#### Feature: `portfolio:unlimited`
+#### Feature: `portfolio_unlimited`
 **Plans**: PRO  
 **Description**: Create unlimited portfolios  
-**Key**: `portfolio:unlimited`  
+**Key**: `portfolio_unlimited`  
 **Permissions**:
-- `portfolio:create` (unlimited)
-- `portfolio:read`
-- `portfolio:update`
-- `portfolio:delete`
+- `portfolio_create` (unlimited)
+- `portfolio_read`
+- `portfolio_update`
+- `portfolio_delete`
 
 ---
 
 ### 4. Branding & PDF Features
 
-#### Feature: `branding:custom`
+#### Feature: `branding_custom`
 **Plans**: STARTER, PRO  
 **Description**: Create branded PDFs with custom logo  
-**Key**: `branding:custom`  
+**Key**: `branding_custom`  
 **Permissions**:
-- `pdf:generate_branded`
-- `branding:upload_logo`
-- `branding:set_colors`
-- `branding:create_profile`
+- `pdf_generate_branded`
+- `branding_upload_logo`
+- `branding_set_colors`
+- `branding_create_profile`
 
-#### Feature: `branding:multi_profile`
+#### Feature: `branding_multi_profile`
 **Plans**: PRO  
 **Description**: Multiple branding profiles  
-**Key**: `branding:multi_profile`  
+**Key**: `branding_multi_profile`  
 **Permissions**:
-- `branding:create_profile` (unlimited)
-- `branding:switch_profile`
-- `branding:manage_profiles`
+- `branding_create_profile` (unlimited)
+- `branding_switch_profile`
+- `branding_manage_profiles`
 
 ---
 
 ### 5. P&L Tracker Features
 
-#### Feature: `pnl:tracker`
+#### Feature: `pnl_tracker`
 **Plans**: PRO  
 **Description**: Agent P&L business tracker  
-**Key**: `pnl:tracker`  
+**Key**: `pnl_tracker`  
 **Permissions**:
-- `pnl:view_dashboard`
-- `pnl:add_income`
-- `pnl:add_expense`
-- `pnl:view_reports`
-- `pnl:set_goals`
+- `pnl_view_dashboard`
+- `pnl_add_income`
+- `pnl_add_expense`
+- `pnl_view_reports`
+- `pnl_set_goals`
 
 ---
 
 ### 6. Export & Reporting Features
 
-#### Feature: `reports:export`
+#### Feature: `reports_export`
 **Plans**: PRO  
 **Description**: Export reports to PDF/Excel  
-**Key**: `reports:export`  
+**Key**: `reports_export`  
 **Permissions**:
-- `report:export_pdf`
-- `report:export_excel`
-- `report:download`
+- `report_export_pdf`
+- `report_export_excel`
+- `report_download`
 
-#### Feature: `reports:projections`
+#### Feature: `reports_projections`
 **Plans**: PRO  
 **Description**: 5-year financial projections  
-**Key**: `reports:projections`  
+**Key**: `reports_projections`  
 **Permissions**:
-- `projection:view`
-- `projection:generate`
-- `projection:export`
+- `projection_view`
+- `projection_generate`
+- `projection_export`
 
 ---
 
 ### 7. Advanced Features
 
-#### Feature: `advanced:url_prefill`
+#### Feature: `advanced_url_prefill`
 **Plans**: PRO  
 **Description**: Auto-fill from MLS URLs  
-**Key**: `advanced:url_prefill`  
+**Key**: `advanced_url_prefill`  
 **Permissions**:
-- `calculator:prefill_from_url`
-- `listing:import_data`
+- `calculator_prefill_from_url`
+- `listing_import_data`
 
 ---
 
@@ -157,17 +159,36 @@ This document maps "I Need Numbers" features to Clerk's permission/feature syste
 
 | Feature Key | FREE | STARTER | PRO | Limit |
 |-------------|------|---------|-----|-------|
-| `calculator:basic` | ✅ | ✅ | ✅ | View only (FREE) |
-| `deals:save` | ❌ | ✅ | ✅ | 0 / 10 / Unlimited |
-| `deals:share` | ❌ | ✅ | ✅ | - |
-| `portfolio:basic` | ❌ | ✅ | ❌ | Max 1 |
-| `portfolio:unlimited` | ❌ | ❌ | ✅ | Unlimited |
-| `branding:custom` | ❌ | ✅ | ✅ | - |
-| `branding:multi_profile` | ❌ | ❌ | ✅ | Unlimited profiles |
-| `pnl:tracker` | ❌ | ❌ | ✅ | - |
-| `reports:export` | ❌ | ❌ | ✅ | - |
-| `reports:projections` | ❌ | ❌ | ✅ | 5-year |
-| `advanced:url_prefill` | ❌ | ❌ | ✅ | - |
+| `calculator_basic` | ✅ | ✅ | ✅ | View only (FREE) |
+| `deals_save` | ❌ | ✅ | ✅ | 0 / 10 / Unlimited |
+| `deal_share` | ❌ | ✅ | ✅ | - |
+| `portfolio_basic` | ❌ | ✅ | ❌ | Max 1 |
+| `portfolio_unlimited` | ❌ | ❌ | ✅ | Unlimited |
+| `branding_custom` | ❌ | ✅ | ✅ | - |
+| `branding_multi_profile` | ❌ | ❌ | ✅ | Unlimited profiles |
+| `pnl_tracker` | ❌ | ❌ | ✅ | - |
+| `reports_export` | ❌ | ❌ | ✅ | - |
+| `reports_projections` | ❌ | ❌ | ✅ | 5-year |
+| `advanced_url_prefill` | ❌ | ❌ | ✅ | - |
+
+---
+
+## Your Current Clerk Setup (From Screenshot)
+
+✅ **Already Created:**
+1. `calculator_basic` - access to all calculators
+2. `deal_share` - ability to share a deal PDF - for Start and Pro
+3. `deals_save` - save deals - only available in Starter and Pro
+4. `pnl_tracker` - Pro only - P&L
+
+**Still Need to Create:**
+5. `portfolio_basic` (STARTER)
+6. `portfolio_unlimited` (PRO)
+7. `branding_custom` (STARTER, PRO)
+8. `branding_multi_profile` (PRO)
+9. `reports_export` (PRO)
+10. `reports_projections` (PRO)
+11. `advanced_url_prefill` (PRO)
 
 ---
 
