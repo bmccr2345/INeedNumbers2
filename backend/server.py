@@ -3896,6 +3896,139 @@ async def verify_auth0_token(token = Depends(HTTPBearer(auto_error=False))):
 # End Auth0 Authentication Endpoints
 # ============================================================================
 
+# ============================================================================
+# Clerk Authentication Endpoints (New Authentication System)
+# ============================================================================
+
+@api_router.post("/clerk/sync-user")
+async def sync_clerk_user(request: Request):
+    """
+    Sync Clerk user with MongoDB application data.
+    Creates or updates user record in MongoDB.
+    """
+    try:
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        email = body.get("email")
+        full_name = body.get("full_name", "")
+        
+        if not clerk_user_id or not email:
+            raise HTTPException(status_code=400, detail="clerk_user_id and email are required")
+        
+        # Check if user exists
+        existing_user = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        
+        if existing_user:
+            # Update existing user
+            await db.users.update_one(
+                {"clerk_user_id": clerk_user_id},
+                {
+                    "$set": {
+                        "email": email,
+                        "full_name": full_name,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            return JSONResponse({
+                "id": existing_user["id"],
+                "email": email,
+                "full_name": full_name,
+                "plan": existing_user.get("plan", "FREE"),
+                "role": existing_user.get("role", "user"),
+                "status": existing_user.get("status", "active"),
+                "deals_count": existing_user.get("deals_count", 0),
+                "created_at": existing_user.get("created_at"),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            })
+        else:
+            # Check if user exists by email (linking old account)
+            email_user = await db.users.find_one({"email": email})
+            if email_user:
+                # Link Clerk ID to existing account
+                await db.users.update_one(
+                    {"email": email},
+                    {
+                        "$set": {
+                            "clerk_user_id": clerk_user_id,
+                            "full_name": full_name,
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                return JSONResponse({
+                    "id": email_user["id"],
+                    "email": email,
+                    "full_name": full_name,
+                    "plan": email_user.get("plan", "FREE"),
+                    "role": email_user.get("role", "user"),
+                    "status": email_user.get("status", "active"),
+                    "deals_count": email_user.get("deals_count", 0),
+                    "created_at": email_user.get("created_at"),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                })
+            
+            # Create new user
+            new_user_id = str(uuid.uuid4())
+            new_user = {
+                "id": new_user_id,
+                "email": email,
+                "full_name": full_name,
+                "clerk_user_id": clerk_user_id,
+                "plan": "FREE",
+                "role": "user",
+                "status": "active",
+                "deals_count": 0,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(new_user)
+            
+            logger.info(f"New Clerk user created: {clerk_user_id} ({email})")
+            return JSONResponse({
+                "id": new_user_id,
+                "email": email,
+                "full_name": full_name,
+                "plan": "FREE",
+                "role": "user",
+                "status": "active",
+                "deals_count": 0,
+                "created_at": new_user["created_at"],
+                "updated_at": new_user["updated_at"]
+            })
+    except Exception as e:
+        logger.error(f"Error syncing Clerk user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/clerk/me/{clerk_user_id}")
+async def get_clerk_user(clerk_user_id: str):
+    """Get user profile by Clerk user ID"""
+    try:
+        user = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return JSONResponse({
+            "id": user["id"],
+            "email": user.get("email"),
+            "full_name": user.get("full_name", ""),
+            "plan": user.get("plan", "FREE"),
+            "role": user.get("role", "user"),
+            "status": user.get("status", "active"),
+            "deals_count": user.get("deals_count", 0),
+            "created_at": user.get("created_at"),
+            "updated_at": user.get("updated_at")
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching Clerk user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# End Clerk Authentication Endpoints
+# ============================================================================
+
 # Closing Date Calculator Models
 class ClosingDateCalculatorInput(BaseModel):
     underContractDate: str
