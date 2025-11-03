@@ -318,6 +318,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Get current plan from Clerk or user object
+  const getCurrentPlan = () => {
+    if (isSignedIn && clerkUser?.publicMetadata?.plan) {
+      const clerkPlanKey = clerkUser.publicMetadata.plan;
+      const planMapping = {
+        'free_user': 'FREE',
+        'starter': 'STARTER',
+        'pro': 'PRO'
+      };
+      return planMapping[clerkPlanKey] || 'FREE';
+    }
+    return user?.plan || 'FREE';
+  };
+
+  // Check if user has active subscription
+  const hasActiveSubscription = () => {
+    if (!isSignedIn || !clerkUser) return false;
+    const plan = getCurrentPlan();
+    const planStatus = clerkUser.publicMetadata?.plan_status || 'active';
+    return plan !== 'FREE' && planStatus === 'active';
+  };
+
   const value = {
     user,
     loading: loading || !isLoaded,
