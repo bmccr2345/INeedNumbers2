@@ -147,40 +147,29 @@ const PricingPage = () => {
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white">
                     Most Popular
                   </Badge>
-                )}
-                {plan.current && !plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white">
-                    Current Plan
-                  </Badge>
-                )}
-                
-                <CardHeader className="text-center">
-                  <CardTitle id={`plan-${plan.name.toLowerCase()}`} className="text-2xl font-bold text-deep-forest font-poppins">
-                    {plan.name}
-                  </CardTitle>
-                  <div className="space-y-2">
-                    <div className="text-4xl font-bold text-deep-forest">
-                      {plan.price}
-                      <span className="text-lg font-normal text-neutral-dark">/{plan.period}</span>
-                    </div>
-                    <CardDescription className="text-sm">{plan.description}</CardDescription>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-6 flex-grow flex flex-col">
-                  <ul className="space-y-3 flex-grow" role="list">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start space-x-3">
-                        <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
-                        <span className="text-neutral-dark text-sm leading-relaxed">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full font-poppins ${
-                      plan.popular 
+        {/* Pricing Cards */}
+        <ClerkPricingTable />
+
         {/* Additional Info */}
+        <div className="mt-16 text-center max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-deep-forest mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4 text-left">
+            <div>
+              <h3 className="font-semibold text-deep-forest">Can I cancel anytime?</h3>
+              <p className="text-neutral-dark">Yes! You can cancel your subscription at any time from your account settings. Your access will continue until the end of your billing period.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-deep-forest">What happens to my data if I downgrade?</h3>
+              <p className="text-neutral-dark">All your saved data is preserved. You'll have read-only access to deals that exceed the plan limits.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-deep-forest">Do you offer refunds?</h3>
+              <p className="text-neutral-dark">We offer a 30-day money-back guarantee. If you're not satisfied, contact support for a full refund.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Cancellation Policy */}
         <div className="text-center mt-12 space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-2xl mx-auto">
             <h3 className="font-semibold text-green-900 mb-2">Flexible Cancellation Policy</h3>
