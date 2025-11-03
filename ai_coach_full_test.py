@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timedelta
 
 class AICoachFullTester:
-    def __init__(self, base_url="https://realestate-numbers.preview.emergentagent.com"):
+    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         

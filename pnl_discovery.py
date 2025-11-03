@@ -9,7 +9,7 @@ import json
 
 def test_pnl_endpoint(endpoint, method="GET", data=None, auth_token=None):
     """Test a single P&L endpoint"""
-    base_url = "https://realestate-numbers.preview.emergentagent.com"
+    base_url = "https://authflow-fix-4.preview.emergentagent.com"
     url = f"{base_url}/{endpoint}"
     
     headers = {'Content-Type': 'application/json'}
