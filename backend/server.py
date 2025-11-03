@@ -4161,6 +4161,7 @@ async def assign_plan_to_user(request: Request):
         )
         
         logger.info(f"Assigned plan '{plan}' to Clerk user {clerk_user_id}")
+        logger.info(f"[ASSIGN-PLAN] Successfully assigned plan. MongoDB updated: clerk_user_id={clerk_user_id}, plan={internal_plan}")
         
         return JSONResponse({
             "success": True,
