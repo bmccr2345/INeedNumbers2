@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         try {
           // Get plan from Clerk public metadata
           const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
-          const clerkPlanStatus = clerkUser.publicMetadata?.plan_status || 'active';
+          const clerkPlanStatus = clerkUser.publicMetadata?.subscription_status || 'active';
           
           // Map Clerk plan keys to our internal plan names
           const planMapping = {
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
             full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
             metadata: {
               plan: mappedPlan,
-              plan_status: clerkPlanStatus,
+              plan_status: clerkPlanStatus,  // Send as plan_status for backend compatibility
               clerk_plan_key: clerkPlanKey
             }
           }, {
