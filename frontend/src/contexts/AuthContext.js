@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import safeLocalStorage from '../utils/safeStorage';
 
 const AuthContext = createContext();
@@ -19,61 +18,51 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
   
-  // Get Auth0 authentication state
-  const {
-    isAuthenticated: isAuth0Authenticated,
-    user: auth0User,
-    isLoading: isAuth0Loading,
-    getAccessTokenSilently,
-    loginWithRedirect,
-    logout: auth0Logout
-  } = useAuth0();
+  // Get Clerk authentication state
+  const { isSignedIn, user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
-  // Configure axios for cookie-based authentication (legacy)
+  // Configure axios for cookie-based authentication (legacy fallback)
   useEffect(() => {
     axios.defaults.withCredentials = true;
   }, []);
 
   // Check authentication status on app load
   useEffect(() => {
-    checkAuth();
-  }, [isAuth0Authenticated, auth0User]);
+    if (isLoaded) {
+      checkAuth();
+    }
+  }, [isLoaded, isSignedIn, clerkUser]);
 
   const checkAuth = async () => {
     try {
-      // If Auth0 is authenticated, sync with backend
-      if (isAuth0Authenticated && auth0User) {
-        console.log('[AuthContext] Auth0 user authenticated:', auth0User.email);
+      // If Clerk is signed in, sync with backend
+      if (isSignedIn && clerkUser) {
+        console.log('[AuthContext] Clerk user authenticated:', clerkUser.primaryEmailAddress?.emailAddress);
         
         try {
-          // Get Auth0 access token
-          const token = await getAccessTokenSilently({
-            authorizationParams: {
-              audience: process.env.REACT_APP_AUTH0_AUDIENCE
-            }
-          });
-          
-          // Fetch user profile from backend using Auth0 token
-          const response = await axios.get(`${backendUrl}/api/auth0/me`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+          // Sync Clerk user with backend
+          const response = await axios.post(`${backendUrl}/api/clerk/sync-user`, {
+            clerk_user_id: clerkUser.id,
+            email: clerkUser.primaryEmailAddress?.emailAddress,
+            full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim()
+          }, {
+            withCredentials: true
           });
           
           const userData = response.data;
-          console.log('[AuthContext] Auth0 user profile fetched:', userData.email);
+          console.log('[AuthContext] Clerk user profile synced:', userData.email);
           
           setUser(userData);
           setLoading(false);
           return;
         } catch (error) {
-          console.error('[AuthContext] Failed to fetch Auth0 user profile:', error);
-          // Fall through to try legacy auth
+          console.error('[AuthContext] Failed to sync Clerk user:', error);
         }
       }
       
       // Fallback to legacy cookie-based authentication
-      if (!isAuth0Authenticated || !auth0User) {
+      if (!isSignedIn) {
         console.log('[AuthContext] Checking legacy authentication...');
         try {
           const response = await axios.get(`${backendUrl}/api/auth/me`);
@@ -138,20 +127,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Auth0 login (new method)
-  const loginWithAuth0 = async (options = {}) => {
-    try {
-      await loginWithRedirect({
-        appState: { returnTo: options.returnTo || window.location.pathname },
-        ...options
-      });
-    } catch (error) {
-      console.error('[AuthContext] Auth0 login failed:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Legacy register function (deprecated with Auth0)
+  // Legacy register function (deprecated with Clerk)
   const register = async (email, password, fullName = '') => {
     try {
       const response = await axios.post(`${backendUrl}/api/auth/register`, {
@@ -190,13 +166,9 @@ export const AuthProvider = ({ children }) => {
   // Unified logout function
   const logout = async () => {
     try {
-      // If using Auth0, logout from Auth0
-      if (isAuth0Authenticated) {
-        await auth0Logout({
-          logoutParams: {
-            returnTo: window.location.origin
-          }
-        });
+      // If using Clerk, sign out from Clerk
+      if (isSignedIn) {
+        await signOut();
       } else {
         // Legacy logout
         await axios.post(`${backendUrl}/api/auth/logout`, {}, {
@@ -212,16 +184,8 @@ export const AuthProvider = ({ children }) => {
 
   const deleteAccount = async (confirmation) => {
     try {
-      // Get token if using Auth0
-      let headers = {};
-      if (isAuth0Authenticated) {
-        const token = await getAccessTokenSilently();
-        headers.Authorization = `Bearer ${token}`;
-      }
-      
       await axios.delete(`${backendUrl}/api/auth/delete-account`, {
-        data: { confirmation },
-        headers
+        data: { confirmation }
       });
       
       logout();
@@ -250,46 +214,25 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      // Get token if using Auth0
-      let headers = {};
-      if (isAuth0Authenticated) {
-        const token = await getAccessTokenSilently();
-        headers.Authorization = `Bearer ${token}`;
+      if (isSignedIn && clerkUser) {
+        // Refresh from backend
+        const response = await axios.get(`${backendUrl}/api/clerk/me/${clerkUser.id}`);
+        setUser(response.data);
+      } else {
+        const response = await axios.get(`${backendUrl}/api/auth/me`);
+        setUser(response.data);
       }
-      
-      const response = await axios.get(`${backendUrl}/api/auth/me`, { headers });
-      setUser(response.data);
     } catch (error) {
       console.error('Failed to refresh user:', error);
     }
   };
 
-  // Helper to get auth headers for API calls
-  const getAuthHeaders = async () => {
-    if (isAuth0Authenticated) {
-      try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: process.env.REACT_APP_AUTH0_AUDIENCE
-          }
-        });
-        return { Authorization: `Bearer ${token}` };
-      } catch (error) {
-        console.error('Failed to get Auth0 token:', error);
-        return {};
-      }
-    }
-    // Legacy: cookies are sent automatically with withCredentials
-    return {};
-  };
-
   const createCheckoutSession = async (plan) => {
     try {
-      const headers = await getAuthHeaders();
       const response = await axios.post(`${backendUrl}/api/stripe/checkout`, {
         plan,
         origin_url: window.location.origin
-      }, { headers });
+      });
       
       return { success: true, url: response.data.url };
     } catch (error) {
@@ -303,8 +246,7 @@ export const AuthProvider = ({ children }) => {
 
   const createCustomerPortal = async () => {
     try {
-      const headers = await getAuthHeaders();
-      const response = await axios.post(`${backendUrl}/api/stripe/portal`, {}, { headers });
+      const response = await axios.post(`${backendUrl}/api/stripe/portal`, {});
       return { success: true, url: response.data.url };
     } catch (error) {
       console.error('Customer portal creation failed:', error);
@@ -317,8 +259,7 @@ export const AuthProvider = ({ children }) => {
 
   const exportUserData = async () => {
     try {
-      const headers = await getAuthHeaders();
-      const response = await axios.get(`${backendUrl}/api/user/export`, { headers });
+      const response = await axios.get(`${backendUrl}/api/user/export`);
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Data export failed:', error);
@@ -359,9 +300,8 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    loading: loading || isAuth0Loading,
+    loading: loading || !isLoaded,
     login,
-    loginWithAuth0,
     register,
     logout,
     deleteAccount,
@@ -370,10 +310,10 @@ export const AuthProvider = ({ children }) => {
     createCustomerPortal,
     exportUserData,
     isAuthenticated: !!user,
-    isAuth0: isAuth0Authenticated,
+    isClerk: isSignedIn,
+    clerkUser,
     getPlanLimits,
-    canPerformAction,
-    getAuthHeaders // Export for use in components
+    canPerformAction
   };
 
   return (
