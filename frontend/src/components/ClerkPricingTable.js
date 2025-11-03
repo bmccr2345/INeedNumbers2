@@ -25,11 +25,19 @@ const ClerkPricingTable = () => {
   const handleSubscribe = (planKey) => {
     // If user is not signed in, redirect to sign up with plan context
     if (!isSignedIn) {
-      // Store selected plan in localStorage so we can redirect after signup
-      if (planKey !== 'free_user') {
-        localStorage.setItem('selected_plan', planKey);
-      }
-      navigate('/auth/register', { state: { selectedPlan: planKey } });
+      // Store selected plan in localStorage for post-signup flow
+      const planMap = {
+        'free_user': 'free',
+        'starter': 'starter',
+        'pro': 'pro'
+      };
+      const normalizedPlan = planMap[planKey] || 'free';
+      localStorage.setItem('selected_plan', normalizedPlan);
+      
+      console.log('[ClerkPricingTable] Selected plan stored:', normalizedPlan);
+      
+      // Redirect to register page with plan in URL
+      navigate(`/auth/register?plan=${normalizedPlan}`);
       return;
     }
 
@@ -39,19 +47,8 @@ const ClerkPricingTable = () => {
       return;
     }
 
-    // For paid plans, open Clerk's user profile with billing
-    if (clerk && clerk.openUserProfile) {
-      clerk.openUserProfile({
-        appearance: {
-          elements: {
-            rootBox: "mx-auto"
-          }
-        }
-      });
-    } else {
-      // Fallback: Navigate to account page
-      navigate('/account');
-    }
+    // For paid plans when user is already signed in, redirect to subscription setup
+    navigate('/subscription-setup');
   };
 
   const plans = [
