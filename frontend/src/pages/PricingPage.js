@@ -116,13 +116,27 @@ const PricingPage = () => {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {pricingPlans.map((plan, index) => (
-            <section 
-              key={index} 
-              aria-labelledby={`plan-${plan.name.toLowerCase()}`}
-              className={`relative ${
-                plan.popular ? 'order-first md:order-none' : ''
+        <ClerkPricingTable />
+
+        {/* Additional Info */}
+        <div className="mt-16 text-center max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-deep-forest mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4 text-left">
+            <div>
+              <h3 className="font-semibold text-deep-forest">Can I cancel anytime?</h3>
+              <p className="text-neutral-dark">Yes! You can cancel your subscription at any time from your account settings. Your access will continue until the end of your billing period.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-deep-forest">What happens to my data if I downgrade?</h3>
+              <p className="text-neutral-dark">All your saved data is preserved. You'll have read-only access to deals that exceed the plan limits.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-deep-forest">Do you offer refunds?</h3>
+              <p className="text-neutral-dark">We offer a 30-day money-back guarantee. If you're not satisfied, contact support for a full refund.</p>
+            </div>
+          </div>
+        </div>
+      </div>
               }`}
             >
               <Card className={`relative border-2 h-full flex flex-col ${
