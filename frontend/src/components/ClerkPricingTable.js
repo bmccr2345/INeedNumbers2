@@ -1,13 +1,15 @@
 import React from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { CheckCircle, Sparkles } from 'lucide-react';
 
 const ClerkPricingTable = () => {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const clerk = useClerk();
+  const navigate = useNavigate();
 
   if (!isLoaded) {
     return <div className="text-center py-8">Loading plans...</div>;
@@ -16,7 +18,19 @@ const ClerkPricingTable = () => {
   const currentPlan = user?.publicMetadata?.plan || 'free_user';
 
   const handleSubscribe = (planKey) => {
-    // Open Clerk's user profile with billing tab
+    // If user is not signed in, redirect to sign up
+    if (!isSignedIn) {
+      navigate('/auth/login');
+      return;
+    }
+
+    // If clicking on Free plan, just navigate to dashboard
+    if (planKey === 'free_user') {
+      navigate('/dashboard');
+      return;
+    }
+
+    // For paid plans, open Clerk's user profile with billing
     if (clerk && clerk.openUserProfile) {
       clerk.openUserProfile({
         appearance: {
@@ -27,7 +41,7 @@ const ClerkPricingTable = () => {
       });
     } else {
       // Fallback: Navigate to account page
-      window.location.href = '/account';
+      navigate('/account');
     }
   };
 
@@ -44,7 +58,7 @@ const ClerkPricingTable = () => {
         'Mortgage & Affordability Calculator',
         'Basic calculations and results'
       ],
-      cta: 'Current Plan',
+      cta: 'Get Started',
       popular: false
     },
     {
@@ -60,7 +74,7 @@ const ClerkPricingTable = () => {
         'Branded PDF reports',
         'Portfolio basics'
       ],
-      cta: 'Upgrade to Starter',
+      cta: 'Buy Now',
       popular: false,
       trial: '30 days free trial'
     },
@@ -80,7 +94,7 @@ const ClerkPricingTable = () => {
         'Multi-brand profiles',
         'All future Pro features'
       ],
-      cta: 'Upgrade to Pro',
+      cta: 'Buy Now',
       popular: true,
       trial: '30 days free trial'
     }
@@ -146,7 +160,7 @@ const ClerkPricingTable = () => {
                     : 'bg-neutral-medium hover:bg-neutral-dark text-white'
                 } ${isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isCurrent ? plan.cta : isUpgrade ? plan.cta : 'Get Started'}
+                {isCurrent ? 'Current Plan' : plan.cta}
               </Button>
             </CardContent>
           </Card>
