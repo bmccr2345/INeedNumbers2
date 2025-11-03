@@ -300,6 +300,33 @@ const HomepagePanel = () => {
     <div className="h-full overflow-y-auto bg-gray-50">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         
+        {/* Plan Indicator Badge */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+            <p className="text-gray-600 text-sm mt-1">Welcome back! Here's what's happening with your business.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {user?.plan === 'PRO' && (
+              <Badge className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-2 text-sm font-semibold shadow-lg">
+                <Sparkles className="w-4 h-4 mr-1.5 inline" />
+                PRO Plan
+              </Badge>
+            )}
+            {user?.plan === 'STARTER' && (
+              <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 text-sm font-semibold shadow-lg">
+                <Zap className="w-4 h-4 mr-1.5 inline" />
+                STARTER Plan
+              </Badge>
+            )}
+            {user?.plan === 'FREE' && (
+              <Badge className="bg-gray-500 text-white px-4 py-2 text-sm font-semibold">
+                FREE Plan
+              </Badge>
+            )}
+          </div>
+        </div>
+        
         {/* Header section removed - now handled in conditional content below */}
 
         {/* Conditional Content Based on User Plan */}
