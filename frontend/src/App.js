@@ -80,12 +80,12 @@ function App() {
       <HelmetProvider>
         <PerformanceMonitor />
         <Toaster position="top-right" richColors />
-        <BrowserRouter future={{
-          v7_relativeSplatPath: true,
-          v7_startTransition: true,
-          v7_fetcherPersist: true
-        }}>
-          <Auth0ProviderWithNavigate>
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+          <BrowserRouter future={{
+            v7_relativeSplatPath: true,
+            v7_startTransition: true,
+            v7_fetcherPersist: true
+          }}>
             <AuthProvider>
               <Routes>
               <Route path="/" element={<HomePage />} />
@@ -131,8 +131,8 @@ function App() {
               <Route path="/app/admin" element={<AdminConsolePage />} />
             </Routes>
           </AuthProvider>
-        </Auth0ProviderWithNavigate>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ClerkProvider>
       </HelmetProvider>
     </div>
   );
