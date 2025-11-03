@@ -50,7 +50,7 @@ const LoginPage = () => {
             routing="path"
             path="/auth/login"
             signUpUrl="/auth/register"
-            redirectUrl={from}
+            fallbackRedirectUrl={from}
             appearance={{
               elements: {
                 rootBox: "mx-auto",
