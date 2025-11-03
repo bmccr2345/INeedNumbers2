@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 class DeploymentReadinessVerifier:
-    def __init__(self, base_url="https://realestate-numbers.preview.emergentagent.com"):
+    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

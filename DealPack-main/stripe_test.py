@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 
 class StripeIntegrationTester:
-    def __init__(self, base_url="https://realestate-numbers.preview.emergentagent.com"):
+    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -113,7 +113,7 @@ class StripeIntegrationTester:
         """Test Stripe checkout session creation for Starter plan"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://realestate-numbers.preview.emergentagent.com"
+            "origin_url": "https://authflow-fix-4.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -146,7 +146,7 @@ class StripeIntegrationTester:
         """Test Stripe checkout session creation for Pro plan"""
         checkout_data = {
             "plan": "pro",
-            "origin_url": "https://realestate-numbers.preview.emergentagent.com"
+            "origin_url": "https://authflow-fix-4.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -179,7 +179,7 @@ class StripeIntegrationTester:
         """Test Stripe checkout with invalid plan"""
         checkout_data = {
             "plan": "invalid_plan",
-            "origin_url": "https://realestate-numbers.preview.emergentagent.com"
+            "origin_url": "https://authflow-fix-4.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -195,7 +195,7 @@ class StripeIntegrationTester:
         """Test Stripe checkout without authentication"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://realestate-numbers.preview.emergentagent.com"
+            "origin_url": "https://authflow-fix-4.preview.emergentagent.com"
         }
         
         return self.run_test(
