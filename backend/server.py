@@ -3906,6 +3906,8 @@ async def sync_clerk_user(request: Request):
     Sync Clerk user with MongoDB application data.
     Creates or updates user record in MongoDB.
     Reads plan from Clerk public metadata.
+    
+    NOTE: MongoDB is optional - if unavailable, returns plan from Clerk metadata.
     """
     try:
         body = await request.json()
@@ -3931,73 +3933,95 @@ async def sync_clerk_user(request: Request):
         if not clerk_user_id or not email:
             raise HTTPException(status_code=400, detail="clerk_user_id and email are required")
         
-        # Check if user exists
-        existing_user = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        # Try MongoDB sync, but don't fail if MongoDB is unavailable
+        user_data = {
+            "id": str(uuid.uuid4()),  # Generate ID upfront
+            "email": email,
+            "full_name": full_name,
+            "clerk_user_id": clerk_user_id,
+            "plan": clerk_plan,
+            "role": "user",
+            "status": "active",
+            "deals_count": 0,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
         
-        if existing_user:
-            # Update existing user
-            await db.users.update_one(
-                {"clerk_user_id": clerk_user_id},
-                {
-                    "$set": {
-                        "email": email,
-                        "full_name": full_name,
-                        "plan": clerk_plan,
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }
-                }
-            )
-            logger.info(f"Updated Clerk user: {clerk_user_id} with plan: {clerk_plan}")
-            return JSONResponse({
-                "id": existing_user["id"],
-                "email": email,
-                "full_name": full_name,
-                "plan": clerk_plan,
-                "role": existing_user.get("role", "user"),
-                "status": existing_user.get("status", "active"),
-                "deals_count": existing_user.get("deals_count", 0),
-                "created_at": existing_user.get("created_at"),
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            })
-        else:
-            # Check if user exists by email (linking old account)
-            email_user = await db.users.find_one({"email": email})
-            if email_user:
-                # Link Clerk ID to existing account and update plan
+        try:
+            # Check if user exists
+            existing_user = await db.users.find_one({"clerk_user_id": clerk_user_id})
+            
+            if existing_user:
+                # Update existing user
                 await db.users.update_one(
-                    {"email": email},
+                    {"clerk_user_id": clerk_user_id},
                     {
                         "$set": {
-                            "clerk_user_id": clerk_user_id,
+                            "email": email,
                             "full_name": full_name,
                             "plan": clerk_plan,
                             "updated_at": datetime.now(timezone.utc).isoformat()
                         }
                     }
                 )
-                logger.info(f"Linked existing user to Clerk: {email} with plan: {clerk_plan}")
-                return JSONResponse({
-                    "id": email_user["id"],
+                logger.info(f"Updated Clerk user: {clerk_user_id} with plan: {clerk_plan}")
+                user_data = {
+                    "id": existing_user["id"],
                     "email": email,
                     "full_name": full_name,
                     "plan": clerk_plan,
-                    "role": email_user.get("role", "user"),
-                    "status": email_user.get("status", "active"),
-                    "deals_count": email_user.get("deals_count", 0),
-                    "created_at": email_user.get("created_at"),
+                    "role": existing_user.get("role", "user"),
+                    "status": existing_user.get("status", "active"),
+                    "deals_count": existing_user.get("deals_count", 0),
+                    "created_at": existing_user.get("created_at"),
                     "updated_at": datetime.now(timezone.utc).isoformat()
-                })
-            
-            # Create new user with plan from Clerk
-            new_user_id = str(uuid.uuid4())
-            new_user = {
-                "id": new_user_id,
-                "email": email,
-                "full_name": full_name,
-                "clerk_user_id": clerk_user_id,
-                "plan": clerk_plan,
-                "role": "user",
-                "status": "active",
+                }
+            else:
+                # Check if user exists by email (linking old account)
+                email_user = await db.users.find_one({"email": email})
+                if email_user:
+                    # Link Clerk ID to existing account and update plan
+                    await db.users.update_one(
+                        {"email": email},
+                        {
+                            "$set": {
+                                "clerk_user_id": clerk_user_id,
+                                "full_name": full_name,
+                                "plan": clerk_plan,
+                                "updated_at": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                    logger.info(f"Linked existing user to Clerk: {email} with plan: {clerk_plan}")
+                    user_data = {
+                        "id": email_user["id"],
+                        "email": email,
+                        "full_name": full_name,
+                        "plan": clerk_plan,
+                        "role": email_user.get("role", "user"),
+                        "status": email_user.get("status", "active"),
+                        "deals_count": email_user.get("deals_count", 0),
+                        "created_at": email_user.get("created_at"),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                else:
+                    # Create new user with plan from Clerk
+                    await db.users.insert_one(user_data)
+                    logger.info(f"Created new Clerk user: {clerk_user_id} with plan: {clerk_plan}")
+        
+        except Exception as mongo_error:
+            # MongoDB is unavailable - log warning but continue
+            logger.warning(f"MongoDB unavailable during sync for {clerk_user_id}: {str(mongo_error)}")
+            logger.info(f"Continuing with Clerk data only for user: {clerk_user_id}, plan: {clerk_plan}")
+        
+        # Return user data (from MongoDB if available, otherwise from Clerk metadata)
+        return JSONResponse(user_data)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing Clerk user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
                 "deals_count": 0,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
