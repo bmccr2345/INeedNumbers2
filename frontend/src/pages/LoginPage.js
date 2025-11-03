@@ -47,10 +47,7 @@ const LoginPage = () => {
         {/* Clerk Sign In Component */}
         <div className="flex justify-center">
           <SignIn 
-            routing="path"
-            path="/auth/login"
-            signUpUrl="/auth/register"
-            fallbackRedirectUrl={from}
+            afterSignInUrl={from}
             appearance={{
               elements: {
                 rootBox: "mx-auto",
