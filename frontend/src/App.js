@@ -1,13 +1,20 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
+import { ClerkProvider } from '@clerk/clerk-react';
 import { AuthProvider } from "./contexts/AuthContext";
-import { Auth0ProviderWithNavigate } from "./auth/Auth0ProviderWithNavigate";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from 'sonner';
 import { useIsMobile } from "./hooks/useMediaQuery";
 import "./App.css";
+
+// Clerk Publishable Key
+const CLERK_PUBLISHABLE_KEY = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
+
+if (!CLERK_PUBLISHABLE_KEY) {
+  throw new Error("Missing Clerk Publishable Key");
+}
 
 // Import pages
 import HomePage from "./pages/HomePage";
