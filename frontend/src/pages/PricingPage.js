@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { useAuth } from '../contexts/AuthContext';
 import Footer from '../components/Footer';
-import { CheckCircle, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import PlanPreviewRibbon from '../components/PlanPreviewRibbon';
 import { usePlanPreview } from '../hooks/usePlanPreview';
+import ClerkPricingTable from '../components/ClerkPricingTable';
 
 const PricingPage = () => {
-  const { user, createCheckoutSession } = useAuth();
+  const { user, isClerk, getCurrentPlan } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { effectivePlan, previewPlan, isPreviewMode, clearPreview } = usePlanPreview(user?.plan);
+  const currentPlan = getCurrentPlan ? getCurrentPlan() : user?.plan || 'FREE';
+  const { effectivePlan, previewPlan, isPreviewMode, clearPreview } = usePlanPreview(currentPlan);
 
   React.useEffect(() => {
     // Check for checkout cancellation
