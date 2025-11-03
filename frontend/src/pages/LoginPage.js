@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { SignIn, useUser } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Sparkles, Lock, Shield } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { navigateToHome } from '../utils/navigation';
 
 const LoginPage = () => {
-  const { loginWithAuth0, user, isAuthenticated } = useAuth();
+  const { isSignedIn, user } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -15,14 +14,10 @@ const LoginPage = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isSignedIn && user) {
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, user, navigate, from]);
-
-  const handleAuth0Login = () => {
-    loginWithAuth0({ returnTo: from });
-  };
+  }, [isSignedIn, user, navigate, from]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -49,74 +44,21 @@ const LoginPage = () => {
           <p className="text-gray-600 mt-2">Sign in to your <span className="font-bold text-green-600" style={{fontFamily: 'Poppins, sans-serif'}}>I Need Numbers</span> account</p>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-2xl">Secure Sign In</CardTitle>
-            <CardDescription className="text-base">
-              We've upgraded to Auth0 for enhanced security
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            {/* Main Login Button */}
-            <Button
-              onClick={handleAuth0Login}
-              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-6 text-lg shadow-lg"
-            >
-              <Lock className="w-5 h-5 mr-2" />
-              Continue with Auth0
-            </Button>
-
-            {/* Security Features */}
-            <div className="space-y-3 pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Why Auth0?</p>
-              
-              <div className="flex items-start space-x-3">
-                <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Bank-level Security</p>
-                  <p className="text-xs text-gray-600">Industry-leading authentication protection</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Single Sign-On</p>
-                  <p className="text-xs text-gray-600">One secure login for all your devices</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <Lock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Your Data Protected</p>
-                  <p className="text-xs text-gray-600">Passwords never stored on our servers</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-900">
-                <strong>New to Auth0?</strong> Don't worry! Click the button above and you'll be able to create an account or sign in securely.
-              </p>
-            </div>
-
-            {/* Footer Links */}
-            <div className="text-center text-sm text-gray-600 space-y-2 pt-4">
-              <p>
-                Need help?{' '}
-                <Link
-                  to="/support"
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Contact Support
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Clerk Sign In Component */}
+        <div className="flex justify-center">
+          <SignIn 
+            routing="path"
+            path="/auth/login"
+            signUpUrl="/auth/register"
+            redirectUrl={from}
+            appearance={{
+              elements: {
+                rootBox: "mx-auto",
+                card: "shadow-xl border-0"
+              }
+            }}
+          />
+        </div>
 
         {/* Additional Info */}
         <div className="mt-6 text-center text-xs text-gray-500">
