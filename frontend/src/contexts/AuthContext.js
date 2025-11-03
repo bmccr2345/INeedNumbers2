@@ -35,17 +35,37 @@ export const AuthProvider = ({ children }) => {
         console.log('[AuthContext] Clerk user authenticated:', clerkUser.primaryEmailAddress?.emailAddress);
         
         try {
-          // Sync Clerk user with backend
+          // Get plan from Clerk public metadata
+          const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
+          const clerkPlanStatus = clerkUser.publicMetadata?.plan_status || 'active';
+          
+          // Map Clerk plan keys to our internal plan names
+          const planMapping = {
+            'free_user': 'FREE',
+            'starter': 'STARTER',
+            'pro': 'PRO'
+          };
+          
+          const mappedPlan = planMapping[clerkPlanKey] || 'FREE';
+          
+          console.log('[AuthContext] Clerk plan:', clerkPlanKey, '→', mappedPlan, '| Status:', clerkPlanStatus);
+          
+          // Sync Clerk user with backend, including metadata
           const response = await axios.post(`${backendUrl}/api/clerk/sync-user`, {
             clerk_user_id: clerkUser.id,
             email: clerkUser.primaryEmailAddress?.emailAddress,
-            full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim()
+            full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+            metadata: {
+              plan: mappedPlan,
+              plan_status: clerkPlanStatus,
+              clerk_plan_key: clerkPlanKey
+            }
           }, {
             withCredentials: true
           });
           
           const userData = response.data;
-          console.log('[AuthContext] Clerk user profile synced:', userData.email);
+          console.log('[AuthContext] Clerk user profile synced:', userData.email, '| Plan:', userData.plan);
           
           setUser(userData);
           setLoading(false);
