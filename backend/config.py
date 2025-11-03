@@ -69,6 +69,9 @@ class Config(BaseSettings):
     AUTH0_AUDIENCE: Optional[str] = Field(default=None, description="Auth0 API audience")
     AUTH0_ALGORITHMS: str = Field(default="RS256", description="Auth0 JWT algorithms")
     
+    # Clerk Configuration (for Clerk authentication and billing)
+    CLERK_SECRET_KEY: str = Field(..., description="Clerk secret key for backend API calls")
+    
     # S3 Storage (REQUIRED in production, OPTIONAL in development)
     STORAGE_DRIVER: str = Field(default="s3", description="Storage driver")
     S3_REGION: str = Field(default="us-east-1", description="AWS S3 region")
