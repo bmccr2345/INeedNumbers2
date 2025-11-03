@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -10,6 +10,7 @@ const ClerkPricingTable = () => {
   const { user, isLoaded, isSignedIn } = useUser();
   const clerk = useClerk();
   const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   if (!isLoaded) {
     return <div className="text-center py-8">Loading plans...</div>;
@@ -17,10 +18,14 @@ const ClerkPricingTable = () => {
 
   const currentPlan = user?.publicMetadata?.plan || 'free_user';
 
+  const handleCardClick = (planKey) => {
+    setSelectedPlan(planKey);
+  };
+
   const handleSubscribe = (planKey) => {
-    // If user is not signed in, redirect to sign up
+    // If user is not signed in, redirect to sign up (not login)
     if (!isSignedIn) {
-      navigate('/auth/login');
+      navigate('/auth/register');
       return;
     }
 
