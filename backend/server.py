@@ -4022,27 +4022,6 @@ async def sync_clerk_user(request: Request):
     except Exception as e:
         logger.error(f"Error syncing Clerk user: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-                "deals_count": 0,
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }
-            await db.users.insert_one(new_user)
-            
-            logger.info(f"New Clerk user created: {clerk_user_id} ({email}) with plan: {clerk_plan}")
-            return JSONResponse({
-                "id": new_user_id,
-                "email": email,
-                "full_name": full_name,
-                "plan": clerk_plan,
-                "role": "user",
-                "status": "active",
-                "deals_count": 0,
-                "created_at": new_user["created_at"],
-                "updated_at": new_user["updated_at"]
-            })
-    except Exception as e:
-        logger.error(f"Error syncing Clerk user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/clerk/me/{clerk_user_id}")
 async def get_clerk_user(clerk_user_id: str):
