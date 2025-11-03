@@ -180,22 +180,6 @@ const PricingPage = () => {
                   <Button 
                     className={`w-full font-poppins ${
                       plan.popular 
-                        ? 'bg-primary hover:bg-secondary text-white' 
-                        : plan.current
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : 'bg-deep-forest hover:bg-deep-forest/90 text-white'
-                    }`}
-                    onClick={plan.action}
-                    disabled={loading || plan.disabled}
-                  >
-                    {loading && (plan.name === 'Starter' || plan.name === 'Pro') ? 'Processing...' : plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
-            </section>
-          ))}
-        </div>
-
         {/* Additional Info */}
         <div className="text-center mt-12 space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-2xl mx-auto">
