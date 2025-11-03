@@ -4174,7 +4174,7 @@ async def assign_plan_to_user(request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error assigning plan: {e}")
+        logger.error(f"[ASSIGN-PLAN] Error assigning plan: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
