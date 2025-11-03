@@ -276,7 +276,13 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/seller-net/save",
             "/api/affordability/save",
             "/api/investor/save",
-            "/api/closing-date/save"
+            "/api/closing-date/save",
+            "/api/clerk/sync-user",  # Clerk authentication sync
+            "/api/clerk/assign-plan",  # Clerk plan assignment
+            "/api/clerk/subscription-status",  # Clerk subscription status
+            "/api/clerk/create-checkout",  # Clerk checkout creation
+            "/api/clerk/billing-portal",  # Clerk billing portal
+            "/api/clerk/webhook"  # Clerk webhooks
         }
     
     async def dispatch(self, request: Request, call_next: Callable):
