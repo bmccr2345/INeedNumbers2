@@ -729,7 +729,7 @@ const HomePage = () => {
                   </div>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800 mt-auto" onClick={() => navigate('/pricing')}>
-                  Learn More
+                  Buy Now
                 </Button>
               </CardContent>
             </Card>
