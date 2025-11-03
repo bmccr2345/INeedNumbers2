@@ -662,7 +662,7 @@ const HomePage = () => {
                   </div>
                 </div>
                 <Button variant="outline" className="w-full mt-auto" onClick={() => navigate('/pricing')}>
-                  Learn More
+                  Get Started
                 </Button>
               </CardContent>
             </Card>
@@ -686,7 +686,7 @@ const HomePage = () => {
                   </div>
                 </div>
                 <Button className="w-full bg-primary hover:bg-secondary mt-auto" onClick={() => navigate('/pricing')}>
-                  Learn More
+                  Buy Now
                 </Button>
               </CardContent>
             </Card>
