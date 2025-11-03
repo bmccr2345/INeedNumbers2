@@ -97,6 +97,7 @@ function App() {
               <Route path="/sample-pdf" element={<SamplePDF />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/subscription-setup" element={<SubscriptionSetupPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/support" element={<SupportPage />} />
               
