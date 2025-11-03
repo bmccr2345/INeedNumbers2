@@ -355,7 +355,9 @@ export const AuthProvider = ({ children }) => {
     isClerk: isSignedIn,
     clerkUser,
     getPlanLimits,
-    canPerformAction
+    canPerformAction,
+    getCurrentPlan,
+    hasActiveSubscription
   };
 
   return (
