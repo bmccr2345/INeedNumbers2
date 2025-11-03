@@ -99,6 +99,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/subscription-setup" element={<SubscriptionSetupPage />} />
+              <Route path="/clerk-debug" element={<ClerkDebugPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/support" element={<SupportPage />} />
               
