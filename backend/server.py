@@ -855,6 +855,7 @@ async def require_master_admin(current_user: User = Depends(require_auth)) -> Us
         )
     return current_user
 
+# Create access token for OAuth2
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
