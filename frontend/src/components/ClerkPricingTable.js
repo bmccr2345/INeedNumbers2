@@ -23,9 +23,13 @@ const ClerkPricingTable = () => {
   };
 
   const handleSubscribe = (planKey) => {
-    // If user is not signed in, redirect to sign up (not login)
+    // If user is not signed in, redirect to sign up with plan context
     if (!isSignedIn) {
-      navigate('/auth/register');
+      // Store selected plan in localStorage so we can redirect after signup
+      if (planKey !== 'free_user') {
+        localStorage.setItem('selected_plan', planKey);
+      }
+      navigate('/auth/register', { state: { selectedPlan: planKey } });
       return;
     }
 
