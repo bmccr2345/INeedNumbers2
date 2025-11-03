@@ -109,14 +109,18 @@ const ClerkPricingTable = () => {
     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
       {plans.map((plan) => {
         const isCurrent = currentPlan === plan.key;
+        const isSelected = selectedPlan === plan.key;
         const isUpgrade = !isCurrent && plan.key !== 'free_user';
 
         return (
           <Card 
             key={plan.key}
-            className={`relative ${
+            onClick={() => handleCardClick(plan.key)}
+            className={`relative cursor-pointer transition-all duration-200 ${
               plan.popular ? 'border-primary shadow-2xl scale-105' : 'border-neutral-medium'
-            } ${isCurrent ? 'bg-primary/5' : ''}`}
+            } ${isCurrent ? 'bg-primary/5' : ''} ${
+              isSelected ? 'ring-4 ring-primary ring-opacity-50 shadow-xl transform scale-105' : ''
+            } hover:shadow-lg`}
           >
             {plan.popular && (
               <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white">
