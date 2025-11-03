@@ -265,9 +265,9 @@ const hasPermission = (permission) => {
 };
 
 // Usage examples
-const canSaveDeals = hasFeature('deals:save');
-const canExportPDF = hasPermission('report:export_pdf');
-const canUsePnL = hasFeature('pnl:tracker');
+const canSaveDeals = hasFeature('deals_save');
+const canExportPDF = hasPermission('report_export_pdf');
+const canUsePnL = hasFeature('pnl_tracker');
 ```
 
 ### Backend Permission Validation
@@ -291,7 +291,7 @@ async def save_deal(request: Request):
     # Get Clerk user from request
     clerk_metadata = request.state.clerk_user_metadata
     
-    if not has_feature(clerk_metadata, 'deals:save'):
+    if not has_feature(clerk_metadata, 'deals_save'):
         raise HTTPException(403, "Upgrade to STARTER to save deals")
     
     # Check deal count for STARTER users
@@ -313,7 +313,7 @@ const getFeatures = () => {
   if (isSignedIn && clerkUser?.publicMetadata?.features) {
     return clerkUser.publicMetadata.features;
   }
-  return ['calculator:basic']; // Default FREE features
+  return ['calculator_basic']; // Default FREE features
 };
 
 const hasFeature = (featureKey) => {
@@ -353,7 +353,7 @@ const DealsList = () => {
     <div>
       <h2>My Deals</h2>
       
-      {!hasFeature('deals:save') && (
+      {!hasFeature('deals_save') && (
         <UpgradePrompt
           title="Save Your Deals"
           message="Upgrade to STARTER to save and manage deals"
@@ -361,13 +361,13 @@ const DealsList = () => {
         />
       )}
       
-      {hasFeature('deals:save') && (
-        <Button onClick={handleSaveDeal} disabled={!hasPermission('deal:create')}>
+      {hasFeature('deals_save') && (
+        <Button onClick={handleSaveDeal} disabled={!hasPermission('deal_create')}>
           Save Deal
         </Button>
       )}
       
-      {hasFeature('deals:share') && (
+      {hasFeature('deal_share') && (
         <Button onClick={handleShareDeal}>
           Share with Client
         </Button>
@@ -391,7 +391,7 @@ const FeatureGate = ({ feature, fallback, children }) => {
 };
 
 // Usage
-<FeatureGate feature="pnl:tracker">
+<FeatureGate feature="pnl_tracker">
   <PnLDashboard />
 </FeatureGate>
 ```
@@ -404,7 +404,7 @@ const SaveDealButton = () => {
   const [dealCount, setDealCount] = useState(0);
   
   const plan = getCurrentPlan();
-  const canSave = hasFeature('deals:save');
+  const canSave = hasFeature('deals_save');
   const isLimitReached = plan === 'STARTER' && dealCount >= 10;
   
   return (
@@ -429,23 +429,23 @@ const SaveDealButton = () => {
   "plan": "starter",
   "plan_status": "active",
   "features": [
-    "calculator:basic",
-    "deals:save",
-    "deals:share",
-    "portfolio:basic",
-    "branding:custom"
+    "calculator_basic",
+    "deals_save",
+    "deal_share",
+    "portfolio_basic",
+    "branding_custom"
   ],
   "permissions": [
-    "calculator:commission_split:view",
-    "calculator:net_sheet:view",
-    "deal:create",
-    "deal:read",
-    "deal:update",
-    "deal:delete",
-    "deal:share:create_link",
-    "portfolio:create",
-    "pdf:generate_branded",
-    "branding:upload_logo"
+    "calculator_commission_split_view",
+    "calculator_net_sheet_view",
+    "deal_create",
+    "deal_read",
+    "deal_update",
+    "deal_delete",
+    "deal_share_create_link",
+    "portfolio_create",
+    "pdf_generate_branded",
+    "branding_upload_logo"
   ],
   "limits": {
     "deals": 10,
