@@ -34,48 +34,47 @@ export const AuthProvider = ({ children }) => {
       if (isSignedIn && clerkUser) {
         console.log('[AuthContext] Clerk user authenticated:', clerkUser.primaryEmailAddress?.emailAddress);
         
-        try {
-          // Get plan from Clerk public metadata
-          const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
-          const clerkPlanStatus = clerkUser.publicMetadata?.subscription_status || 'active';
-          
-          // Map Clerk plan keys to our internal plan names
-          const planMapping = {
-            'free_user': 'FREE',
-            'starter': 'STARTER',
-            'pro': 'PRO'
-          };
-          
-          const mappedPlan = planMapping[clerkPlanKey] || 'FREE';
-          
-          console.log('[AuthContext] Clerk plan:', clerkPlanKey, '→', mappedPlan, '| Status:', clerkPlanStatus);
-          
-          // Sync Clerk user with backend, including metadata
-          const response = await axios.post(`${backendUrl}/api/clerk/sync-user`, {
-            clerk_user_id: clerkUser.id,
-            email: clerkUser.primaryEmailAddress?.emailAddress,
-            full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-            metadata: {
-              plan: mappedPlan,
-              plan_status: clerkPlanStatus,  // Send as plan_status for backend compatibility
-              clerk_plan_key: clerkPlanKey
-            }
-          }, {
-            withCredentials: true
-          });
-          
-          const userData = response.data;
-          console.log('[AuthContext] Clerk user profile synced:', userData.email, '| Plan:', userData.plan);
-          
-          setUser(userData);
-          setLoading(false);
-          return;
-        } catch (error) {
-          console.error('[AuthContext] Failed to sync Clerk user:', error);
+        // Get plan from Clerk public metadata - NO backend sync needed!
+        const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
+        const clerkPlanStatus = clerkUser.publicMetadata?.subscription_status || 'active';
+        
+        // Map Clerk plan keys to our internal plan names
+        const planMapping = {
+          'free_user': 'FREE',
+          'starter': 'STARTER',
+          'pro': 'PRO'
+        };
+        
+        const mappedPlan = planMapping[clerkPlanKey] || 'FREE';
+        
+        console.log('[AuthContext] Clerk plan:', clerkPlanKey, '→', mappedPlan, '| Status:', clerkPlanStatus);
+        
+        // If plan is not active, downgrade to FREE
+        const finalPlan = (mappedPlan !== 'FREE' && clerkPlanStatus !== 'active') ? 'FREE' : mappedPlan;
+        
+        if (finalPlan !== mappedPlan) {
+          console.log('[AuthContext] Plan downgraded due to inactive status:', mappedPlan, '→', finalPlan);
         }
+        
+        // Build user object directly from Clerk data - NO MongoDB needed!
+        const userData = {
+          id: clerkUser.id,
+          email: clerkUser.primaryEmailAddress?.emailAddress,
+          full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+          plan: finalPlan,
+          role: 'user',
+          status: 'active',
+          clerk_user_id: clerkUser.id
+        };
+        
+        console.log('[AuthContext] User authenticated with plan:', userData.email, '| Plan:', userData.plan);
+        
+        setUser(userData);
+        setLoading(false);
+        return;
       }
       
-      // Fallback to legacy cookie-based authentication
+      // Fallback to legacy cookie-based authentication (will be removed eventually)
       if (!isSignedIn) {
         console.log('[AuthContext] Checking legacy authentication...');
         try {
