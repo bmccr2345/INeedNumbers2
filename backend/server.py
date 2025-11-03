@@ -4045,6 +4045,53 @@ async def get_clerk_user(clerk_user_id: str):
         logger.error(f"Error fetching Clerk user: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/clerk/update-plan")
+async def update_clerk_user_plan(request: Request):
+    """
+    Update user plan based on Stripe subscription status.
+    Called after successful Stripe payment or subscription change.
+    """
+    try:
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        new_plan = body.get("plan", "FREE")
+        
+        # Validate plan
+        valid_plans = ["FREE", "STARTER", "PRO"]
+        if new_plan not in valid_plans:
+            raise HTTPException(status_code=400, detail=f"Invalid plan: {new_plan}")
+        
+        if not clerk_user_id:
+            raise HTTPException(status_code=400, detail="clerk_user_id is required")
+        
+        # Update user plan in MongoDB
+        result = await db.users.update_one(
+            {"clerk_user_id": clerk_user_id},
+            {
+                "$set": {
+                    "plan": new_plan,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        logger.info(f"Updated plan for Clerk user {clerk_user_id} to {new_plan}")
+        
+        return JSONResponse({
+            "success": True,
+            "message": f"Plan updated to {new_plan}",
+            "clerk_user_id": clerk_user_id,
+            "plan": new_plan
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating Clerk user plan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============================================================================
 # End Clerk Authentication Endpoints
 # ============================================================================
