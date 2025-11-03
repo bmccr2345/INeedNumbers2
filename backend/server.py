@@ -4116,6 +4116,8 @@ async def assign_plan_to_user(request: Request):
         clerk_user_id = body.get("clerk_user_id")
         plan = body.get("plan", "free").lower()
         
+        logger.info(f"[ASSIGN-PLAN] Received request: user_id={clerk_user_id}, plan={plan}")
+        
         if not clerk_user_id:
             raise HTTPException(status_code=400, detail="clerk_user_id is required")
         
