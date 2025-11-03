@@ -13,7 +13,6 @@ const RegisterPage = () => {
   const [searchParams] = useSearchParams();
   const [isAssigningPlan, setIsAssigningPlan] = useState(false);
   
-  const from = location.state?.from?.pathname || '/dashboard';
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   // Get plan from URL or localStorage
@@ -51,18 +50,21 @@ const RegisterPage = () => {
           // Clear stored plan
           localStorage.removeItem('selected_plan');
           
-          // Redirect based on plan
-          if (selectedPlan === 'free') {
-            console.log('[RegisterPage] Free plan - redirecting to dashboard');
-            navigate('/dashboard', { replace: true });
-          } else {
-            console.log('[RegisterPage] Paid plan - redirecting to subscription setup');
-            navigate('/subscription-setup', { replace: true });
-          }
+          // Wait a moment for Clerk to sync metadata
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          // Force reload the page to refresh Clerk user data
+          // This ensures AuthContext picks up the updated plan metadata
+          console.log('[RegisterPage] Reloading to sync plan metadata...');
+          
+          // Redirect based on plan - ALWAYS to dashboard for now
+          // The dashboard will handle showing the right content based on plan
+          window.location.href = '/dashboard';
+          
         } catch (error) {
           console.error('[RegisterPage] Error assigning plan:', error);
           // On error, still redirect to dashboard
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
         } finally {
           setIsAssigningPlan(false);
         }
@@ -70,7 +72,7 @@ const RegisterPage = () => {
     };
 
     assignPlanAfterSignup();
-  }, [isSignedIn, user, navigate, backendUrl, isAssigningPlan]);
+  }, [isSignedIn, user, backendUrl, isAssigningPlan]);
 
   // Show loading state while assigning plan
   if (isSignedIn && user && isAssigningPlan) {
