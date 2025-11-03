@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -7,6 +7,7 @@ import { CheckCircle, Sparkles } from 'lucide-react';
 
 const ClerkPricingTable = () => {
   const { user, isLoaded } = useUser();
+  const clerk = useClerk();
 
   if (!isLoaded) {
     return <div className="text-center py-8">Loading plans...</div>;
@@ -15,11 +16,18 @@ const ClerkPricingTable = () => {
   const currentPlan = user?.publicMetadata?.plan || 'free_user';
 
   const handleSubscribe = (planKey) => {
-    // Clerk will handle the subscription flow
-    if (window.Clerk) {
-      window.Clerk.openUserProfile({
-        afterSignOutUrl: '/',
+    // Open Clerk's user profile with billing tab
+    if (clerk && clerk.openUserProfile) {
+      clerk.openUserProfile({
+        appearance: {
+          elements: {
+            rootBox: "mx-auto"
+          }
+        }
       });
+    } else {
+      // Fallback: Navigate to account page
+      window.location.href = '/account';
     }
   };
 
