@@ -164,8 +164,12 @@ const ClerkPricingTable = () => {
                 onClick={() => handleSubscribe(plan.key)}
                 disabled={isCurrent}
                 className={`w-full ${
-                  plan.popular
+                  plan.key === 'free_user'
+                    ? 'bg-neutral-medium hover:bg-neutral-dark text-white'
+                    : plan.key === 'starter'
                     ? 'bg-primary hover:bg-secondary text-white'
+                    : plan.popular
+                    ? 'bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800 text-white'
                     : 'bg-neutral-medium hover:bg-neutral-dark text-white'
                 } ${isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
