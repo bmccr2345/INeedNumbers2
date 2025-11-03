@@ -4151,20 +4151,24 @@ async def assign_plan_to_user(request: Request):
             }
         )
         
-        # Also update MongoDB
+        # Optionally update MongoDB (if available) - but don't fail if it's down
         internal_plan = plan.upper()
-        await db.users.update_one(
-            {"clerk_user_id": clerk_user_id},
-            {
-                "$set": {
-                    "plan": internal_plan,
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }
-            }
-        )
+        try:
+            await db.users.update_one(
+                {"clerk_user_id": clerk_user_id},
+                {
+                    "$set": {
+                        "plan": internal_plan,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                upsert=True  # Create if doesn't exist
+            )
+            logger.info(f"[ASSIGN-PLAN] MongoDB updated: clerk_user_id={clerk_user_id}, plan={internal_plan}")
+        except Exception as mongo_error:
+            logger.warning(f"[ASSIGN-PLAN] MongoDB unavailable (non-critical): {str(mongo_error)}")
         
-        logger.info(f"Assigned plan '{plan}' to Clerk user {clerk_user_id}")
-        logger.info(f"[ASSIGN-PLAN] Successfully assigned plan. MongoDB updated: clerk_user_id={clerk_user_id}, plan={internal_plan}")
+        logger.info(f"[ASSIGN-PLAN] Successfully assigned plan '{plan}' to Clerk user {clerk_user_id}")
         
         return JSONResponse({
             "success": True,
