@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
 import safeLocalStorage from '../utils/safeStorage';
@@ -28,13 +28,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Check authentication status on app load
-  useEffect(() => {
-    if (isLoaded) {
-      checkAuth();
-    }
-  }, [isLoaded, isSignedIn, clerkUser]);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       // If Clerk is signed in, sync with backend
       if (isSignedIn && clerkUser) {
@@ -80,7 +74,13 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isSignedIn, clerkUser, backendUrl]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      checkAuth();
+    }
+  }, [isLoaded, checkAuth]);
 
   // Legacy login function (for backward compatibility)
   const login = async (email, password, rememberMe = false) => {
