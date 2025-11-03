@@ -3905,12 +3905,28 @@ async def sync_clerk_user(request: Request):
     """
     Sync Clerk user with MongoDB application data.
     Creates or updates user record in MongoDB.
+    Reads plan from Clerk public metadata.
     """
     try:
         body = await request.json()
         clerk_user_id = body.get("clerk_user_id")
         email = body.get("email")
         full_name = body.get("full_name", "")
+        
+        # Get plan from Clerk metadata (passed from frontend)
+        clerk_metadata = body.get("metadata", {})
+        clerk_plan = clerk_metadata.get("plan", "FREE")
+        plan_status = clerk_metadata.get("plan_status", "active")
+        
+        # Validate plan
+        valid_plans = ["FREE", "STARTER", "PRO"]
+        if clerk_plan not in valid_plans:
+            clerk_plan = "FREE"
+        
+        # If plan is not FREE but status is not active, downgrade to FREE
+        if clerk_plan != "FREE" and plan_status != "active":
+            logger.warning(f"User {clerk_user_id} has inactive {clerk_plan} plan, downgrading to FREE")
+            clerk_plan = "FREE"
         
         if not clerk_user_id or not email:
             raise HTTPException(status_code=400, detail="clerk_user_id and email are required")
@@ -3926,15 +3942,17 @@ async def sync_clerk_user(request: Request):
                     "$set": {
                         "email": email,
                         "full_name": full_name,
+                        "plan": clerk_plan,
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }
                 }
             )
+            logger.info(f"Updated Clerk user: {clerk_user_id} with plan: {clerk_plan}")
             return JSONResponse({
                 "id": existing_user["id"],
                 "email": email,
                 "full_name": full_name,
-                "plan": existing_user.get("plan", "FREE"),
+                "plan": clerk_plan,
                 "role": existing_user.get("role", "user"),
                 "status": existing_user.get("status", "active"),
                 "deals_count": existing_user.get("deals_count", 0),
@@ -3945,22 +3963,24 @@ async def sync_clerk_user(request: Request):
             # Check if user exists by email (linking old account)
             email_user = await db.users.find_one({"email": email})
             if email_user:
-                # Link Clerk ID to existing account
+                # Link Clerk ID to existing account and update plan
                 await db.users.update_one(
                     {"email": email},
                     {
                         "$set": {
                             "clerk_user_id": clerk_user_id,
                             "full_name": full_name,
+                            "plan": clerk_plan,
                             "updated_at": datetime.now(timezone.utc).isoformat()
                         }
                     }
                 )
+                logger.info(f"Linked existing user to Clerk: {email} with plan: {clerk_plan}")
                 return JSONResponse({
                     "id": email_user["id"],
                     "email": email,
                     "full_name": full_name,
-                    "plan": email_user.get("plan", "FREE"),
+                    "plan": clerk_plan,
                     "role": email_user.get("role", "user"),
                     "status": email_user.get("status", "active"),
                     "deals_count": email_user.get("deals_count", 0),
@@ -3968,14 +3988,14 @@ async def sync_clerk_user(request: Request):
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 })
             
-            # Create new user
+            # Create new user with plan from Clerk
             new_user_id = str(uuid.uuid4())
             new_user = {
                 "id": new_user_id,
                 "email": email,
                 "full_name": full_name,
                 "clerk_user_id": clerk_user_id,
-                "plan": "FREE",
+                "plan": clerk_plan,
                 "role": "user",
                 "status": "active",
                 "deals_count": 0,
@@ -3984,12 +4004,12 @@ async def sync_clerk_user(request: Request):
             }
             await db.users.insert_one(new_user)
             
-            logger.info(f"New Clerk user created: {clerk_user_id} ({email})")
+            logger.info(f"New Clerk user created: {clerk_user_id} ({email}) with plan: {clerk_plan}")
             return JSONResponse({
                 "id": new_user_id,
                 "email": email,
                 "full_name": full_name,
-                "plan": "FREE",
+                "plan": clerk_plan,
                 "role": "user",
                 "status": "active",
                 "deals_count": 0,
