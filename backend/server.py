@@ -4093,7 +4093,407 @@ async def update_clerk_user_plan(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
-# End Clerk Authentication Endpoints
+# Clerk Billing Integration Endpoints (Stripe-Connected)
+# ============================================================================
+
+from app.clerk_billing import clerk_billing_client
+from app.stripe_billing import stripe_billing_client
+
+@api_router.post("/clerk/assign-plan")
+async def assign_plan_to_user(request: Request):
+    """
+    Assign a plan to a user after signup.
+    Updates Clerk public metadata with selected plan.
+    
+    Request body:
+        {
+            "clerk_user_id": "user_xxx",
+            "plan": "starter" | "pro" | "free"
+        }
+    """
+    try:
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        plan = body.get("plan", "free").lower()
+        
+        if not clerk_user_id:
+            raise HTTPException(status_code=400, detail="clerk_user_id is required")
+        
+        # Validate plan
+        valid_plans = ["free", "starter", "pro"]
+        if plan not in valid_plans:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid plan. Must be one of: {', '.join(valid_plans)}"
+            )
+        
+        # Map to Clerk plan key
+        plan_mapping = {
+            "free": "free_user",
+            "starter": "starter",
+            "pro": "pro"
+        }
+        clerk_plan_key = plan_mapping[plan]
+        
+        # Update Clerk metadata
+        updated_user = await clerk_billing_client.update_user_metadata(
+            user_id=clerk_user_id,
+            public_metadata={
+                "plan": clerk_plan_key,
+                "subscription_status": "inactive" if plan != "free" else "active",
+                "assigned_at": datetime.now(timezone.utc).isoformat()
+            }
+        )
+        
+        # Also update MongoDB
+        internal_plan = plan.upper()
+        await db.users.update_one(
+            {"clerk_user_id": clerk_user_id},
+            {
+                "$set": {
+                    "plan": internal_plan,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        logger.info(f"Assigned plan '{plan}' to Clerk user {clerk_user_id}")
+        
+        return JSONResponse({
+            "success": True,
+            "message": f"Successfully assigned {plan.title()} plan",
+            "plan": plan,
+            "clerk_plan_key": clerk_plan_key,
+            "requires_payment": plan != "free"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error assigning plan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/clerk/subscription-status")
+async def get_subscription_status(request: Request):
+    """
+    Get subscription status for authenticated Clerk user.
+    Returns plan information and subscription status.
+    
+    Requires Clerk session token in Authorization header.
+    """
+    try:
+        # Get Clerk user ID from request header or body
+        auth_header = request.headers.get("Authorization", "")
+        
+        # For development, allow clerk_user_id in query params
+        clerk_user_id = request.query_params.get("clerk_user_id")
+        
+        if not clerk_user_id:
+            # Try to extract from auth header (Bearer token)
+            # In production, validate the JWT token here
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication required. Provide clerk_user_id or valid token."
+            )
+        
+        # Fetch user from Clerk
+        user_data = await clerk_billing_client.get_user(clerk_user_id)
+        
+        # Extract plan and subscription status
+        plan_id, subscription_status = clerk_billing_client.extract_plan_from_metadata(user_data)
+        
+        # Get subscriptions (if available)
+        subscriptions = await clerk_billing_client.get_user_subscriptions(clerk_user_id)
+        
+        # Check MongoDB for additional data
+        mongo_user = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        
+        return JSONResponse({
+            "clerk_user_id": clerk_user_id,
+            "email": user_data.get("email_addresses", [{}])[0].get("email_address", ""),
+            "plan": plan_id,
+            "subscription_status": subscription_status,
+            "subscriptions_count": len(subscriptions),
+            "mongo_synced": mongo_user is not None,
+            "requires_payment": plan_id in ["STARTER", "PRO"] and subscription_status != "active"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching subscription status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/clerk/billing-portal")
+async def create_billing_portal_session(request: Request):
+    """
+    Create a Stripe billing portal session for the user.
+    Returns URL to redirect user to Stripe Customer Portal.
+    
+    Request body:
+        {
+            "clerk_user_id": "user_xxx",
+            "return_url": "https://yourdomain.com/dashboard"
+        }
+    """
+    try:
+        if not stripe_billing_client:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe billing is not configured"
+            )
+        
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        return_url = body.get("return_url", f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard")
+        
+        if not clerk_user_id:
+            raise HTTPException(status_code=400, detail="clerk_user_id is required")
+        
+        # Get user from Clerk to find Stripe customer ID
+        user_data = await clerk_billing_client.get_user(clerk_user_id)
+        private_metadata = user_data.get("private_metadata", {})
+        stripe_customer_id = private_metadata.get("stripe_customer_id")
+        
+        if not stripe_customer_id:
+            # User doesn't have a Stripe customer yet - need to create checkout session instead
+            logger.warning(f"User {clerk_user_id} has no Stripe customer ID - redirect to checkout")
+            raise HTTPException(
+                status_code=400,
+                detail="No active subscription found. Please complete checkout first."
+            )
+        
+        # Create billing portal session
+        portal_url = await stripe_billing_client.create_billing_portal_session(
+            customer_id=stripe_customer_id,
+            return_url=return_url
+        )
+        
+        logger.info(f"Created billing portal session for user {clerk_user_id}")
+        
+        return JSONResponse({
+            "success": True,
+            "url": portal_url,
+            "message": "Redirect user to this URL to manage their subscription"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating billing portal session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/clerk/create-checkout")
+async def create_checkout_session(request: Request):
+    """
+    Create a Stripe Checkout session for subscription signup.
+    
+    Request body:
+        {
+            "clerk_user_id": "user_xxx",
+            "plan": "starter" | "pro",
+            "success_url": "https://yourdomain.com/success",
+            "cancel_url": "https://yourdomain.com/pricing"
+        }
+    """
+    try:
+        if not stripe_billing_client:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe billing is not configured"
+            )
+        
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        plan = body.get("plan", "").lower()
+        success_url = body.get("success_url")
+        cancel_url = body.get("cancel_url")
+        
+        if not all([clerk_user_id, plan, success_url, cancel_url]):
+            raise HTTPException(
+                status_code=400,
+                detail="clerk_user_id, plan, success_url, and cancel_url are required"
+            )
+        
+        # Validate plan
+        if plan not in ["starter", "pro"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid plan. Must be 'starter' or 'pro'"
+            )
+        
+        # Get Stripe price ID from environment
+        price_id_key = f"STRIPE_PRICE_{plan.upper()}_MONTHLY"
+        price_id = os.getenv(price_id_key)
+        
+        if not price_id:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Stripe price ID not configured for {plan} plan"
+            )
+        
+        # Get user email from Clerk
+        user_data = await clerk_billing_client.get_user(clerk_user_id)
+        customer_email = user_data.get("email_addresses", [{}])[0].get("email_address", "")
+        
+        if not customer_email:
+            raise HTTPException(status_code=400, detail="User email not found")
+        
+        # Create checkout session
+        checkout_url = await stripe_billing_client.create_checkout_session(
+            price_id=price_id,
+            customer_email=customer_email,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "clerk_user_id": clerk_user_id,
+                "plan": plan
+            }
+        )
+        
+        logger.info(f"Created checkout session for user {clerk_user_id}, plan: {plan}")
+        
+        return JSONResponse({
+            "success": True,
+            "url": checkout_url,
+            "plan": plan,
+            "message": "Redirect user to this URL to complete payment"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/clerk/webhook")
+async def handle_stripe_webhook(request: Request):
+    """
+    Handle Stripe webhook events.
+    Validates signature and processes subscription events.
+    
+    Supported events:
+    - customer.subscription.created
+    - customer.subscription.updated
+    - customer.subscription.deleted
+    - checkout.session.completed
+    """
+    try:
+        if not stripe_billing_client:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe billing is not configured"
+            )
+        
+        # Get raw body and signature
+        body = await request.body()
+        signature = request.headers.get("stripe-signature", "")
+        
+        if not signature:
+            raise HTTPException(status_code=400, detail="Missing stripe-signature header")
+        
+        # Verify webhook signature
+        event = stripe_billing_client.verify_webhook_signature(body, signature)
+        
+        event_type = event["type"]
+        event_data = event["data"]["object"]
+        
+        logger.info(f"Processing Stripe webhook: {event_type}")
+        
+        # Handle checkout.session.completed
+        if event_type == "checkout.session.completed":
+            clerk_user_id = event_data.get("metadata", {}).get("clerk_user_id")
+            plan = event_data.get("metadata", {}).get("plan", "").upper()
+            stripe_customer_id = event_data.get("customer")
+            
+            if clerk_user_id and plan:
+                # Update Clerk metadata with Stripe customer ID
+                await clerk_billing_client.update_user_metadata(
+                    user_id=clerk_user_id,
+                    public_metadata={
+                        "plan": plan.lower(),
+                        "subscription_status": "active"
+                    },
+                    private_metadata={
+                        "stripe_customer_id": stripe_customer_id
+                    }
+                )
+                
+                # Update MongoDB
+                await db.users.update_one(
+                    {"clerk_user_id": clerk_user_id},
+                    {
+                        "$set": {
+                            "plan": plan,
+                            "stripe_customer_id": stripe_customer_id,
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                
+                logger.info(f"Checkout completed for user {clerk_user_id}, plan: {plan}")
+        
+        # Handle subscription events
+        elif event_type in ["customer.subscription.created", "customer.subscription.updated"]:
+            subscription_status = event_data.get("status")
+            stripe_customer_id = event_data.get("customer")
+            clerk_user_id = event_data.get("metadata", {}).get("clerk_user_id")
+            
+            # If we have clerk_user_id in metadata, update the user
+            if clerk_user_id:
+                subscription_active = subscription_status in ["active", "trialing"]
+                
+                await clerk_billing_client.update_user_metadata(
+                    user_id=clerk_user_id,
+                    public_metadata={
+                        "subscription_status": "active" if subscription_active else "inactive"
+                    }
+                )
+                
+                logger.info(f"Subscription {event_type} for user {clerk_user_id}, status: {subscription_status}")
+        
+        elif event_type == "customer.subscription.deleted":
+            stripe_customer_id = event_data.get("customer")
+            clerk_user_id = event_data.get("metadata", {}).get("clerk_user_id")
+            
+            if clerk_user_id:
+                # Downgrade to FREE plan
+                await clerk_billing_client.update_user_metadata(
+                    user_id=clerk_user_id,
+                    public_metadata={
+                        "plan": "free_user",
+                        "subscription_status": "inactive"
+                    }
+                )
+                
+                # Update MongoDB
+                await db.users.update_one(
+                    {"clerk_user_id": clerk_user_id},
+                    {
+                        "$set": {
+                            "plan": "FREE",
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                
+                logger.info(f"Subscription cancelled for user {clerk_user_id}, downgraded to FREE")
+        
+        return JSONResponse({"received": True})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing webhook: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# End Clerk Billing Integration Endpoints
 # ============================================================================
 
 # Closing Date Calculator Models
