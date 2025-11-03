@@ -29,6 +29,7 @@ import RegisterPage from "./pages/RegisterPage";
 import MyAccountPage from "./pages/MyAccountPage";
 import PricingPage from "./pages/PricingPage";
 import SubscriptionSetupPage from "./pages/SubscriptionSetupPage";
+import ClerkDebugPage from "./pages/ClerkDebugPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import WelcomePage from "./pages/WelcomePage";
