@@ -5,7 +5,7 @@ import boto3
 import uuid
 import logging
 from botocore.config import Config
-from app.auth import get_current_user
+from app.clerk_auth import get_current_user
 
 logger = logging.getLogger(__name__)
 
