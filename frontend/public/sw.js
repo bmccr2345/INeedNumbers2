@@ -1,5 +1,5 @@
 // Service Worker for caching and performance optimization
-const CACHE_NAME = 'ineednumbers-v1.0.0';
+const CACHE_NAME = 'ineednumbers-v1.1.0';
 const STATIC_CACHE = 'static-v1.0.0';
 const DYNAMIC_CACHE = 'dynamic-v1.0.0';
 
