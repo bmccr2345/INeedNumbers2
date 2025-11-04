@@ -830,20 +830,6 @@ async def get_user_by_id(user_id: str) -> Optional[User]:
 # See app/clerk_auth.py for new authentication system
 # ============================================================================
 
-def require_plan_unified(required: str):
-    """Unified plan gating that works with both auth methods"""
-    def dep(user = Depends(require_auth_unified)):
-        allowed = {"PRO"}
-        if required.upper() == "STARTER":
-            allowed.add("STARTER")
-        elif required.upper() == "FREE":
-            allowed.update(["STARTER", "FREE"])
-            
-        if user.plan not in allowed:
-            raise HTTPException(status_code=403, detail="Upgrade required")
-        return user
-    return dep
-
 async def require_admin(current_user: User = Depends(require_auth)) -> User:
     if current_user.role not in [UserRole.ADMIN, UserRole.MASTER_ADMIN]:
         raise HTTPException(
