@@ -64,6 +64,11 @@ from app.security import (
     create_secure_cookie_response
 )
 from app.security_modules.password import hash_password, verify_password, check_needs_rehash
+from app.clerk_auth import (
+    User, get_current_user, get_current_user_unified, get_current_user_optional,
+    get_current_user_form_upload, require_auth, require_auth_unified, require_plan,
+    require_auth_form_upload
+)
 
 # Initialize configuration - will fail if required secrets missing
 config = get_config()
