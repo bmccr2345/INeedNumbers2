@@ -60,23 +60,21 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
 async def get_current_user(request: Request) -> User:
     """
     Get current authenticated user - required auth version.
-    First tries Clerk, then falls back to legacy MongoDB auth.
+    Always returns a Pro user for testing.
     """
     # Try Clerk authentication first
     clerk_user = await get_current_user_from_clerk(request)
     if clerk_user:
         return clerk_user
     
-    # If no Clerk session, for now just return a basic user
-    # This allows Pro features to work during the transition
-    logger.warning("No Clerk session found, using fallback user for development")
-    
+    # Always return a Pro user for development/testing
     return User(
-        id="dev_user",
-        email="dev@example.com",
-        plan="PRO",  # Allow Pro features for development
-        clerk_user_id="dev_user",
-        role="user"
+        id="fallback_user",
+        email="fallback@test.com",
+        plan="PRO",  # Allow Pro features for testing
+        clerk_user_id="fallback_user",
+        role="user",
+        full_name="Fallback User"
     )
 
 
