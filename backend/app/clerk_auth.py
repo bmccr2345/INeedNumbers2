@@ -122,7 +122,7 @@ async def require_auth_form_upload(request: Request) -> User:
     return await require_auth(request)
 
 
-def require_plan(required: str):
+# For backward compatibility with existing imports
     """
     Plan gating decorator.
     """
