@@ -16,6 +16,8 @@ class User:
         self.email = email
         self.plan = plan.upper()
         self.clerk_user_id = kwargs.get("clerk_user_id", id)
+        self.role = kwargs.get("role", "user")
+        self.full_name = kwargs.get("full_name", "")
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -42,7 +44,8 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
             email="clerk_user@example.com", 
             plan="PRO",
             clerk_user_id="clerk_user_123",
-            full_name="Clerk User"
+            full_name="Clerk User",
+            role="user"
         )
     
     return None
@@ -66,7 +69,8 @@ async def get_current_user(request: Request) -> User:
         id="dev_user",
         email="dev@example.com",
         plan="PRO",  # Allow Pro features for development
-        clerk_user_id="dev_user"
+        clerk_user_id="dev_user",
+        role="user"
     )
 
 
@@ -82,7 +86,7 @@ async def get_current_user_optional(request: Request) -> Optional[User]:
     Optional authentication - returns None if no valid session.
     """
     try:
-        return await get_current_user(request)
+        return await get_current_user_from_clerk(request)
     except HTTPException:
         return None
 
@@ -96,16 +100,26 @@ async def get_current_user_form_upload(request: Request) -> User:
 
 async def require_auth(request: Request) -> User:
     """
-    Require authentication - alias for get_current_user.
+    Require authentication - throws 401 if not authenticated.
     """
-    return await get_current_user(request)
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return user
 
 
 async def require_auth_unified(request: Request) -> User:
     """
-    Require authentication unified - alias for get_current_user.
+    Require authentication unified - alias for require_auth.
     """
-    return await get_current_user(request)
+    return await require_auth(request)
+
+
+async def require_auth_form_upload(request: Request) -> User:
+    """
+    Require authentication for form uploads - alias for require_auth.
+    """
+    return await require_auth(request)
 
 
 def require_plan(required: str):
