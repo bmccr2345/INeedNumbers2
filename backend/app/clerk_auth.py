@@ -40,6 +40,10 @@ class User:
         self.full_name = kwargs.get("full_name", "")
         for k, v in kwargs.items():
             setattr(self, k, v)
+    
+    def dict(self):
+        """Return dict representation of User for Pydantic compatibility"""
+        return self.__dict__
 
 
 def map_clerk_plan_to_internal(clerk_plan_key: str) -> str:
