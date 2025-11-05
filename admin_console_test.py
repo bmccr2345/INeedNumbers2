@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any
 import time
 
 class AdminConsoleAPITester:
-    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://clerk-migrate-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

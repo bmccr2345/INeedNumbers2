@@ -16,7 +16,7 @@ def debug_affordability_response():
     }
     
     response = requests.post(
-        "https://authflow-fix-4.preview.emergentagent.com/api/auth/login",
+        "https://clerk-migrate-fix.preview.emergentagent.com/api/auth/login",
         json=login_data,
         timeout=15
     )
@@ -42,7 +42,7 @@ def debug_affordability_response():
     }
     
     response = requests.post(
-        "https://authflow-fix-4.preview.emergentagent.com/api/ai-coach-v2/generate",
+        "https://clerk-migrate-fix.preview.emergentagent.com/api/ai-coach-v2/generate",
         json=affordability_data,
         cookies=cookies,
         timeout=30

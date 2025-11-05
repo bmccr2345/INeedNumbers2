@@ -14,7 +14,7 @@ def test_plan_gating_with_free_user():
     print("=" * 60)
     
     tester = DealPackAPITester()
-    base_url = "https://authflow-fix-4.preview.emergentagent.com"
+    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
     
     # Try to find a FREE user or create test scenario
     print("🔍 Looking for FREE user to test plan gating...")

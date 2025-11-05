@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_login_with_correct_password():
-    base_url = "https://authflow-fix-4.preview.emergentagent.com"
+    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
     
     print("🔐 Testing login with correct password...")
     

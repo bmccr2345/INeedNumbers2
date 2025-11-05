@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 
 class AICoachPnLTester:
-    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://clerk-migrate-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         self.test_user_email = "demo@demo.com"
