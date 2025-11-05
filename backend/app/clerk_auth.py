@@ -14,8 +14,19 @@ logger = logging.getLogger(__name__)
 CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 CLERK_API_BASE = "https://api.clerk.com/v1"
 
+# Try to load from dotenv if not found
 if not CLERK_SECRET_KEY:
-    raise ValueError("CLERK_SECRET_KEY environment variable is required for production")
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
+    except ImportError:
+        pass
+
+if not CLERK_SECRET_KEY:
+    logger.warning("CLERK_SECRET_KEY not configured - authentication will fail in production")
+    # For development, we can continue without it
+    CLERK_SECRET_KEY = "missing"
 
 
 class User:
