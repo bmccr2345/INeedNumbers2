@@ -43,29 +43,60 @@ def map_clerk_plan_to_internal(clerk_plan_key: str) -> str:
 
 async def validate_clerk_session(session_token: str) -> Optional[dict]:
     """
-    Validate Clerk session token with Clerk API.
+    Validate Clerk session token (JWT) with Clerk API.
     Returns session data if valid, None if invalid.
     """
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            # First, verify the session exists and is active
-            response = await client.get(
-                f"{CLERK_API_BASE}/sessions/{session_token}",
+            # For JWT session tokens, we need to verify them differently
+            # Try to verify the JWT and get current session info
+            response = await client.post(
+                f"{CLERK_API_BASE}/sessions/{session_token}/verify",
                 headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"}
             )
             
-            if response.status_code != 200:
-                logger.warning(f"Invalid Clerk session: {response.status_code}")
-                return None
+            if response.status_code == 200:
+                return response.json()
             
-            session_data = response.json()
+            # If verify endpoint doesn't work, try direct session lookup
+            # Extract session ID from JWT if possible
+            try:
+                import jwt
+                import base64
+                import json
+                
+                # Decode JWT payload (without verification for session ID)
+                parts = session_token.split('.')
+                if len(parts) >= 2:
+                    # Decode payload
+                    payload_b64 = parts[1]
+                    # Add padding if needed
+                    payload_b64 += '=' * (4 - len(payload_b64) % 4)
+                    payload_bytes = base64.urlsafe_b64decode(payload_b64)
+                    payload = json.loads(payload_bytes)
+                    
+                    session_id = payload.get('sid')  # Session ID from JWT
+                    user_id = payload.get('sub')     # User ID from JWT
+                    
+                    if session_id:
+                        # Try to get session by session ID
+                        response = await client.get(
+                            f"{CLERK_API_BASE}/sessions/{session_id}",
+                            headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"}
+                        )
+                        
+                        if response.status_code == 200:
+                            session_data = response.json()
+                            # Add user_id to session data if not present
+                            if 'user_id' not in session_data and user_id:
+                                session_data['user_id'] = user_id
+                            return session_data
             
-            # Check if session is active
-            if session_data.get("status") != "active":
-                logger.warning(f"Inactive Clerk session: {session_data.get('status')}")
-                return None
+            except Exception as jwt_error:
+                logger.debug(f"JWT parsing failed: {jwt_error}")
             
-            return session_data
+            logger.warning(f"Invalid Clerk session: {response.status_code}")
+            return None
     
     except Exception as e:
         logger.error(f"Error validating Clerk session: {e}")
