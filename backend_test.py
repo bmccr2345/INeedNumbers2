@@ -1411,80 +1411,29 @@ class DealPackAPITester:
         """Test AI Coach endpoint that was previously returning 500 errors"""
         print("\n🤖 TESTING AI COACH ENDPOINT AFTER ATLAS FIX...")
         
-        print("   🔍 Testing POST /api/ai-coach-v2/generate...")
+        # Test AI Coach endpoint - expecting either 200 (working) or 401 (auth required), NOT 500
+        success, response = self.run_test(
+            "AI Coach Generate",
+            "POST",
+            "api/ai-coach-v2/generate",
+            200,  # Try for 200 first
+            data=self.sample_ai_coach_data,
+            auth_required=False
+        )
         
-        try:
-            import requests
-            
-            # Test without authentication first
-            response = requests.post(
-                f"{self.base_url}/api/ai-coach-v2/generate",
-                json=self.sample_ai_coach_data,
-                timeout=15
-            )
-            
-            print(f"   📊 Status Code: {response.status_code}")
-            
-            if response.status_code == 401:
-                print("   ✅ Proper 401 Unauthorized (authentication required)")
-                return True, {
-                    "status": response.status_code,
-                    "success": True,
-                    "message": "Proper authentication required"
-                }
-            elif response.status_code == 200:
-                print("   ✅ 200 OK - Endpoint accessible")
-                try:
-                    data = response.json()
-                    print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
-                    return True, {
-                        "status": response.status_code,
-                        "success": True,
-                        "message": "AI Coach endpoint working",
-                        "data_preview": str(data)[:200]
-                    }
-                except:
-                    print("   ⚠️  200 OK but invalid JSON")
-                    return False, {
-                        "status": response.status_code,
-                        "success": False,
-                        "message": "Invalid JSON response"
-                    }
-            elif response.status_code == 500:
-                print("   ❌ 500 Internal Server Error - MongoDB connection issue")
-                try:
-                    error_data = response.json()
-                    print(f"   ❌ Error details: {error_data}")
-                except:
-                    print(f"   ❌ Error text: {response.text[:200]}")
-                return False, {
-                    "status": response.status_code,
-                    "success": False,
-                    "message": "500 Internal Server Error - Database issue",
-                    "error_details": response.text[:200]
-                }
-            else:
-                print(f"   ⚠️  Unexpected status code: {response.status_code}")
-                return False, {
-                    "status": response.status_code,
-                    "success": False,
-                    "message": f"Unexpected status: {response.status_code}"
-                }
-                
-        except requests.exceptions.Timeout:
-            print("   ❌ Request timeout")
-            return False, {
-                "status": "timeout",
-                "success": False,
-                "message": "Request timeout"
-            }
-        except Exception as e:
-            print(f"   ❌ Error: {e}")
-            return False, {
-                "status": "error",
-                "success": False,
-                "message": str(e)
-            }
+        # If we got 401, that's also acceptable (auth required)
+        if not success and isinstance(response, dict):
+            # Check if it's a 401 auth error (which is acceptable)
+            if "401" in str(response) or "authentication" in str(response).lower():
+                success = True
+                print("   ✅ AI Coach endpoint - Proper authentication required (401)")
+        
+        if not success:
+            # Check if it's a 500 error (the problem we're testing for)
+            if "500" in str(response):
+                print("   ❌ AI Coach endpoint - 500 Internal Server Error (MongoDB issue)")
+        
+        return success, response
     
     def test_tracker_endpoints_after_atlas_fix(self):
         """Test Tracker endpoints that were previously returning 500 errors"""
