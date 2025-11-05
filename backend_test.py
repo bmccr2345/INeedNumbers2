@@ -1440,87 +1440,38 @@ class DealPackAPITester:
         print("\n📊 TESTING TRACKER ENDPOINTS AFTER ATLAS FIX...")
         
         endpoints_to_test = [
-            ("GET /api/tracker/settings", "api/tracker/settings", "GET"),
-            ("GET /api/cap-tracker/config", "api/cap-tracker/config", "GET")
+            ("Tracker Settings", "api/tracker/settings", [200, 401]),
+            ("Cap Tracker Config", "api/cap-tracker/config", [200, 401])
         ]
         
         results = {}
         successful_endpoints = 0
         
-        for endpoint_name, endpoint_path, method in endpoints_to_test:
-            print(f"\n   🔍 Testing {endpoint_name}...")
+        for endpoint_name, endpoint_path, expected_statuses in endpoints_to_test:
+            # Test endpoint - expecting either 200 (working) or 401 (auth required), NOT 500
+            success, response = self.run_test(
+                endpoint_name,
+                "GET",
+                endpoint_path,
+                expected_statuses[0],  # Try for 200 first
+                auth_required=False
+            )
             
-            try:
-                import requests
-                response = requests.get(
-                    f"{self.base_url}/{endpoint_path}",
-                    timeout=15
-                )
-                
-                print(f"   📊 Status Code: {response.status_code}")
-                
-                # Check if we get proper response (not 500 error)
-                if response.status_code == 401:
-                    print("   ✅ Proper 401 Unauthorized (authentication required)")
-                    successful_endpoints += 1
-                    results[endpoint_name] = {
-                        "status": response.status_code,
-                        "success": True,
-                        "message": "Proper authentication required"
-                    }
-                elif response.status_code == 200:
-                    print("   ✅ 200 OK - Endpoint accessible")
-                    try:
-                        data = response.json()
-                        print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
-                        successful_endpoints += 1
-                        results[endpoint_name] = {
-                            "status": response.status_code,
-                            "success": True,
-                            "message": "Endpoint working with data",
-                            "data_preview": str(data)[:200]
-                        }
-                    except:
-                        print("   ⚠️  200 OK but invalid JSON")
-                        results[endpoint_name] = {
-                            "status": response.status_code,
-                            "success": False,
-                            "message": "Invalid JSON response"
-                        }
-                elif response.status_code == 500:
-                    print("   ❌ 500 Internal Server Error - MongoDB connection issue")
-                    try:
-                        error_data = response.json()
-                        print(f"   ❌ Error details: {error_data}")
-                    except:
-                        print(f"   ❌ Error text: {response.text[:200]}")
-                    results[endpoint_name] = {
-                        "status": response.status_code,
-                        "success": False,
-                        "message": "500 Internal Server Error - Database issue"
-                    }
-                else:
-                    print(f"   ⚠️  Unexpected status code: {response.status_code}")
-                    results[endpoint_name] = {
-                        "status": response.status_code,
-                        "success": False,
-                        "message": f"Unexpected status: {response.status_code}"
-                    }
-                    
-            except requests.exceptions.Timeout:
-                print("   ❌ Request timeout")
-                results[endpoint_name] = {
-                    "status": "timeout",
-                    "success": False,
-                    "message": "Request timeout"
-                }
-            except Exception as e:
-                print(f"   ❌ Error: {e}")
-                results[endpoint_name] = {
-                    "status": "error",
-                    "success": False,
-                    "message": str(e)
-                }
+            # If we got 401, that's also acceptable (auth required)
+            if not success and isinstance(response, dict):
+                # Check if it's a 401 auth error (which is acceptable)
+                if "401" in str(response) or "authentication" in str(response).lower():
+                    success = True
+                    print(f"   ✅ {endpoint_name} - Proper authentication required (401)")
+            
+            if success:
+                successful_endpoints += 1
+                results[endpoint_name] = {"success": True, "response": response}
+            else:
+                results[endpoint_name] = {"success": False, "response": response}
+                # Check if it's a 500 error (the problem we're testing for)
+                if "500" in str(response):
+                    print(f"   ❌ {endpoint_name} - 500 Internal Server Error (MongoDB issue)")
         
         success_rate = successful_endpoints / len(endpoints_to_test)
         overall_success = success_rate >= 0.5  # At least 1/2 endpoints working
