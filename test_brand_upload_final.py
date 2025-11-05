@@ -6,7 +6,7 @@ import io
 
 def test_brand_upload_fix():
     """Test that the ALLOWED_MIME configuration fix is working"""
-    base_url = "https://authflow-fix-4.preview.emergentagent.com"
+    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
     
     print("🎨 Testing Brand Upload Configuration Fix...")
     print("   Verifying that 'ALLOWED_MIME is not defined' error is resolved")

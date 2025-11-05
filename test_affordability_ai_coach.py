@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class AffordabilityAICoachTester:
-    def __init__(self, base_url="https://authflow-fix-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://clerk-migrate-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         self.auth_cookies = None

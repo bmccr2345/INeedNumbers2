@@ -13,7 +13,7 @@ def test_security_headers():
     print("🔒 Testing Security Headers...")
     
     try:
-        response = requests.get("https://authflow-fix-4.preview.emergentagent.com/api/health", timeout=10)
+        response = requests.get("https://clerk-migrate-fix.preview.emergentagent.com/api/health", timeout=10)
         headers = response.headers
         
         security_headers = {
@@ -52,7 +52,7 @@ def test_authentication():
     
     try:
         response = requests.post(
-            "https://authflow-fix-4.preview.emergentagent.com/api/auth/login",
+            "https://clerk-migrate-fix.preview.emergentagent.com/api/auth/login",
             json=login_data,
             timeout=10
         )
@@ -95,7 +95,7 @@ def test_core_apis(auth_token):
     
     for name, method, endpoint, needs_auth in endpoints:
         try:
-            url = f"https://authflow-fix-4.preview.emergentagent.com{endpoint}"
+            url = f"https://clerk-migrate-fix.preview.emergentagent.com{endpoint}"
             request_headers = headers if needs_auth else {}
             
             response = requests.get(url, headers=request_headers, timeout=10)
@@ -124,7 +124,7 @@ def test_plan_access_control(auth_token):
     # Test P&L endpoints (should work for PRO user)
     try:
         response = requests.get(
-            "https://authflow-fix-4.preview.emergentagent.com/api/pnl/deals?month=2025-01",
+            "https://clerk-migrate-fix.preview.emergentagent.com/api/pnl/deals?month=2025-01",
             headers=headers,
             timeout=10
         )
@@ -145,11 +145,11 @@ def test_cors_allowlist():
     print("\n🌐 Testing CORS Allowlist...")
     
     # Test with allowed origin
-    allowed_origin = "https://authflow-fix-4.preview.emergentagent.com"
+    allowed_origin = "https://clerk-migrate-fix.preview.emergentagent.com"
     
     try:
         response = requests.options(
-            "https://authflow-fix-4.preview.emergentagent.com/api/health",
+            "https://clerk-migrate-fix.preview.emergentagent.com/api/health",
             headers={
                 'Origin': allowed_origin,
                 'Access-Control-Request-Method': 'GET'
@@ -182,7 +182,7 @@ def test_webhook_endpoint():
     
     try:
         response = requests.post(
-            "https://authflow-fix-4.preview.emergentagent.com/api/stripe/webhook",
+            "https://clerk-migrate-fix.preview.emergentagent.com/api/stripe/webhook",
             json=webhook_data,
             timeout=10
         )
