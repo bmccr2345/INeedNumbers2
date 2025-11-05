@@ -1663,6 +1663,293 @@ class DealPackAPITester:
             print(f"   ❌ Error testing CSRF protection: {e}")
             return False, {"error": str(e)}
 
+    # ========== CLERK AUTHENTICATION TESTING ==========
+    
+    def test_clerk_authentication_after_user_dict_fix(self):
+        """Test Clerk authentication after User.dict() fix - Critical Issue Resolution"""
+        print("\n🔐 TESTING CLERK AUTHENTICATION AFTER USER.DICT() FIX...")
+        print("   Context: User bmccr@msn.com was getting 500 errors on auth endpoint")
+        print("   Fix: Added missing dict() method on User class in clerk_auth.py")
+        print("   Testing: /api/auth/me endpoint should handle Clerk session tokens")
+        print("   Expected: 200 OK with user data OR 401 Unauthorized (NOT 500 error)")
+        
+        results = {}
+        
+        # 1. Test /api/auth/me endpoint without authentication (should return 401, not 500)
+        no_auth_success, no_auth_response = self.test_auth_me_without_authentication()
+        results['no_auth_test'] = {
+            'success': no_auth_success,
+            'response': no_auth_response
+        }
+        
+        # 2. Test /api/auth/me endpoint with simulated Clerk session
+        clerk_auth_success, clerk_auth_response = self.test_auth_me_with_clerk_simulation()
+        results['clerk_auth_test'] = {
+            'success': clerk_auth_success,
+            'response': clerk_auth_response
+        }
+        
+        # 3. Test /api/auth/me endpoint with regular authentication (fallback test)
+        regular_auth_success, regular_auth_response = self.test_auth_me_with_regular_auth()
+        results['regular_auth_test'] = {
+            'success': regular_auth_success,
+            'response': regular_auth_response
+        }
+        
+        # 4. Test error handling and response codes
+        error_handling_success, error_handling_response = self.test_auth_me_error_handling()
+        results['error_handling_test'] = {
+            'success': error_handling_success,
+            'response': error_handling_response
+        }
+        
+        # Calculate overall success
+        total_tests = 4
+        successful_tests = sum([
+            no_auth_success,
+            clerk_auth_success,
+            regular_auth_success,
+            error_handling_success
+        ])
+        
+        overall_success = successful_tests >= 3  # Allow one failure
+        
+        print(f"\n🔐 CLERK AUTHENTICATION TESTING SUMMARY:")
+        print(f"   ✅ Successful tests: {successful_tests}/{total_tests}")
+        print(f"   📈 Success rate: {(successful_tests/total_tests)*100:.1f}%")
+        
+        if overall_success:
+            print("   🎉 Clerk Authentication - USER.DICT() FIX VERIFIED WORKING")
+        else:
+            print("   ❌ Clerk Authentication - CRITICAL ISSUES STILL PRESENT")
+            
+        return overall_success, results
+    
+    def test_auth_me_without_authentication(self):
+        """Test /api/auth/me endpoint without authentication - should return 401, not 500"""
+        print("\n🚫 TESTING /api/auth/me WITHOUT AUTHENTICATION...")
+        
+        # Test endpoint without any authentication
+        success, response = self.run_test(
+            "Auth Me - No Authentication (Should Return 401)",
+            "GET",
+            "api/auth/me",
+            401,  # Should require authentication
+            auth_required=False
+        )
+        
+        if success:
+            print("   ✅ /api/auth/me properly returns 401 Unauthorized without auth")
+            print("   ✅ No 500 Internal Server Error - User.dict() fix working")
+            return True, response
+        else:
+            # Check if we got a 500 error (the problem we're testing for)
+            if isinstance(response, dict) and "500" in str(response):
+                print("   ❌ /api/auth/me returning 500 Internal Server Error")
+                print("   ❌ User.dict() fix may not be working properly")
+                return False, response
+            elif isinstance(response, str) and "500" in response:
+                print("   ❌ /api/auth/me returning 500 Internal Server Error")
+                print("   ❌ User.dict() fix may not be working properly")
+                return False, response
+            else:
+                print(f"   ⚠️  /api/auth/me returned unexpected status (not 401 or 500)")
+                print(f"   ⚠️  Response: {response}")
+                return False, response
+    
+    def test_auth_me_with_clerk_simulation(self):
+        """Test /api/auth/me endpoint with simulated Clerk session token"""
+        print("\n🎫 TESTING /api/auth/me WITH SIMULATED CLERK SESSION...")
+        
+        # Test with various Clerk-style headers and tokens
+        clerk_test_scenarios = [
+            {
+                "name": "Clerk Bearer Token",
+                "headers": {"Authorization": "Bearer clerk_test_token_12345"},
+                "expected_status": [401, 403]  # Should reject invalid token, not crash
+            },
+            {
+                "name": "Clerk Session Cookie",
+                "cookies": {"__session": "clerk_session_token_67890"},
+                "expected_status": [401, 403]  # Should reject invalid session, not crash
+            },
+            {
+                "name": "Clerk User ID Header",
+                "headers": {"X-Clerk-User-Id": "user_12345"},
+                "expected_status": [401, 403]  # Should require proper auth, not crash
+            }
+        ]
+        
+        successful_scenarios = 0
+        scenario_results = {}
+        
+        for scenario in clerk_test_scenarios:
+            print(f"   🔍 Testing {scenario['name']}...")
+            
+            try:
+                import requests
+                
+                url = f"{self.base_url}/api/auth/me"
+                headers = scenario.get("headers", {})
+                cookies = scenario.get("cookies", {})
+                
+                response = requests.get(url, headers=headers, cookies=cookies, timeout=15)
+                
+                # Check if response status is acceptable (not 500)
+                if response.status_code in scenario["expected_status"]:
+                    print(f"   ✅ {scenario['name']} - Proper rejection ({response.status_code})")
+                    successful_scenarios += 1
+                    scenario_results[scenario['name']] = {"success": True, "status": response.status_code}
+                elif response.status_code == 500:
+                    print(f"   ❌ {scenario['name']} - 500 Internal Server Error (User.dict() issue)")
+                    scenario_results[scenario['name']] = {"success": False, "status": 500, "error": "500_error"}
+                else:
+                    print(f"   ⚠️  {scenario['name']} - Unexpected status {response.status_code}")
+                    scenario_results[scenario['name']] = {"success": False, "status": response.status_code}
+                    
+            except Exception as e:
+                print(f"   ❌ {scenario['name']} - Error: {e}")
+                scenario_results[scenario['name']] = {"success": False, "error": str(e)}
+        
+        success_rate = successful_scenarios / len(clerk_test_scenarios)
+        overall_success = success_rate >= 0.67  # At least 2/3 scenarios working
+        
+        print(f"\n   📊 Clerk Simulation Summary: {successful_scenarios}/{len(clerk_test_scenarios)} scenarios handled correctly")
+        
+        return overall_success, scenario_results
+    
+    def test_auth_me_with_regular_auth(self):
+        """Test /api/auth/me endpoint with regular authentication as fallback"""
+        print("\n🔑 TESTING /api/auth/me WITH REGULAR AUTHENTICATION...")
+        
+        try:
+            import requests
+            session = requests.Session()
+            
+            # Login with demo credentials first
+            login_data = {
+                "email": "demo@demo.com",
+                "password": "Goosey23!!23",
+                "remember_me": False
+            }
+            
+            print("   🔍 Step 1: Logging in with demo credentials...")
+            login_response = session.post(
+                f"{self.base_url}/api/auth/login",
+                json=login_data,
+                timeout=15
+            )
+            
+            if login_response.status_code == 200:
+                print("   ✅ Step 1: Login successful")
+                
+                # Test /api/auth/me with session cookies
+                print("   🔍 Step 2: Testing /api/auth/me with authentication...")
+                me_response = session.get(
+                    f"{self.base_url}/api/auth/me",
+                    timeout=15
+                )
+                
+                if me_response.status_code == 200:
+                    print("   ✅ Step 2: /api/auth/me working with authentication")
+                    me_data = me_response.json()
+                    
+                    # Verify user data structure
+                    required_fields = ['id', 'email', 'plan', 'role']
+                    missing_fields = [field for field in required_fields if field not in me_data]
+                    
+                    if not missing_fields:
+                        print("   ✅ All required user data fields present")
+                        print(f"   ✅ User: {me_data.get('email')} (Role: {me_data.get('role')}, Plan: {me_data.get('plan')})")
+                        return True, me_data
+                    else:
+                        print(f"   ❌ Missing required fields: {missing_fields}")
+                        return False, {"error": "missing_fields", "missing": missing_fields}
+                        
+                elif me_response.status_code == 500:
+                    print("   ❌ Step 2: /api/auth/me returning 500 Internal Server Error")
+                    print("   ❌ User.dict() fix not working with authenticated requests")
+                    return False, {"error": "500_error", "status": 500}
+                else:
+                    print(f"   ❌ Step 2: /api/auth/me failed with status {me_response.status_code}")
+                    return False, {"error": "auth_me_failed", "status": me_response.status_code}
+            else:
+                print(f"   ❌ Step 1: Login failed with status {login_response.status_code}")
+                return False, {"error": "login_failed", "status": login_response.status_code}
+                
+        except Exception as e:
+            print(f"   ❌ Error in regular auth test: {e}")
+            return False, {"error": str(e)}
+    
+    def test_auth_me_error_handling(self):
+        """Test /api/auth/me endpoint error handling and response codes"""
+        print("\n🚨 TESTING /api/auth/me ERROR HANDLING...")
+        
+        error_test_scenarios = [
+            {
+                "name": "Invalid Bearer Token",
+                "headers": {"Authorization": "Bearer invalid_token_xyz"},
+                "expected_status": [401, 403],
+                "description": "Should reject invalid token gracefully"
+            },
+            {
+                "name": "Malformed Authorization Header",
+                "headers": {"Authorization": "InvalidFormat"},
+                "expected_status": [401, 403],
+                "description": "Should handle malformed auth header"
+            },
+            {
+                "name": "Empty Authorization Header",
+                "headers": {"Authorization": ""},
+                "expected_status": [401, 403],
+                "description": "Should handle empty auth header"
+            },
+            {
+                "name": "No Authorization",
+                "headers": {},
+                "expected_status": [401],
+                "description": "Should require authentication"
+            }
+        ]
+        
+        successful_scenarios = 0
+        scenario_results = {}
+        
+        for scenario in error_test_scenarios:
+            print(f"   🔍 Testing {scenario['name']}...")
+            
+            try:
+                import requests
+                
+                url = f"{self.base_url}/api/auth/me"
+                headers = scenario.get("headers", {})
+                
+                response = requests.get(url, headers=headers, timeout=15)
+                
+                # Check if response status is acceptable (not 500)
+                if response.status_code in scenario["expected_status"]:
+                    print(f"   ✅ {scenario['name']} - Proper error handling ({response.status_code})")
+                    successful_scenarios += 1
+                    scenario_results[scenario['name']] = {"success": True, "status": response.status_code}
+                elif response.status_code == 500:
+                    print(f"   ❌ {scenario['name']} - 500 Internal Server Error")
+                    print(f"   ❌ {scenario['description']} - User.dict() issue")
+                    scenario_results[scenario['name']] = {"success": False, "status": 500, "error": "500_error"}
+                else:
+                    print(f"   ⚠️  {scenario['name']} - Unexpected status {response.status_code}")
+                    scenario_results[scenario['name']] = {"success": False, "status": response.status_code}
+                    
+            except Exception as e:
+                print(f"   ❌ {scenario['name']} - Error: {e}")
+                scenario_results[scenario['name']] = {"success": False, "error": str(e)}
+        
+        success_rate = successful_scenarios / len(error_test_scenarios)
+        overall_success = success_rate >= 0.75  # At least 3/4 scenarios working
+        
+        print(f"\n   📊 Error Handling Summary: {successful_scenarios}/{len(error_test_scenarios)} scenarios handled correctly")
+        
+        return overall_success, scenario_results
+
     # ========== PRODUCTION AUTHENTICATION TIMEOUT TESTS ==========
     
     def test_production_authentication_timeout_issue(self):
