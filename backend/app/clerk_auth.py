@@ -123,6 +123,10 @@ async def get_clerk_user_data(user_id: str) -> Optional[dict]:
     Fetch user data from Clerk API.
     Returns user data if successful, None if failed.
     """
+    if CLERK_SECRET_KEY == "missing":
+        logger.warning("CLERK_SECRET_KEY not configured - cannot fetch user data")
+        return None
+        
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
