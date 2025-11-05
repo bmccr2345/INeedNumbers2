@@ -22922,6 +22922,31 @@ def main_production_timeout_tests():
     
     return timeout_success
 
+def main_mongodb_atlas_tests():
+    """Main function for MongoDB Atlas connection and API endpoint testing"""
+    tester = DealPackAPITester()
+    
+    print("🚀 Starting MongoDB Atlas Connection and API Endpoint Testing...")
+    print(f"🌐 Base URL: {tester.base_url}")
+    print("🗄️  Context: Testing after MongoDB connection string update from 'sample_mflix' to 'ineednumbers'")
+    print("=" * 80)
+    
+    # Run MongoDB Atlas connection and endpoint testing
+    success, results = tester.test_mongodb_atlas_connection_and_endpoints()
+    
+    print("\n" + "=" * 80)
+    print(f"🏁 MongoDB Atlas Testing Complete!")
+    print(f"📊 Tests Run: {tester.tests_run}")
+    print(f"✅ Tests Passed: {tester.tests_passed}")
+    print(f"📈 Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 Overall Result: SUCCESS - MongoDB Atlas connection working")
+        return True
+    else:
+        print("❌ Overall Result: FAILURE - MongoDB Atlas connection issues found")
+        return False
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1:
