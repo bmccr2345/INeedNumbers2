@@ -290,17 +290,18 @@ def require_plan(required: str):
     Enforces actual plan restrictions.
     """
     def dep(user: User = Depends(get_current_user)):
-        # Define what plans can access what
-        plan_hierarchy = {
-            "FREE": {"FREE"},
-            "STARTER": {"FREE", "STARTER"}, 
-            "PRO": {"FREE", "STARTER", "PRO"}
+        # Define which user plans can access which requirements
+        # Key: required plan, Value: user plans that can access it
+        access_matrix = {
+            "FREE": {"FREE", "STARTER", "PRO"},      # Free features: all plans can access
+            "STARTER": {"STARTER", "PRO"},           # Starter features: STARTER and PRO only
+            "PRO": {"PRO"}                           # Pro features: PRO only
         }
         
         required_upper = required.upper()
-        allowed_plans = plan_hierarchy.get(required_upper, {"PRO"})
+        allowed_user_plans = access_matrix.get(required_upper, {"PRO"})
         
-        if user.plan not in allowed_plans:
+        if user.plan not in allowed_user_plans:
             logger.warning(f"User {user.email} with {user.plan} plan tried to access {required_upper} feature")
             raise HTTPException(
                 status_code=403,
