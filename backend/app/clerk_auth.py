@@ -57,6 +57,10 @@ async def validate_clerk_session(session_token: str) -> Optional[dict]:
     Validate Clerk session token (JWT) with Clerk API.
     Returns session data if valid, None if invalid.
     """
+    if CLERK_SECRET_KEY == "missing":
+        logger.warning("CLERK_SECRET_KEY not configured - cannot validate sessions")
+        return None
+        
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             # For JWT session tokens, we need to verify them differently
