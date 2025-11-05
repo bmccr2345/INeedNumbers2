@@ -22945,9 +22945,11 @@ if __name__ == "__main__":
             main_audit_logs_tests()
         elif test_type == "mobile":
             main_mobile_api_tests()
+        elif test_type == "mongodb" or test_type == "atlas":
+            main_mongodb_atlas_tests()
         else:
-            print("Available tests: timeout, production, pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile")
+            print("Available tests: timeout, production, pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile, mongodb")
             sys.exit(1)
     else:
-        # Default: run production timeout tests as requested in review
-        main_production_timeout_tests()
+        # Default: run MongoDB Atlas tests as requested in review
+        main_mongodb_atlas_tests()
