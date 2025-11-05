@@ -173,9 +173,11 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
         logger.warning("No user_id in Clerk session data")
         return None
     
-    # Fetch user data from Clerk
+    # Always fetch fresh user data from Clerk API for plan information
+    # JWT plan claims can be stale after metadata updates
     user_data = await get_clerk_user_data(user_id)
     if not user_data:
+        logger.warning(f"Could not fetch user data for {user_id}")
         return None
     
     # Extract user information
@@ -189,7 +191,7 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     if not primary_email and email_addresses:
         primary_email = email_addresses[0].get("email_address", "")
     
-    # Extract plan from public metadata
+    # Extract plan from FRESH metadata (not from JWT claims)
     public_metadata = user_data.get("public_metadata", {})
     clerk_plan_key = public_metadata.get("plan", "free_user")
     subscription_status = public_metadata.get("subscription_status", "active")
@@ -207,7 +209,7 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     last_name = user_data.get("last_name", "")
     full_name = f"{first_name} {last_name}".strip()
     
-    logger.info(f"Authenticated Clerk user: {primary_email} with plan: {internal_plan}")
+    logger.info(f"Authenticated Clerk user: {primary_email} with plan: {internal_plan} (from fresh API data)")
     
     return User(
         id=user_id,
