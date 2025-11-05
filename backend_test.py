@@ -30,6 +30,16 @@ class DealPackAPITester:
         self.starter_user_password = "demo123"
         # Production domain for testing
         self.production_domain = "https://ineednumbers.com"
+        # Test data for AI Coach
+        self.sample_ai_coach_data = {
+            "context": "pnl_analysis",
+            "data": {
+                "monthly_income": 15000,
+                "monthly_expenses": 8000,
+                "deals_closed": 3,
+                "average_commission": 5000
+            }
+        }
         self.sample_agent_info = {
             "agent_name": "Sarah Johnson",
             "brokerage": "Premier Real Estate Group",
