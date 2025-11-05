@@ -23085,6 +23085,38 @@ def main_mongodb_atlas_tests():
         print("❌ Overall Result: FAILURE - MongoDB Atlas connection issues found")
         return False
 
+def main_clerk_auth_tests():
+    """Main function to run Clerk authentication tests after User.dict() fix"""
+    tester = DealPackAPITester()
+    
+    print("🚀 Starting Clerk Authentication Testing After User.dict() Fix...")
+    print(f"🌐 Base URL: {tester.base_url}")
+    print("🔐 Context: User bmccr@msn.com was getting 500 errors on auth endpoint")
+    print("🔧 Fix: Added missing dict() method on User class in clerk_auth.py")
+    print("🎯 Testing: /api/auth/me endpoint should handle Clerk session tokens")
+    print("✅ Expected: 200 OK with user data OR 401 Unauthorized (NOT 500 error)")
+    print("=" * 80)
+    
+    # Run Clerk authentication tests
+    success, results = tester.test_clerk_authentication_after_user_dict_fix()
+    
+    print("\n" + "=" * 80)
+    print(f"🏁 Clerk Authentication Testing Complete!")
+    print(f"📊 Tests Run: {tester.tests_run}")
+    print(f"✅ Tests Passed: {tester.tests_passed}")
+    print(f"📈 Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 Overall Result: SUCCESS - User.dict() fix verified working")
+        print("✅ /api/auth/me endpoint no longer returns 500 errors")
+        print("✅ Proper authentication handling confirmed")
+        return True
+    else:
+        print("❌ Overall Result: FAILURE - Clerk authentication issues found")
+        print("❌ User.dict() fix may not be working properly")
+        print("❌ /api/auth/me endpoint may still have 500 errors")
+        return False
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1:
