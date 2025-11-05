@@ -1299,6 +1299,455 @@ class DealPackAPITester:
         except Exception as e:
             print(f"   ❌ Error testing security configuration: {e}")
             return False, {"error": str(e)}
+
+    # ========== MONGODB ATLAS CONNECTION AND API ENDPOINTS TESTS ==========
+    
+    def test_mongodb_atlas_connection_and_endpoints(self):
+        """Test MongoDB Atlas connection and backend API endpoints after database fix"""
+        print("\n🗄️  TESTING MONGODB ATLAS CONNECTION AND API ENDPOINTS...")
+        print("   Context: MongoDB connection string updated from 'sample_mflix' to 'ineednumbers' database")
+        print("   Testing: P&L endpoints, AI Coach endpoint, Tracker endpoints")
+        print("   Expected: 200 OK with data OR 401 unauthorized (NOT 500 Internal Server Error)")
+        
+        results = {}
+        
+        # 1. Test P&L Endpoints
+        pnl_success, pnl_response = self.test_pnl_endpoints_after_atlas_fix()
+        results['pnl_endpoints'] = {
+            'success': pnl_success,
+            'response': pnl_response
+        }
+        
+        # 2. Test AI Coach Endpoint
+        ai_coach_success, ai_coach_response = self.test_ai_coach_endpoint_after_atlas_fix()
+        results['ai_coach_endpoint'] = {
+            'success': ai_coach_success,
+            'response': ai_coach_response
+        }
+        
+        # 3. Test Tracker Endpoints
+        tracker_success, tracker_response = self.test_tracker_endpoints_after_atlas_fix()
+        results['tracker_endpoints'] = {
+            'success': tracker_success,
+            'response': tracker_response
+        }
+        
+        # 4. Test with Authentication
+        auth_test_success, auth_test_response = self.test_endpoints_with_authentication()
+        results['authenticated_endpoints'] = {
+            'success': auth_test_success,
+            'response': auth_test_response
+        }
+        
+        # Calculate overall success
+        total_tests = 4
+        successful_tests = sum([
+            pnl_success,
+            ai_coach_success,
+            tracker_success,
+            auth_test_success
+        ])
+        
+        overall_success = successful_tests >= 3  # Allow one failure
+        
+        print(f"\n🗄️  MONGODB ATLAS CONNECTION TESTING SUMMARY:")
+        print(f"   ✅ Successful tests: {successful_tests}/{total_tests}")
+        print(f"   📈 Success rate: {(successful_tests/total_tests)*100:.1f}%")
+        
+        if overall_success:
+            print("   🎉 MongoDB Atlas Connection - ENDPOINTS WORKING CORRECTLY")
+        else:
+            print("   ❌ MongoDB Atlas Connection - CRITICAL ENDPOINT ISSUES FOUND")
+            
+        return overall_success, results
+    
+    def test_pnl_endpoints_after_atlas_fix(self):
+        """Test P&L endpoints that were previously returning 500 errors"""
+        print("\n💰 TESTING P&L ENDPOINTS AFTER ATLAS FIX...")
+        
+        endpoints_to_test = [
+            ("GET /api/pnl/active-deals", "api/pnl/active-deals", "GET"),
+            ("GET /api/pnl/summary?month=2025-11", "api/pnl/summary?month=2025-11", "GET"),
+            ("GET /api/pnl/deals?month=2025-11", "api/pnl/deals?month=2025-11", "GET")
+        ]
+        
+        results = {}
+        successful_endpoints = 0
+        
+        for endpoint_name, endpoint_path, method in endpoints_to_test:
+            print(f"\n   🔍 Testing {endpoint_name}...")
+            
+            try:
+                import requests
+                response = requests.get(
+                    f"{self.base_url}/{endpoint_path}",
+                    timeout=15
+                )
+                
+                print(f"   📊 Status Code: {response.status_code}")
+                
+                # Check if we get proper response (not 500 error)
+                if response.status_code == 401:
+                    print("   ✅ Proper 401 Unauthorized (authentication required)")
+                    successful_endpoints += 1
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": True,
+                        "message": "Proper authentication required"
+                    }
+                elif response.status_code == 200:
+                    print("   ✅ 200 OK - Endpoint accessible")
+                    try:
+                        data = response.json()
+                        print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
+                        successful_endpoints += 1
+                        results[endpoint_name] = {
+                            "status": response.status_code,
+                            "success": True,
+                            "message": "Endpoint working with data",
+                            "data_preview": str(data)[:200]
+                        }
+                    except:
+                        print("   ⚠️  200 OK but invalid JSON")
+                        results[endpoint_name] = {
+                            "status": response.status_code,
+                            "success": False,
+                            "message": "Invalid JSON response"
+                        }
+                elif response.status_code == 500:
+                    print("   ❌ 500 Internal Server Error - MongoDB connection issue")
+                    try:
+                        error_data = response.json()
+                        print(f"   ❌ Error details: {error_data}")
+                    except:
+                        print(f"   ❌ Error text: {response.text[:200]}")
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": False,
+                        "message": "500 Internal Server Error - Database issue"
+                    }
+                else:
+                    print(f"   ⚠️  Unexpected status code: {response.status_code}")
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": False,
+                        "message": f"Unexpected status: {response.status_code}"
+                    }
+                    
+            except requests.exceptions.Timeout:
+                print("   ❌ Request timeout")
+                results[endpoint_name] = {
+                    "status": "timeout",
+                    "success": False,
+                    "message": "Request timeout"
+                }
+            except Exception as e:
+                print(f"   ❌ Error: {e}")
+                results[endpoint_name] = {
+                    "status": "error",
+                    "success": False,
+                    "message": str(e)
+                }
+        
+        success_rate = successful_endpoints / len(endpoints_to_test)
+        overall_success = success_rate >= 0.67  # At least 2/3 endpoints working
+        
+        print(f"\n   📊 P&L Endpoints Summary: {successful_endpoints}/{len(endpoints_to_test)} working")
+        
+        return overall_success, results
+    
+    def test_ai_coach_endpoint_after_atlas_fix(self):
+        """Test AI Coach endpoint that was previously returning 500 errors"""
+        print("\n🤖 TESTING AI COACH ENDPOINT AFTER ATLAS FIX...")
+        
+        print("   🔍 Testing POST /api/ai-coach-v2/generate...")
+        
+        try:
+            import requests
+            
+            # Test without authentication first
+            response = requests.post(
+                f"{self.base_url}/api/ai-coach-v2/generate",
+                json=self.sample_ai_coach_data,
+                timeout=15
+            )
+            
+            print(f"   📊 Status Code: {response.status_code}")
+            
+            if response.status_code == 401:
+                print("   ✅ Proper 401 Unauthorized (authentication required)")
+                return True, {
+                    "status": response.status_code,
+                    "success": True,
+                    "message": "Proper authentication required"
+                }
+            elif response.status_code == 200:
+                print("   ✅ 200 OK - Endpoint accessible")
+                try:
+                    data = response.json()
+                    print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
+                    return True, {
+                        "status": response.status_code,
+                        "success": True,
+                        "message": "AI Coach endpoint working",
+                        "data_preview": str(data)[:200]
+                    }
+                except:
+                    print("   ⚠️  200 OK but invalid JSON")
+                    return False, {
+                        "status": response.status_code,
+                        "success": False,
+                        "message": "Invalid JSON response"
+                    }
+            elif response.status_code == 500:
+                print("   ❌ 500 Internal Server Error - MongoDB connection issue")
+                try:
+                    error_data = response.json()
+                    print(f"   ❌ Error details: {error_data}")
+                except:
+                    print(f"   ❌ Error text: {response.text[:200]}")
+                return False, {
+                    "status": response.status_code,
+                    "success": False,
+                    "message": "500 Internal Server Error - Database issue",
+                    "error_details": response.text[:200]
+                }
+            else:
+                print(f"   ⚠️  Unexpected status code: {response.status_code}")
+                return False, {
+                    "status": response.status_code,
+                    "success": False,
+                    "message": f"Unexpected status: {response.status_code}"
+                }
+                
+        except requests.exceptions.Timeout:
+            print("   ❌ Request timeout")
+            return False, {
+                "status": "timeout",
+                "success": False,
+                "message": "Request timeout"
+            }
+        except Exception as e:
+            print(f"   ❌ Error: {e}")
+            return False, {
+                "status": "error",
+                "success": False,
+                "message": str(e)
+            }
+    
+    def test_tracker_endpoints_after_atlas_fix(self):
+        """Test Tracker endpoints that were previously returning 500 errors"""
+        print("\n📊 TESTING TRACKER ENDPOINTS AFTER ATLAS FIX...")
+        
+        endpoints_to_test = [
+            ("GET /api/tracker/settings", "api/tracker/settings", "GET"),
+            ("GET /api/cap-tracker/config", "api/cap-tracker/config", "GET")
+        ]
+        
+        results = {}
+        successful_endpoints = 0
+        
+        for endpoint_name, endpoint_path, method in endpoints_to_test:
+            print(f"\n   🔍 Testing {endpoint_name}...")
+            
+            try:
+                import requests
+                response = requests.get(
+                    f"{self.base_url}/{endpoint_path}",
+                    timeout=15
+                )
+                
+                print(f"   📊 Status Code: {response.status_code}")
+                
+                # Check if we get proper response (not 500 error)
+                if response.status_code == 401:
+                    print("   ✅ Proper 401 Unauthorized (authentication required)")
+                    successful_endpoints += 1
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": True,
+                        "message": "Proper authentication required"
+                    }
+                elif response.status_code == 200:
+                    print("   ✅ 200 OK - Endpoint accessible")
+                    try:
+                        data = response.json()
+                        print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
+                        successful_endpoints += 1
+                        results[endpoint_name] = {
+                            "status": response.status_code,
+                            "success": True,
+                            "message": "Endpoint working with data",
+                            "data_preview": str(data)[:200]
+                        }
+                    except:
+                        print("   ⚠️  200 OK but invalid JSON")
+                        results[endpoint_name] = {
+                            "status": response.status_code,
+                            "success": False,
+                            "message": "Invalid JSON response"
+                        }
+                elif response.status_code == 500:
+                    print("   ❌ 500 Internal Server Error - MongoDB connection issue")
+                    try:
+                        error_data = response.json()
+                        print(f"   ❌ Error details: {error_data}")
+                    except:
+                        print(f"   ❌ Error text: {response.text[:200]}")
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": False,
+                        "message": "500 Internal Server Error - Database issue"
+                    }
+                else:
+                    print(f"   ⚠️  Unexpected status code: {response.status_code}")
+                    results[endpoint_name] = {
+                        "status": response.status_code,
+                        "success": False,
+                        "message": f"Unexpected status: {response.status_code}"
+                    }
+                    
+            except requests.exceptions.Timeout:
+                print("   ❌ Request timeout")
+                results[endpoint_name] = {
+                    "status": "timeout",
+                    "success": False,
+                    "message": "Request timeout"
+                }
+            except Exception as e:
+                print(f"   ❌ Error: {e}")
+                results[endpoint_name] = {
+                    "status": "error",
+                    "success": False,
+                    "message": str(e)
+                }
+        
+        success_rate = successful_endpoints / len(endpoints_to_test)
+        overall_success = success_rate >= 0.5  # At least 1/2 endpoints working
+        
+        print(f"\n   📊 Tracker Endpoints Summary: {successful_endpoints}/{len(endpoints_to_test)} working")
+        
+        return overall_success, results
+    
+    def test_endpoints_with_authentication(self):
+        """Test endpoints with proper authentication to verify data retrieval"""
+        print("\n🔐 TESTING ENDPOINTS WITH AUTHENTICATION...")
+        
+        try:
+            import requests
+            session = requests.Session()
+            
+            # Try to login with demo credentials
+            login_data = {
+                "email": self.demo_email,
+                "password": self.demo_password,
+                "remember_me": False
+            }
+            
+            print(f"   🔍 Attempting login with {self.demo_email}...")
+            login_response = session.post(
+                f"{self.base_url}/api/auth/login",
+                json=login_data,
+                timeout=15
+            )
+            
+            if login_response.status_code == 200:
+                print("   ✅ Authentication successful")
+                
+                # Test authenticated endpoints
+                authenticated_endpoints = [
+                    ("GET /api/pnl/active-deals", "api/pnl/active-deals"),
+                    ("GET /api/pnl/summary?month=2025-11", "api/pnl/summary?month=2025-11"),
+                    ("POST /api/ai-coach-v2/generate", "api/ai-coach-v2/generate")
+                ]
+                
+                results = {}
+                successful_endpoints = 0
+                
+                for endpoint_name, endpoint_path in authenticated_endpoints:
+                    print(f"\n   🔍 Testing authenticated {endpoint_name}...")
+                    
+                    try:
+                        if endpoint_name.startswith("POST"):
+                            response = session.post(
+                                f"{self.base_url}/{endpoint_path}",
+                                json=self.sample_ai_coach_data,
+                                timeout=15
+                            )
+                        else:
+                            response = session.get(
+                                f"{self.base_url}/{endpoint_path}",
+                                timeout=15
+                            )
+                        
+                        print(f"   📊 Status Code: {response.status_code}")
+                        
+                        if response.status_code == 200:
+                            print("   ✅ 200 OK - Data retrieved successfully")
+                            try:
+                                data = response.json()
+                                print(f"   ✅ Valid JSON response: {str(data)[:100]}...")
+                                successful_endpoints += 1
+                                results[endpoint_name] = {
+                                    "status": response.status_code,
+                                    "success": True,
+                                    "message": "Data retrieved successfully",
+                                    "data_preview": str(data)[:200]
+                                }
+                            except:
+                                print("   ⚠️  200 OK but invalid JSON")
+                                results[endpoint_name] = {
+                                    "status": response.status_code,
+                                    "success": False,
+                                    "message": "Invalid JSON response"
+                                }
+                        elif response.status_code == 500:
+                            print("   ❌ 500 Internal Server Error - Database issue persists")
+                            results[endpoint_name] = {
+                                "status": response.status_code,
+                                "success": False,
+                                "message": "500 Internal Server Error - Database issue"
+                            }
+                        else:
+                            print(f"   ⚠️  Status: {response.status_code}")
+                            results[endpoint_name] = {
+                                "status": response.status_code,
+                                "success": False,
+                                "message": f"Unexpected status: {response.status_code}"
+                            }
+                            
+                    except Exception as e:
+                        print(f"   ❌ Error testing {endpoint_name}: {e}")
+                        results[endpoint_name] = {
+                            "status": "error",
+                            "success": False,
+                            "message": str(e)
+                        }
+                
+                success_rate = successful_endpoints / len(authenticated_endpoints)
+                overall_success = success_rate >= 0.33  # At least 1/3 endpoints working with auth
+                
+                print(f"\n   📊 Authenticated Endpoints Summary: {successful_endpoints}/{len(authenticated_endpoints)} working")
+                
+                return overall_success, results
+                
+            else:
+                print(f"   ❌ Authentication failed - Status: {login_response.status_code}")
+                try:
+                    error_data = login_response.json()
+                    print(f"   ❌ Login error: {error_data}")
+                except:
+                    print(f"   ❌ Login error: {login_response.text[:200]}")
+                
+                return False, {
+                    "authentication_failed": True,
+                    "login_status": login_response.status_code,
+                    "message": "Could not authenticate to test endpoints"
+                }
+                
+        except Exception as e:
+            print(f"   ❌ Error in authentication test: {e}")
+            return False, {"error": str(e)}
     
     def test_csrf_protection_functional(self):
         """Test that CSRF protection remains functional"""
