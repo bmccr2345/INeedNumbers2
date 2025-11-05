@@ -23142,9 +23142,11 @@ if __name__ == "__main__":
             main_mobile_api_tests()
         elif test_type == "mongodb" or test_type == "atlas":
             main_mongodb_atlas_tests()
+        elif test_type == "clerk" or test_type == "clerk-auth":
+            main_clerk_auth_tests()
         else:
-            print("Available tests: timeout, production, pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile, mongodb")
+            print("Available tests: timeout, production, pdf, affordability, ai-coach, starter, 2fa, admin_crud, audit_logs, mobile, mongodb, clerk")
             sys.exit(1)
     else:
-        # Default: run MongoDB Atlas tests as requested in review
-        main_mongodb_atlas_tests()
+        # Default: run Clerk authentication tests as requested in review
+        main_clerk_auth_tests()
