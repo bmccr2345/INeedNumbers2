@@ -78,10 +78,20 @@ const GoalSettingsPanel = () => {
     const numericValue = parseFormattedNumber(value);
     // Allow empty or numeric values only
     if (numericValue === '' || /^\d+$/.test(numericValue)) {
-      setLocalSettings(prev => ({
-        ...prev,
-        [field]: numericValue
-      }));
+      setLocalSettings(prev => {
+        const updated = {
+          ...prev,
+          [field]: numericValue
+        };
+        
+        // Auto-calculate monthly GCI when annual GCI changes
+        if (field === 'annualGciGoal' && numericValue) {
+          const annual = parseInt(numericValue);
+          updated.monthlyGciTarget = Math.round(annual / 12).toString();
+        }
+        
+        return updated;
+      });
     }
   };
 
