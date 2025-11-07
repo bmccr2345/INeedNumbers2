@@ -67,44 +67,39 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
         reflection: currentEntry.reflection
       });
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/activity-log`,
+        {
           activities: nonZeroActivities,
           hours: nonZeroHours,
           reflection: currentEntry.reflection || null
-        })
-      });
-
-      if (response.ok) {
-        console.log('[ActivityModal] Success!');
-        // Reset form
-        setCurrentEntry({
-          activities: {},
-          hours: {},
-          reflection: ''
-        });
-        onClose();
-        if (onActivitySaved) {
-          onActivitySaved();
+        },
+        {
+          withCredentials: true
         }
-        
-        // Show success message
-        const successDiv = document.createElement('div');
-        successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
-        successDiv.textContent = '✅ Activities logged successfully!';
-        document.body.appendChild(successDiv);
-        
-        setTimeout(() => {
-          successDiv.remove();
-        }, 3000);
-      } else {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-        console.error('[ActivityModal] Server error:', response.status, errorData);
-        throw new Error(errorData.detail || 'Failed to log activities');
+      );
+
+      console.log('[ActivityModal] Success!');
+      // Reset form
+      setCurrentEntry({
+        activities: {},
+        hours: {},
+        reflection: ''
+      });
+      onClose();
+      if (onActivitySaved) {
+        onActivitySaved();
       }
+      
+      // Show success message
+      const successDiv = document.createElement('div');
+      successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+      successDiv.textContent = '✅ Activities logged successfully!';
+      document.body.appendChild(successDiv);
+      
+      setTimeout(() => {
+        successDiv.remove();
+      }, 3000);
     } catch (error) {
       console.error('[ActivityModal] Error:', error);
       alert(`Error logging activity: ${error.message}`);
