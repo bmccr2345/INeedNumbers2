@@ -112,6 +112,9 @@ const PnLPanel = () => {
       setExpenseCategories(categoriesResponse.data);
       setLeadSources(leadSourcesResponse.data);
       
+      // Load cap progress data
+      await loadCapProgress();
+      
       // Load P&L data for current month
       await loadPnLData();
     } catch (error) {
