@@ -101,23 +101,8 @@ const AICoachBanner = () => {
         });
         return;
       } catch (newApiError) {
-        console.warn('New AI Coach API failed, falling back to legacy:', newApiError);
-        
-        // Fallback to legacy API
-        const response = await fetch(`${BACKEND_URL}/api/ai-coach-v2/generate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCoachData(data);
-        } else {
-          throw new Error(`Legacy API failed: ${response.status}`);
-        }
+        console.error('AI Coach API failed:', newApiError);
+        throw newApiError; // Re-throw to be caught by outer catch block
       }
     } catch (error) {
       console.error('Error generating coaching:', error);
