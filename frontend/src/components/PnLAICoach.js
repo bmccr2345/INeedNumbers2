@@ -204,8 +204,8 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <CardHeader className="border-b flex-shrink-0">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col bg-white">
+        <CardHeader className="border-b flex-shrink-0 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-purple-600" />
@@ -225,7 +225,7 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-6">
+        <CardContent className="flex-1 overflow-y-auto p-6 bg-white">
           {!analysis && !isAnalyzing && (
             <div className="text-center py-12">
               <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
