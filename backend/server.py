@@ -6728,6 +6728,26 @@ async def create_pnl_expense(
         expense_dict = new_expense.dict()
         await db.pnl_expenses.insert_one(expense_dict)
         
+        # If a budget was provided, create/update the budget for this category and month
+        if expense_data.budget and expense_data.budget > 0:
+            await db.pnl_budgets.update_one(
+                {
+                    "user_id": current_user.id,
+                    "category": expense_data.category,
+                    "month": month
+                },
+                {
+                    "$set": {
+                        "user_id": current_user.id,
+                        "category": expense_data.category,
+                        "month": month,
+                        "monthly_budget": expense_data.budget
+                    }
+                },
+                upsert=True
+            )
+            logger.info(f"Budget set for {expense_data.category}: ${expense_data.budget} for {month}")
+        
         # If recurring, create expenses for all remaining months in the year
         if expense_data.recurring:
             current_month = expense_date_obj.month
