@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 
 const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) => {
   const [analysis, setAnalysis] = useState('');
