@@ -25,6 +25,36 @@ export const AuthProvider = ({ children }) => {
   // Configure axios for cookie-based authentication (legacy fallback)
   useEffect(() => {
     axios.defaults.withCredentials = true;
+    
+    // Add axios interceptor to include Clerk session token in Authorization header
+    // This handles cross-origin requests where cookies don't work
+    const interceptor = axios.interceptors.request.use((config) => {
+      // Get Clerk session token from cookies
+      const getClerkSessionToken = () => {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === '__session' || name === '__session_9mLiswkQ') {
+            return value;
+          }
+        }
+        return null;
+      };
+      
+      const sessionToken = getClerkSessionToken();
+      if (sessionToken && !config.headers['Authorization']) {
+        config.headers['Authorization'] = `Bearer ${sessionToken}`;
+      }
+      
+      return config;
+    }, (error) => {
+      return Promise.reject(error);
+    });
+    
+    // Cleanup interceptor on unmount
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
   }, []);
 
   // Check authentication status on app load
