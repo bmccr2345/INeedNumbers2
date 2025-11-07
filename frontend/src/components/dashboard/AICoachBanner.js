@@ -11,11 +11,13 @@ import {
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 // Removed js-cookie import - using HttpOnly cookies now
 
 const AICoachBanner = () => {
   const { user } = useAuth();
+  const { getToken } = useClerkAuth();
   const [isExpanded, setIsExpanded] = useState(false); // Start minimized by default
   const [coachData, setCoachData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
