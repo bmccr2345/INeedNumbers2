@@ -43,25 +43,42 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
   };
 
   const handleSubmit = async () => {
-    if (!currentEntry.activities || Object.keys(currentEntry.activities).length === 0) {
-      alert('Please enter some activity data to log.');
+    // Filter out zero values from activities
+    const nonZeroActivities = Object.entries(currentEntry.activities)
+      .filter(([_, value]) => value > 0)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+    if (Object.keys(nonZeroActivities).length === 0) {
+      alert('Please enter at least one activity with a value greater than 0.');
       return;
     }
 
+    // Filter out zero values from hours
+    const nonZeroHours = Object.entries(currentEntry.hours)
+      .filter(([_, value]) => value > 0)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
     try {
       setIsLogging(true);
+      console.log('[ActivityModal] Submitting:', {
+        activities: nonZeroActivities,
+        hours: nonZeroHours,
+        reflection: currentEntry.reflection
+      });
+
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          activities: currentEntry.activities,
-          hours: currentEntry.hours,
-          reflection: currentEntry.reflection
+          activities: nonZeroActivities,
+          hours: nonZeroHours,
+          reflection: currentEntry.reflection || null
         })
       });
 
       if (response.ok) {
+        console.log('[ActivityModal] Success!');
         // Reset form
         setCurrentEntry({
           activities: {},
@@ -83,11 +100,13 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
           successDiv.remove();
         }, 3000);
       } else {
-        throw new Error('Failed to log activities');
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        console.error('[ActivityModal] Server error:', response.status, errorData);
+        throw new Error(errorData.detail || 'Failed to log activities');
       }
     } catch (error) {
-      console.error('Error logging activities:', error);
-      alert('Error logging activities. Please try again.');
+      console.error('[ActivityModal] Error:', error);
+      alert(`Error logging activity: ${error.message}`);
     } finally {
       setIsLogging(false);
     }
