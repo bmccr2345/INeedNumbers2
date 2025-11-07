@@ -345,7 +345,12 @@ const DashboardPage = () => {
   const renderActivePanel = () => {
     switch (activeTab) {
       case 'homepage':
-        return <HomepagePanel />;
+        return (
+          <>
+            <HomepagePanel />
+            <AICoachDebugPanel />
+          </>
+        );
       case 'actiontracker':
         return <ActionTrackerPanel />;
       case 'mortgage':
