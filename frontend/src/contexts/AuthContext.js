@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 import safeLocalStorage from '../utils/safeStorage';
 
@@ -21,35 +21,43 @@ export const AuthProvider = ({ children }) => {
   // Get Clerk authentication state
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
   const { signOut } = useClerk();
+  const { getToken } = useClerkAuth();
+  
+  // Store getToken in ref to use in interceptor
+  const getTokenRef = useRef(getToken);
+  
+  useEffect(() => {
+    getTokenRef.current = getToken;
+  }, [getToken]);
 
-  // Configure axios for cookie-based authentication (legacy fallback)
+  // Configure axios interceptor to add Clerk session token to all requests
   useEffect(() => {
     axios.defaults.withCredentials = true;
     
-    // Add axios interceptor to include Clerk session token in Authorization header
-    // This handles cross-origin requests where cookies don't work
-    const interceptor = axios.interceptors.request.use((config) => {
-      // Get Clerk session token from cookies
-      const getClerkSessionToken = () => {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-          const [name, value] = cookie.trim().split('=');
-          if (name === '__session' || name === '__session_9mLiswkQ') {
-            return value;
+    // Add axios interceptor to include Clerk JWT token in Authorization header
+    // This enables cross-origin authentication between different domains
+    const interceptor = axios.interceptors.request.use(
+      async (config) => {
+        try {
+          // Get fresh JWT token from Clerk using official getToken() method
+          // This works across domains and returns a valid JWT
+          const token = await getTokenRef.current();
+          
+          if (token && !config.headers['Authorization']) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+            console.log('[AuthContext] Added Clerk token to request:', config.url);
           }
+        } catch (error) {
+          console.warn('[AuthContext] Failed to get Clerk token:', error);
+          // Continue with request even if token fetch fails
         }
-        return null;
-      };
-      
-      const sessionToken = getClerkSessionToken();
-      if (sessionToken && !config.headers['Authorization']) {
-        config.headers['Authorization'] = `Bearer ${sessionToken}`;
+        
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
       }
-      
-      return config;
-    }, (error) => {
-      return Promise.reject(error);
-    });
+    );
     
     // Cleanup interceptor on unmount
     return () => {
