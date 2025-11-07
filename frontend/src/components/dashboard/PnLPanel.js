@@ -48,6 +48,8 @@ const PnLPanel = () => {
   const [expenseCategories, setExpenseCategories] = useState([]);
   const [leadSources, setLeadSources] = useState([]);
   const [error, setError] = useState(null);
+  const [capProgress, setCapProgress] = useState(null);
+  const [capLoading, setCapLoading] = useState(true);
   
   // Inline editing state
   const [editingCell, setEditingCell] = useState(null); // { type: 'deal'|'expense', id: string, field: string }
