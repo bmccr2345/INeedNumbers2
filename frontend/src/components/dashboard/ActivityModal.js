@@ -208,7 +208,7 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={isLogging || Object.keys(currentEntry.activities).length === 0}
+              disabled={isLogging}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Save className="w-4 h-4 mr-2" />
