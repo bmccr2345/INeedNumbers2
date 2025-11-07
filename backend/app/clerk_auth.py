@@ -151,20 +151,28 @@ async def get_clerk_user_data(user_id: str) -> Optional[dict]:
 
 async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     """
-    Extract and validate user from Clerk session cookies.
+    Extract and validate user from Clerk session cookies or Authorization header.
     Returns User object if valid session, None if invalid.
     """
     # Look for Clerk session token in cookies
     session_token = None
     
-    # Try different possible cookie names that Clerk uses
-    for cookie_name in ["__session", "__session_9mLiswkQ"]:
-        if cookie_name in request.cookies:
-            session_token = request.cookies[cookie_name]
-            break
+    # First, try Authorization header (for cross-origin requests)
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        session_token = auth_header.replace("Bearer ", "")
+        logger.debug("Found Clerk session token in Authorization header")
+    
+    # Fallback to cookies (for same-origin requests)
+    if not session_token:
+        for cookie_name in ["__session", "__session_9mLiswkQ", "__clerk_db_jwt", "__clerk_db_jwt_9mLiswkQ"]:
+            if cookie_name in request.cookies:
+                session_token = request.cookies[cookie_name]
+                logger.debug(f"Found Clerk session token in cookie: {cookie_name}")
+                break
     
     if not session_token:
-        logger.debug("No Clerk session token found in cookies")
+        logger.debug("No Clerk session token found in cookies or Authorization header")
         return None
     
     # Validate session with Clerk API
