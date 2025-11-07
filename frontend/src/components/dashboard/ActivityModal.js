@@ -69,6 +69,12 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
         reflection: currentEntry.reflection
       });
 
+      // Get fresh Clerk token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication token not available');
+      }
+
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/activity-log`,
         {
@@ -77,6 +83,9 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
           reflection: currentEntry.reflection || null
         },
         {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           withCredentials: true
         }
       );
