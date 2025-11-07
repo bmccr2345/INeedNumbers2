@@ -449,29 +449,23 @@ const PnLPanel = () => {
     return categories;
   };
 
+  // Load cap progress data
+  const loadCapProgress = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`, {
+        withCredentials: true
+      });
+      setCapProgress(response.data);
+    } catch (error) {
+      // Cap progress is optional, don't show error if not configured
+      console.log('Cap progress not available:', error);
+    } finally {
+      setCapLoading(false);
+    }
+  };
+
   // Cap Progress Component
   const CapProgressSection = () => {
-    const [capProgress, setCapProgress] = useState(null);
-    const [capLoading, setCapLoading] = useState(true);
-
-    useEffect(() => {
-      loadCapProgress();
-    }, []);
-
-    const loadCapProgress = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`, {
-          withCredentials: true
-        });
-        setCapProgress(response.data);
-      } catch (error) {
-        // Cap progress is optional, don't show error if not configured
-        console.log('Cap progress not available:', error);
-      } finally {
-        setCapLoading(false);
-      }
-    };
-
     if (capLoading || !capProgress) return null;
 
     return (
