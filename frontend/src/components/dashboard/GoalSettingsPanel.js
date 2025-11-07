@@ -112,23 +112,18 @@ const GoalSettingsPanel = () => {
 
       console.log('[GoalSettings] Submitting:', goalData);
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goalData)
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`,
+        goalData,
+        {
+          withCredentials: true
+        }
+      );
 
-      if (response.ok) {
-        const updatedSettings = await response.json();
-        setSettings(updatedSettings);
-        console.log('[GoalSettings] Saved successfully:', updatedSettings);
-        alert('Goal settings saved successfully!');
-      } else {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-        console.error('[GoalSettings] Server error:', response.status, errorData);
-        throw new Error(errorData.detail || 'Failed to save goal settings');
-      }
+      const updatedSettings = response.data;
+      setSettings(updatedSettings);
+      console.log('[GoalSettings] Saved successfully:', updatedSettings);
+      alert('Goal settings saved successfully!');
     } catch (error) {
       console.error('[GoalSettings] Error:', error);
       alert(`Error saving goal settings: ${error.message}`);
