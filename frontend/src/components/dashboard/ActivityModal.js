@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 
 const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
   const [currentEntry, setCurrentEntry] = useState({
