@@ -102,7 +102,9 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
       }, 3000);
     } catch (error) {
       console.error('[ActivityModal] Error:', error);
-      alert(`Error logging activity: ${error.message}`);
+      const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
+      console.error('[ActivityModal] Server error:', error.response?.status, error.response?.data);
+      alert(`Error logging activity: ${errorMessage}`);
     } finally {
       setIsLogging(false);
     }
