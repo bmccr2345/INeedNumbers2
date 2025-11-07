@@ -44,8 +44,17 @@ const AICoachBanner = () => {
         return;
       }
 
+      // Get fresh Clerk token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication token not available');
+      }
+
       const response = await axios.post(`${backendUrl}/api/ai-coach-v2/generate`, {}, {
-        withCredentials: true,  // Use HttpOnly cookies instead of Bearer token
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        withCredentials: true,
         timeout: 30000 // 30 second timeout for AI generation
       });
 
