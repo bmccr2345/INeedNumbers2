@@ -8,7 +8,7 @@ import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 
 const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
   const [currentEntry, setCurrentEntry] = useState({
     activities: {},
     hours: {},
@@ -16,31 +16,22 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
   });
   const [isLogging, setIsLogging] = useState(false);
 
-  // Format activity name (same as ActionTracker)
-  const formatActivityName = (activity) => {
-    return activity.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-  };
+  const activityCategories = [
+    'Conversations',
+    'Appointments',
+    'Listings',
+    'Showings',
+    'Offers',
+    'Contracts'
+  ];
 
-  // Handle activity change
-  const handleActivityChange = (activity, value) => {
-    const numericValue = parseInt(value) || 0;
+  const handleActivityChange = (category, value) => {
+    const numValue = parseInt(value) || 0;
     setCurrentEntry(prev => ({
       ...prev,
       activities: {
         ...prev.activities,
-        [activity]: numericValue
-      }
-    }));
-  };
-
-  // Handle hours change
-  const handleHoursChange = (category, value) => {
-    const numericValue = parseFloat(value) || 0;
-    setCurrentEntry(prev => ({
-      ...prev,
-      hours: {
-        ...prev.hours,
-        [category]: numericValue
+        [category]: numValue
       }
     }));
   };
@@ -69,11 +60,40 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
         reflection: currentEntry.reflection
       });
 
-      // Get fresh Clerk token
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Authentication token not available');
+      // Wait for Clerk to be loaded
+      if (!isLoaded) {
+        throw new Error('Authentication is still loading. Please wait a moment and try again.');
       }
+
+      // Get fresh Clerk token with retry logic
+      let token = null;
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (!token && attempts < maxAttempts) {
+        try {
+          token = await getToken();
+          if (!token) {
+            attempts++;
+            if (attempts < maxAttempts) {
+              console.log(`[ActivityModal] Token fetch attempt ${attempts} failed, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms before retry
+            }
+          }
+        } catch (tokenError) {
+          console.error('[ActivityModal] Token fetch error:', tokenError);
+          attempts++;
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+      
+      if (!token) {
+        throw new Error('Unable to get authentication token. Please try logging out and back in.');
+      }
+
+      console.log('[ActivityModal] Token obtained, sending request...');
 
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/activity-log`,
@@ -86,7 +106,8 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
           headers: {
             'Authorization': `Bearer ${token}`
           },
-          withCredentials: true
+          withCredentials: true,
+          timeout: 10000 // 10 second timeout
         }
       );
 
@@ -121,28 +142,19 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
     }
   };
 
-  const handleClose = () => {
-    setCurrentEntry({
-      activities: {},
-      hours: {},
-      reflection: ''
-    });
-    onClose();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center">
-            <Activity className="w-5 h-5 mr-2 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Log Today's Activities</h2>
+        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl font-semibold">Log Daily Activities</h2>
           </div>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -151,79 +163,58 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Activities Completed */}
+          {/* Activities */}
           <div>
-            <Label className="text-sm font-medium mb-3 block">Activities Completed</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {['conversations', 'appointments', 'offersWritten', 'listingsTaken'].map(activity => (
-                <div key={activity}>
-                  <Label htmlFor={activity} className="text-sm">{formatActivityName(activity)}</Label>
-                  <Input
-                    id={activity}
-                    type="number"
-                    value={currentEntry.activities[activity]?.toString() || ''}
-                    onChange={(e) => handleActivityChange(activity, e.target.value)}
-                    placeholder="0"
-                    className="mt-1"
-                    min="0"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Time Allocation */}
-          <div>
-            <Label className="text-sm font-medium mb-3 block">Time Allocation (Hours)</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {['prospecting', 'appointments', 'admin', 'marketing'].map(category => (
+            <Label className="text-base font-semibold mb-3 block">Activities Completed</Label>
+            <div className="grid grid-cols-2 gap-4">
+              {activityCategories.map(category => (
                 <div key={category}>
-                  <Label htmlFor={category} className="text-sm">{formatActivityName(category)}</Label>
+                  <Label htmlFor={category} className="text-sm mb-1">{category}</Label>
                   <Input
                     id={category}
                     type="number"
-                    step="0.5"
-                    value={currentEntry.hours[category]?.toString() || ''}
-                    onChange={(e) => handleHoursChange(category, e.target.value)}
-                    placeholder="0.0"
-                    className="mt-1"
                     min="0"
+                    value={currentEntry.activities[category] || ''}
+                    onChange={(e) => handleActivityChange(category, e.target.value)}
+                    placeholder="0"
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Optional Reflection */}
+          {/* Reflection */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Notes (Optional)</Label>
+            <Label htmlFor="reflection" className="text-base font-semibold mb-2 block">
+              Daily Reflection (Optional)
+            </Label>
             <Textarea
+              id="reflection"
               value={currentEntry.reflection}
-              onChange={(e) => setCurrentEntry(prev => ({...prev, reflection: e.target.value}))}
-              placeholder="Any additional notes about today's activities..."
-              rows={3}
-              className="resize-none"
+              onChange={(e) => setCurrentEntry(prev => ({ ...prev, reflection: e.target.value }))}
+              placeholder="What went well today? What could be improved?"
+              rows={4}
             />
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button
-              onClick={handleClose}
-              variant="outline"
-              disabled={isLogging}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isLogging}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isLogging ? 'Logging...' : 'Log Activities'}
-            </Button>
-          </div>
+        {/* Footer */}
+        <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
+          <Button
+            onClick={onClose}
+            variant="outline"
+            disabled={isLogging}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLogging}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {isLogging ? 'Logging...' : 'Log Activities'}
+          </Button>
         </div>
       </div>
     </div>
