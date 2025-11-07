@@ -126,7 +126,9 @@ const GoalSettingsPanel = () => {
       alert('Goal settings saved successfully!');
     } catch (error) {
       console.error('[GoalSettings] Error:', error);
-      alert(`Error saving goal settings: ${error.message}`);
+      const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
+      console.error('[GoalSettings] Server error:', error.response?.status, error.response?.data);
+      alert(`Error saving goal settings: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
