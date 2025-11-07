@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 
 const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
+  const { getToken } = useAuth();
   const [currentEntry, setCurrentEntry] = useState({
     activities: {},
     hours: {},
