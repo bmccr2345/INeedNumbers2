@@ -109,6 +109,8 @@ const GoalSettingsPanel = () => {
         earnedGciToDate: localSettings.earnedGciToDate ? parseFloat(localSettings.earnedGciToDate) : 0
       };
 
+      console.log('[GoalSettings] Submitting:', goalData);
+
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`, {
         method: 'POST',
         credentials: 'include',
@@ -119,13 +121,16 @@ const GoalSettingsPanel = () => {
       if (response.ok) {
         const updatedSettings = await response.json();
         setSettings(updatedSettings);
+        console.log('[GoalSettings] Saved successfully:', updatedSettings);
         alert('Goal settings saved successfully!');
       } else {
-        throw new Error('Failed to save goal settings');
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        console.error('[GoalSettings] Server error:', response.status, errorData);
+        throw new Error(errorData.detail || 'Failed to save goal settings');
       }
     } catch (error) {
-      console.error('Error saving goal settings:', error);
-      alert('Error saving goal settings. Please try again.');
+      console.error('[GoalSettings] Error:', error);
+      alert(`Error saving goal settings: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
