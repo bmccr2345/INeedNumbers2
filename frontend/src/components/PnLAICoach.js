@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 
 const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) => {
+  const { getToken } = useAuth();
   const [analysis, setAnalysis] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
