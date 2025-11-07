@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Save } from 'lucide-react';
+import axios from 'axios';
 
 const GoalSettingsPanel = () => {
   const [settings, setSettings] = useState(null);
