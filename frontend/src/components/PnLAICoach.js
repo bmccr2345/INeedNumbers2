@@ -175,8 +175,21 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
       
     } catch (error) {
       console.error('Error calling AI Coach API:', error);
-      // Fallback to informative error message
-      setAnalysis(`Unable to generate P&L analysis at the moment. Please try again or review your financial data manually. ${error.message}`);
+      let errorMessage = 'Unable to generate P&L analysis at the moment.';
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = 'Authentication required. Please sign in to access AI Coach.';
+        } else if (error.response.status === 503) {
+          errorMessage = 'AI Coach is currently disabled. Please check back later.';
+        } else {
+          errorMessage = `AI Coach service error (${error.response.status}). Please try again.`;
+        }
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setAnalysis(`Unable to generate P&L analysis at the moment. Please try again or review your financial data manually. ${errorMessage}`);
     } finally {
       setIsAnalyzing(false);
     }
