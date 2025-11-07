@@ -49,25 +49,25 @@ const GoalSettingsPanel = () => {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`,
+        {
+          withCredentials: true
+        }
+      );
       
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-        
-        // Update local settings with loaded data
-        setLocalSettings({
-          goalType: data.goalType || 'gci',
-          annualGciGoal: data.annualGciGoal?.toString() || '',
-          monthlyGciTarget: data.monthlyGciTarget?.toString() || '',
-          avgGciPerClosing: data.avgGciPerClosing?.toString() || '',
-          workdays: data.workdays?.toString() || '',
-          earnedGciToDate: data.earnedGciToDate?.toString() || ''
-        });
-      }
+      const data = response.data;
+      setSettings(data);
+      
+      // Update local settings with loaded data
+      setLocalSettings({
+        goalType: data.goalType || 'gci',
+        annualGciGoal: data.annualGciGoal?.toString() || '',
+        monthlyGciTarget: data.monthlyGciTarget?.toString() || '',
+        avgGciPerClosing: data.avgGciPerClosing?.toString() || '',
+        workdays: data.workdays?.toString() || '',
+        earnedGciToDate: data.earnedGciToDate?.toString() || ''
+      });
     } catch (error) {
       console.error('Error loading goal settings:', error);
     } finally {
