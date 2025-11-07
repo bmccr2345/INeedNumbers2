@@ -45,6 +45,7 @@ import BrandingPanel from '../components/dashboard/BrandingPanel';
 import GoalSettingsPanel from '../components/dashboard/GoalSettingsPanel';
 import UpgradeModal from '../components/dashboard/UpgradeModal';
 import ProOnboardingWizard from '../components/ProOnboardingWizard';
+import AICoachDebugPanel from '../components/AICoachDebugPanel';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
