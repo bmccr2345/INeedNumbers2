@@ -80,11 +80,10 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
       const currentMonth = currentMonthData || {};
       const historicalData = pastSixMonthsData || [];
       
-      // Call the AI Coach API
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({
+      // Call the AI Coach API using axios
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`,
+        {
           context: 'pnl_analysis',
           pnl_data: {
             current_month: {
@@ -113,20 +112,13 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
           },
           year: new Date().getFullYear(),
           stream: false
-        })
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Authentication required. Please sign in to access AI Coach.');
-        } else if (response.status === 503) {
-          throw new Error('AI Coach is currently disabled. Please check back later.');
-        } else {
-          throw new Error(`AI Coach service error (${response.status}). Please try again.`);
+        },
+        {
+          withCredentials: true
         }
-      }
+      );
 
-      const aiResponse = await response.json();
+      const aiResponse = response.data;
       
       console.log('AI Response received:', aiResponse); // Debug log
       
