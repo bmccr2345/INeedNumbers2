@@ -97,32 +97,16 @@ def format_pnl_analysis(obj: dict) -> str:
 
 @router.post("/generate")
 async def generate_coach(
-    request: Request,
+    request: Request, 
+    user = Depends(require_plan_unified("starter")),
     settings = Depends(get_settings)
 ):
     """Generate AI coaching insights with streaming support"""
     
-    # VERY FIRST LINE - write to file to see if we get here
-    open("/tmp/endpoint_reached.txt", "w").write(f"Endpoint reached at {datetime.datetime.now()}")
-    
-    # DEBUG: Try to get user but log what happens
-    try:
-        user = await get_current_user_unified(request)
-        open("/tmp/auth_success.txt", "w").write(f"Auth success: {user.id}, {user.plan}")
-    except Exception as auth_error:
-        open("/tmp/auth_failed.txt", "w").write(f"Auth failed: {str(auth_error)}")
-        # Re-raise the auth error
-        raise
-    
-    print(f"========== AI COACH REQUEST RECEIVED ==========")
-    print(f"User ID: {user.id}, Plan: {user.plan}")
     logger.info(f"AI Coach request started - user_id: {user.id[:8]}..., plan: {user.plan}")
     
     if not settings.AI_COACH_ENABLED:
-        print(f"AI Coach is DISABLED in settings")
         raise HTTPException(status_code=503, detail="AI Coach disabled")
-    
-    print(f"AI Coach is ENABLED, proceeding...")
     
     # Enforce body size limit
     enforce_body_limit(request, settings.MAX_JSON_BODY_KB)
