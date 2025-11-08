@@ -103,10 +103,15 @@ async def generate_coach(
 ):
     """Generate AI coaching insights with streaming support"""
     
+    print(f"========== AI COACH REQUEST RECEIVED ==========")
+    print(f"User ID: {user.id}, Plan: {user.plan}")
     logger.info(f"AI Coach request started - user_id: {user.id[:8]}..., plan: {user.plan}")
     
     if not settings.AI_COACH_ENABLED:
+        print(f"AI Coach is DISABLED in settings")
         raise HTTPException(status_code=503, detail="AI Coach disabled")
+    
+    print(f"AI Coach is ENABLED, proceeding...")
     
     # Enforce body size limit
     enforce_body_limit(request, settings.MAX_JSON_BODY_KB)
