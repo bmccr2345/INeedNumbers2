@@ -103,6 +103,10 @@ async def generate_coach(
 ):
     """Generate AI coaching insights with streaming support"""
     
+    # This should NEVER execute if auth fails, but let's add it anyway for debugging
+    with open("/tmp/ai_coach_endpoint_reached.log", "a") as f:
+        f.write(f"\n[{datetime.datetime.now()}] AI Coach endpoint reached! User plan: {user.plan}\n")
+    
     print(f"========== AI COACH REQUEST RECEIVED ==========")
     print(f"User ID: {user.id}, Plan: {user.plan}")
     logger.info(f"AI Coach request started - user_id: {user.id[:8]}..., plan: {user.plan}")
