@@ -350,14 +350,17 @@ async def generate_coach(
         
         else:
             # Non-streaming path
+            logger.info(f"Making non-streaming OpenAI API call for user {user.id[:8]}...")
             response = await client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=messages,
                 temperature=settings.AI_COACH_TEMPERATURE,
                 max_tokens=settings.AI_COACH_MAX_TOKENS
             )
+            logger.info(f"OpenAI API call successful for user {user.id[:8]}...")
             
             text = response.choices[0].message.content or ""
+            logger.info(f"Received {len(text)} characters from OpenAI for user {user.id[:8]}...")
             
             # For P&L analysis and affordability analysis, format the response differently
             if context == "pnl_analysis":
