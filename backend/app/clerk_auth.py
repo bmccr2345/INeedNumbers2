@@ -77,18 +77,16 @@ async def get_clerk_jwks() -> dict:
             return _jwks_cache
     
     try:
-        # Clerk JWKS endpoint - extract instance from secret key
-        # sk_test_xxx or sk_live_xxx format
+        # Use Clerk's official JWKS endpoint
         async with httpx.AsyncClient(timeout=10.0) as client:
-            # Use the well-known JWKS endpoint
             response = await client.get(
-                "https://clerk.ineednumbers.com/.well-known/jwks.json",
-                headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"}
+                "https://apparent-dragon-65.clerk.accounts.dev/.well-known/jwks.json"
             )
             
             if response.status_code == 200:
                 _jwks_cache = response.json()
                 _jwks_cache_time = datetime.now()
+                logger.info("Successfully fetched and cached Clerk JWKS")
                 return _jwks_cache
             else:
                 logger.error(f"Failed to fetch Clerk JWKS: {response.status_code}")
