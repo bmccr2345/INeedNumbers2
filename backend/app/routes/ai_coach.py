@@ -492,7 +492,10 @@ async def generate_coach(
                 return JSONResponse(content=obj)
             
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
         logger.error(f"AI coach error for user {user.id[:8]}...: {e}")
+        logger.error(f"Full traceback: {error_traceback}")
         
         # Return safe fallback
         fallback_response = {
