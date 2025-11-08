@@ -15,7 +15,7 @@ import time
 import re
 
 class LoginEndpointTester:
-    def __init__(self, base_url="https://clerk-migrate-fix.preview.emergentagent.com"):
+    def __init__(self, base_url="https://inn-auth-upgrade.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -578,7 +578,7 @@ class LoginEndpointTester:
             preflight_response = requests.options(
                 f"{self.base_url}/api/auth/login",
                 headers={
-                    'Origin': 'https://clerk-migrate-fix.preview.emergentagent.com',
+                    'Origin': 'https://inn-auth-upgrade.preview.emergentagent.com',
                     'Access-Control-Request-Method': 'POST',
                     'Access-Control-Request-Headers': 'Content-Type'
                 },

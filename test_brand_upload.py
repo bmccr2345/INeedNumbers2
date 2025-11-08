@@ -5,7 +5,7 @@ import base64
 import io
 
 def test_brand_upload():
-    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
+    base_url = "https://inn-auth-upgrade.preview.emergentagent.com"
     
     # Step 1: Login to get cookies
     print("🔑 Logging in...")

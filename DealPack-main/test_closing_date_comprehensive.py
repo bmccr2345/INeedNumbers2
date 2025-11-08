@@ -7,7 +7,7 @@ import uuid
 def test_closing_date_comprehensive():
     """Comprehensive test of all closing date calculator endpoints"""
     
-    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
+    base_url = "https://inn-auth-upgrade.preview.emergentagent.com"
     
     # First, authenticate
     print("🔐 Authenticating...")
