@@ -61,7 +61,10 @@ async def validate_clerk_session(session_token: str) -> Optional[dict]:
     Validate Clerk session token (JWT) with Clerk API.
     Returns session data if valid, None if invalid.
     """
+    print(f"[CLERK VALIDATE] Starting validation for token: {session_token[:50]}...")
+    
     if CLERK_SECRET_KEY == "missing":
+        print(f"[CLERK VALIDATE] CLERK_SECRET_KEY is missing!")
         logger.warning("CLERK_SECRET_KEY not configured - cannot validate sessions")
         return None
         
