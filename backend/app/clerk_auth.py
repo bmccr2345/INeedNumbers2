@@ -8,12 +8,18 @@ import httpx
 import logging
 import os
 from datetime import datetime
+from jose import jwt, JWTError
+import json
 
 logger = logging.getLogger(__name__)
 
 # Clerk API Configuration
 CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 CLERK_API_BASE = "https://api.clerk.com/v1"
+
+# Clerk JWKS cache
+_jwks_cache = None
+_jwks_cache_time = None
 
 # Try to load from dotenv if not found
 if not CLERK_SECRET_KEY:
