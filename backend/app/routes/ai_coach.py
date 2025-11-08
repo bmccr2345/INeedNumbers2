@@ -103,6 +103,8 @@ async def generate_coach(
 ):
     """Generate AI coaching insights with streaming support"""
     
+    logger.info(f"AI Coach request started - user_id: {user.id[:8]}..., plan: {user.plan}")
+    
     if not settings.AI_COACH_ENABLED:
         raise HTTPException(status_code=503, detail="AI Coach disabled")
     
