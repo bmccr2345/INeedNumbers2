@@ -22,20 +22,6 @@ import re
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Add middleware to log ALL requests to this router
-@router.middleware("http")
-async def log_ai_coach_requests(request: Request, call_next):
-    """Log all AI Coach requests before auth"""
-    if request.url.path.endswith("/generate"):
-        with open("/tmp/ai_coach_all_requests.log", "a") as f:
-            f.write(f"\n[{datetime.datetime.now()}] Request to {request.url.path} - Method: {request.method}\n")
-            f.write(f"  Authorization header present: {'Authorization' in request.headers}\n")
-    response = await call_next(request)
-    if request.url.path.endswith("/generate"):
-        with open("/tmp/ai_coach_all_requests.log", "a") as f:
-            f.write(f"  Response status: {response.status_code}\n")
-    return response
-
 def redact_pii(text: str) -> str:
     """Basic PII scrubbing for reflections"""
     if not text:
