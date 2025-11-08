@@ -161,7 +161,8 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         session_token = auth_header.replace("Bearer ", "")
-        logger.debug("Found Clerk session token in Authorization header")
+        print(f"[CLERK AUTH] Found session token in Authorization header: {session_token[:50]}...")
+        logger.info("Found Clerk session token in Authorization header")
     
     # Fallback to cookies (for same-origin requests)
     if not session_token:
