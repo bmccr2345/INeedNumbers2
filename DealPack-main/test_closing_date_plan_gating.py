@@ -6,7 +6,7 @@ import json
 def test_plan_gating():
     """Test plan-based feature gating for closing date calculator"""
     
-    base_url = "https://clerk-migrate-fix.preview.emergentagent.com"
+    base_url = "https://inn-auth-upgrade.preview.emergentagent.com"
     
     # Test data
     closing_date_data = {
