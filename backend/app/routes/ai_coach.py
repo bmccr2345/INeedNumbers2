@@ -277,7 +277,9 @@ async def generate_coach(
             return JSONResponse(content=fallback_response)
         
         # Call OpenAI
+        logger.info(f"Preparing to call OpenAI for user {user.id[:8]}...")
         client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        logger.info(f"OpenAI client created successfully for user {user.id[:8]}...")
         
         # Use appropriate system prompt based on context
         if context == "pnl_analysis":
