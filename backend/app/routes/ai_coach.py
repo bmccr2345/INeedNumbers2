@@ -102,14 +102,15 @@ async def generate_coach(
 ):
     """Generate AI coaching insights with streaming support"""
     
+    # VERY FIRST LINE - write to file to see if we get here
+    open("/tmp/endpoint_reached.txt", "w").write(f"Endpoint reached at {datetime.datetime.now()}")
+    
     # DEBUG: Try to get user but log what happens
     try:
         user = await get_current_user_unified(request)
-        with open("/tmp/ai_coach_debug.log", "a") as f:
-            f.write(f"\n[{datetime.datetime.now()}] AUTH SUCCESS - User: {user.id}, Plan: {user.plan}\n")
+        open("/tmp/auth_success.txt", "w").write(f"Auth success: {user.id}, {user.plan}")
     except Exception as auth_error:
-        with open("/tmp/ai_coach_debug.log", "a") as f:
-            f.write(f"\n[{datetime.datetime.now()}] AUTH FAILED - Error: {str(auth_error)}\n")
+        open("/tmp/auth_failed.txt", "w").write(f"Auth failed: {str(auth_error)}")
         # Re-raise the auth error
         raise
     
