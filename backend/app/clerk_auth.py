@@ -63,70 +63,95 @@ def map_clerk_plan_to_internal(clerk_plan_key: str) -> str:
     return mapping.get(clerk_plan_key, "FREE")
 
 
-async def validate_clerk_session(session_token: str) -> Optional[dict]:
+async def get_clerk_jwks() -> dict:
     """
-    Validate Clerk session token (JWT) with Clerk API.
-    Returns session data if valid, None if invalid.
+    Fetch Clerk's JWKS (JSON Web Key Set) for JWT verification.
+    Caches for 1 hour to reduce API calls.
     """
-    print(f"[CLERK VALIDATE] Starting validation for token: {session_token[:50]}...")
+    global _jwks_cache, _jwks_cache_time
     
-    if CLERK_SECRET_KEY == "missing":
-        print(f"[CLERK VALIDATE] CLERK_SECRET_KEY is missing!")
-        logger.warning("CLERK_SECRET_KEY not configured - cannot validate sessions")
-        return None
-        
+    # Return cached JWKS if less than 1 hour old
+    if _jwks_cache and _jwks_cache_time:
+        age = (datetime.now() - _jwks_cache_time).total_seconds()
+        if age < 3600:  # 1 hour
+            return _jwks_cache
+    
     try:
+        # Clerk JWKS endpoint - extract instance from secret key
+        # sk_test_xxx or sk_live_xxx format
         async with httpx.AsyncClient(timeout=10.0) as client:
-            # For JWT session tokens, we need to verify them differently
-            # Try to verify the JWT and get current session info
-            response = await client.post(
-                f"{CLERK_API_BASE}/sessions/{session_token}/verify",
+            # Use the well-known JWKS endpoint
+            response = await client.get(
+                "https://clerk.ineednumbers.com/.well-known/jwks.json",
                 headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"}
             )
             
             if response.status_code == 200:
-                return response.json()
-            
-            # If verify endpoint doesn't work, try direct session lookup
-            # Extract session ID from JWT if possible
-            try:
-                import jwt
-                import base64
-                import json
-                
-                # Decode JWT payload (without verification for session ID)
-                parts = session_token.split('.')
-                if len(parts) >= 2:
-                    # Decode payload
-                    payload_b64 = parts[1]
-                    # Add padding if needed
-                    payload_b64 += '=' * (4 - len(payload_b64) % 4)
-                    payload_bytes = base64.urlsafe_b64decode(payload_b64)
-                    payload = json.loads(payload_bytes)
-                    
-                    session_id = payload.get('sid')  # Session ID from JWT
-                    user_id = payload.get('sub')     # User ID from JWT
-                    
-                    if session_id:
-                        # Try to get session by session ID
-                        response = await client.get(
-                            f"{CLERK_API_BASE}/sessions/{session_id}",
-                            headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"}
-                        )
-                        
-                        if response.status_code == 200:
-                            session_data = response.json()
-                            # Add user_id to session data if not present
-                            if 'user_id' not in session_data and user_id:
-                                session_data['user_id'] = user_id
-                            return session_data
-            
-            except Exception as jwt_error:
-                logger.debug(f"JWT parsing failed: {jwt_error}")
-            
-            logger.warning(f"Invalid Clerk session: {response.status_code}")
+                _jwks_cache = response.json()
+                _jwks_cache_time = datetime.now()
+                return _jwks_cache
+            else:
+                logger.error(f"Failed to fetch Clerk JWKS: {response.status_code}")
+                return None
+    except Exception as e:
+        logger.error(f"Error fetching Clerk JWKS: {e}")
+        return None
+
+
+async def validate_clerk_session(session_token: str) -> Optional[dict]:
+    """
+    Validate Clerk session token (JWT) using JWKS verification.
+    Returns decoded JWT payload if valid, None if invalid.
+    """
+    try:
+        # Get Clerk's public keys
+        jwks = await get_clerk_jwks()
+        if not jwks:
+            logger.error("Could not fetch Clerk JWKS")
             return None
-    
+        
+        # Decode JWT header to get key ID
+        unverified_header = jwt.get_unverified_header(session_token)
+        kid = unverified_header.get("kid")
+        
+        if not kid:
+            logger.warning("No 'kid' in JWT header")
+            return None
+        
+        # Find matching key in JWKS
+        key = None
+        for jwk_key in jwks.get("keys", []):
+            if jwk_key.get("kid") == kid:
+                key = jwk_key
+                break
+        
+        if not key:
+            logger.warning(f"No matching key found for kid: {kid}")
+            return None
+        
+        # Verify and decode JWT
+        payload = jwt.decode(
+            session_token,
+            key,
+            algorithms=["RS256"],
+            options={
+                "verify_signature": True,
+                "verify_exp": True,
+                "verify_iat": True
+            }
+        )
+        
+        # Extract session and user info
+        return {
+            "user_id": payload.get("sub"),
+            "session_id": payload.get("sid"),
+            "status": "active",
+            "metadata": payload
+        }
+        
+    except JWTError as e:
+        logger.warning(f"JWT validation failed: {e}")
+        return None
     except Exception as e:
         logger.error(f"Error validating Clerk session: {e}")
         return None
