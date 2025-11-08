@@ -111,15 +111,21 @@ def format_pnl_analysis(obj: dict) -> str:
 
 @router.post("/generate")
 async def generate_coach(
-    request: Request, 
-    user = Depends(require_plan_unified("starter")),
+    request: Request,
     settings = Depends(get_settings)
 ):
     """Generate AI coaching insights with streaming support"""
     
-    # This should NEVER execute if auth fails, but let's add it anyway for debugging
-    with open("/tmp/ai_coach_endpoint_reached.log", "a") as f:
-        f.write(f"\n[{datetime.datetime.now()}] AI Coach endpoint reached! User plan: {user.plan}\n")
+    # DEBUG: Try to get user but log what happens
+    try:
+        user = await get_current_user_unified(request)
+        with open("/tmp/ai_coach_debug.log", "a") as f:
+            f.write(f"\n[{datetime.datetime.now()}] AUTH SUCCESS - User: {user.id}, Plan: {user.plan}\n")
+    except Exception as auth_error:
+        with open("/tmp/ai_coach_debug.log", "a") as f:
+            f.write(f"\n[{datetime.datetime.now()}] AUTH FAILED - Error: {str(auth_error)}\n")
+        # Re-raise the auth error
+        raise
     
     print(f"========== AI COACH REQUEST RECEIVED ==========")
     print(f"User ID: {user.id}, Plan: {user.plan}")
