@@ -157,6 +157,10 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     Extract and validate user from Clerk session cookies or Authorization header.
     Returns User object if valid session, None if invalid.
     """
+    # Debug logging to file
+    with open("/tmp/clerk_auth_debug.log", "a") as f:
+        f.write(f"\n[{datetime.now()}] get_current_user_from_clerk called\n")
+    
     # Look for Clerk session token in cookies
     session_token = None
     
@@ -164,6 +168,8 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         session_token = auth_header.replace("Bearer ", "")
+        with open("/tmp/clerk_auth_debug.log", "a") as f:
+            f.write(f"Found session token in Authorization header: {session_token[:50]}...\n")
         print(f"[CLERK AUTH] Found session token in Authorization header: {session_token[:50]}...")
         logger.info("Found Clerk session token in Authorization header")
     
