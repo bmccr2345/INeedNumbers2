@@ -173,12 +173,15 @@ async def get_current_user_from_clerk(request: Request) -> Optional[User]:
                 break
     
     if not session_token:
+        print(f"[CLERK AUTH] No session token found in cookies or Authorization header")
         logger.debug("No Clerk session token found in cookies or Authorization header")
         return None
     
     # Validate session with Clerk API
+    print(f"[CLERK AUTH] Validating session with Clerk API...")
     session_data = await validate_clerk_session(session_token)
     if not session_data:
+        print(f"[CLERK AUTH] Session validation failed - session_data is None")
         return None
     
     user_id = session_data.get("user_id")
