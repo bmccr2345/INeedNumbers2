@@ -312,7 +312,7 @@ const HomePage = () => {
             <div className="space-y-8 text-center lg:text-left">
               <div className="relative">
                 <h1 className="text-4xl lg:text-6xl font-bold text-deep-forest mb-6 font-poppins leading-tight">
-                  Run your real-estate business with clarity, not guesswork.
+                  Run your real estate business with clarity, not guesswork.
                 </h1>
                 {/* Small Fairy Logo Accent near headline */}
                 <div className="absolute -top-4 -right-8 lg:-right-16">
