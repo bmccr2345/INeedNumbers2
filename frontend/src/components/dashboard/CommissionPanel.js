@@ -38,7 +38,8 @@ const CommissionPanel = () => {
     if (!confirm('Delete this commission split?')) return;
     
     try {
-      await mockDashboardAPI.commission.delete(id);
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      await axios.delete(`${backendUrl}/api/commission/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
       
       // Show success toast
