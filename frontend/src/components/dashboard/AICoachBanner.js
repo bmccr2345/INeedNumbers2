@@ -131,7 +131,12 @@ const AICoachBanner = () => {
                 {isGenerating && <span className="text-sm text-purple-600 animate-pulse">(Generating...)</span>}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                {error ? error : 'Your personalized AI-powered business insights'}
+                {error ? error : (
+                  <>
+                    <span className="hidden md:inline">Your personalized AI-powered business insights</span>
+                    <span className="md:hidden">AI-powered insights</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
