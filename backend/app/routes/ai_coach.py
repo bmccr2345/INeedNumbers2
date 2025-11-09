@@ -479,19 +479,17 @@ async def generate_coach(
                 except (json.JSONDecodeError, ValueError):
                     # Fallback to structured response
                     obj = {
-                        "coaching_advice": "Keep logging your daily activities and reviewing your numbers. Consistency is key to reaching your goals. Track your conversations, appointments, and deals to understand what's working. Your progress compounds over time when you stay focused on the fundamentals.",
-                        "stats": {
-                            "goals": goals,
-                            "recent_activity": activity,
-                            "pnl_summary": pnl
-                        },
-                        "actions": [],
-                        "risks": [],
-                        "next_inputs": [
-                            "Log daily conversations and appointments", 
+                        "summary": "Keep logging your daily activities and reviewing your numbers. Consistency is key to reaching your goals. Track your conversations, appointments, and deals to understand what's working. Your progress compounds over time when you stay focused on the fundamentals.",
+                        "priority_actions": [
+                            "Log daily conversations and appointments",
                             "Update goal progress weekly",
                             "Review P&L monthly"
-                        ]
+                        ],
+                        "time_sensitive": [
+                            "Set up your annual GCI goal if not done",
+                            "Log today's business activities"
+                        ],
+                        "performance_analysis": "Start tracking your activities to see performance trends"
                     }
                 
                 # Cache successful response
