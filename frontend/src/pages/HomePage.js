@@ -321,10 +321,6 @@ const HomePage = () => {
               </div>
               
               <div className="text-xl lg:text-2xl text-neutral-dark space-y-6">
-                <p className="leading-relaxed" style={{ lineHeight: '1.7' }}>
-                  Free tools to crunch your numbers. A simple upgrade to track your deals, know your profit, and get guided by your AI coach.
-                </p>
-                
                 <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-100">
                   <h2 className="text-2xl font-semibold text-deep-forest mb-4">What It Does</h2>
                   <p className="leading-relaxed text-lg" style={{ lineHeight: '1.7' }}>
