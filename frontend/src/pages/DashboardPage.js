@@ -63,9 +63,9 @@ const DashboardPage = () => {
     myBusiness: true
   });
 
-  // Check if Pro user needs onboarding
+  // Check if Pro user needs onboarding (mobile only)
   useEffect(() => {
-    if (user && user.plan === 'PRO') {
+    if (user && user.plan === 'PRO' && isMobile) {
       const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
       const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
       
@@ -76,7 +76,7 @@ const DashboardPage = () => {
         }, 1000);
       }
     }
-  }, [user]);
+  }, [user, isMobile]);
 
   // Sidebar categories with sub-tabs
   const sidebarStructure = [
