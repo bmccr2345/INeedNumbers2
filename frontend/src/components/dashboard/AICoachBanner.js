@@ -82,8 +82,10 @@ const AICoachBanner = () => {
       });
 
       console.log('[AICoachBanner] AI Coach response received');
+      console.log('[AICoachBanner] Response data:', response.data);
       setCoachData(response.data);
       setIsExpanded(true); // Auto-expand on successful generation
+      console.log('[AICoachBanner] State updated, should be expanded now');
     } catch (error) {
       console.error('[AICoachBanner] Error generating insights:', error);
       let errorMessage = 'AI Coach temporarily unavailable. Please try again in a moment.';
