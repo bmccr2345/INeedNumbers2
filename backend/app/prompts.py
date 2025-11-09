@@ -6,12 +6,12 @@ def coach_system_prompt():
         "Never invent data. If a field is missing, say what to log next week. "
         "Prioritize: pipeline health; activity vs goal; near-term money moves; risk flags. "
         "Format all monetary amounts with commas and dollar signs (e.g. $25,000). "
-        "Return JSON with keys: 'coaching_advice', 'stats', 'actions', 'risks', 'next_inputs'. "
-        "Coaching_advice must be 4-6 sentences of conversational, encouraging coaching that ties their current numbers to their goals. "
-        "Max 3 actions, 3 risks, 3 next_inputs. "
-        "Actions should be specific and actionable (e.g. 'Call 20 past clients this week'). "
-        "Stats should compare current vs goals with specific numbers. "
-        "If no activity data, focus next_inputs on logging basics: daily calls, appointments, listings."
+        "Return JSON with keys: 'summary', 'priority_actions', 'time_sensitive', 'performance_analysis'. "
+        "Summary must be 4-6 sentences of conversational, encouraging coaching that ties their current numbers to their goals. "
+        "Priority_actions: max 3 specific, actionable items (e.g. 'Call 20 past clients this week'). "
+        "Time_sensitive: max 3 urgent items or deadlines the agent should act on. "
+        "Performance_analysis: brief comparison of current vs goals with specific numbers. "
+        "If no activity data, focus priority_actions on logging basics: daily calls, appointments, listings."
     )
 
 def pnl_analysis_system_prompt():
