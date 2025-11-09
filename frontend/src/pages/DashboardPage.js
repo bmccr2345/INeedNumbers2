@@ -63,20 +63,20 @@ const DashboardPage = () => {
     myBusiness: true
   });
 
-  // Pro onboarding disabled per user request
-  // useEffect(() => {
-  //   if (user && user.plan === 'PRO' && isMobile) {
-  //     const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
-  //     const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
-  //     
-  //     if (!hasCompletedOnboarding && !hasDismissedThisSession) {
-  //       // Show wizard after a brief delay to let dashboard load
-  //       setTimeout(() => {
-  //         setShowOnboardingWizard(true);
-  //       }, 1000);
-  //     }
-  //   }
-  // }, [user, isMobile]);
+  // Check if Pro user needs onboarding (desktop only)
+  useEffect(() => {
+    if (user && user.plan === 'PRO' && !isMobile) {
+      const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
+      const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
+      
+      if (!hasCompletedOnboarding && !hasDismissedThisSession) {
+        // Show wizard after a brief delay to let dashboard load
+        setTimeout(() => {
+          setShowOnboardingWizard(true);
+        }, 1000);
+      }
+    }
+  }, [user, isMobile]);
 
   // Sidebar categories with sub-tabs
   const sidebarStructure = [
