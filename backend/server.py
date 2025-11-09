@@ -5100,6 +5100,34 @@ async def save_commission_calculation(
         logger.error(f"Error saving commission calculation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/commission/history")
+async def get_commission_history(
+    current_user: User = Depends(require_auth),
+    limit: int = 10
+):
+    """Get user's commission calculation history"""
+    try:
+        calculations = await db.commission_calculations.find(
+            {"user_id": current_user.id}
+        ).sort("created_at", -1).limit(limit).to_list(length=limit)
+        
+        # Format the response
+        formatted_calcs = []
+        for calc in calculations:
+            formatted_calcs.append({
+                "id": calc.get("id"),
+                "title": calc.get("title", "Untitled"),
+                "created_at": calc.get("created_at"),
+                "inputs": calc.get("inputs", {}),
+                "results": calc.get("results", {})
+            })
+        
+        return {"items": formatted_calcs}
+        
+    except Exception as e:
+        logger.error(f"Error fetching commission history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Seller Net Sheet Save Endpoint
 @api_router.post("/seller-net/save")
 async def save_seller_net_calculation(
