@@ -5168,7 +5168,7 @@ async def save_seller_net_calculation(
     """Save a seller net sheet calculation"""
     try:
         # Check plan - only STARTER and PRO can save
-        if current_user.plan.value not in ["STARTER", "PRO"]:
+        if current_user.plan not in ["STARTER", "PRO"]:
             raise HTTPException(
                 status_code=403,
                 detail="Saving calculations requires a STARTER or PRO plan. Please upgrade."
