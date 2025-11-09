@@ -5256,7 +5256,7 @@ async def save_investor_deal(
     """Save an investor deal calculation"""
     try:
         # Check plan - only STARTER and PRO can save
-        if current_user.plan.value not in ["STARTER", "PRO"]:
+        if current_user.plan not in ["STARTER", "PRO"]:
             raise HTTPException(
                 status_code=403,
                 detail="Saving deals requires a STARTER or PRO plan. Please upgrade."
