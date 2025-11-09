@@ -5128,6 +5128,36 @@ async def get_commission_history(
         logger.error(f"Error fetching commission history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.delete("/commission/{calculation_id}")
+async def delete_commission_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth),
+    request_obj: Request = None
+):
+    """Delete a commission calculation"""
+    try:
+        # Find and delete the calculation
+        result = await db.commission_calculations.delete_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Calculation not found or unauthorized")
+        
+        await log_audit_event(current_user, AuditAction.DELETE, {
+            "resource_type": "commission_calculation",
+            "calculation_id": calculation_id
+        }, request_obj)
+        
+        return {"message": "Commission calculation deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting commission calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Seller Net Sheet Save Endpoint
 @api_router.post("/seller-net/save")
 async def save_seller_net_calculation(
