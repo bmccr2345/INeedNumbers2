@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { DollarSign, ExternalLink, Trash2, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { mockDashboardAPI, formatCurrency, formatDate } from '../../services/mockDashboardAPI';
+import { formatCurrency, formatDate } from '../../services/mockDashboardAPI';
+import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 const CommissionPanel = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [history, setHistory] = useState([]);
 
@@ -18,10 +21,12 @@ const CommissionPanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const response = await mockDashboardAPI.commission.history({ limit: 3 });
-      setHistory(response.items);
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const response = await axios.get(`${backendUrl}/api/commission/history?limit=10`);
+      setHistory(response.data.items || []);
     } catch (error) {
       console.error('Failed to load commission history:', error);
+      setHistory([]);
     } finally {
       setIsLoadingHistory(false);
     }
