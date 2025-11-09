@@ -471,8 +471,8 @@ async def generate_coach(
                 
                 try:
                     obj = json.loads(clean_text)
-                    # Validate required keys (removed 'summary', added 'coaching_advice')
-                    required_keys = ['coaching_advice', 'stats', 'actions', 'risks', 'next_inputs']
+                    # Validate required keys for dashboard AI Coach
+                    required_keys = ['summary', 'priority_actions', 'time_sensitive', 'performance_analysis']
                     if not all(key in obj for key in required_keys):
                         raise ValueError("Missing required keys")
                             
