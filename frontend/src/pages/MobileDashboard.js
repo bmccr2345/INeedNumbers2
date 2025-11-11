@@ -529,25 +529,18 @@ const MobileDashboard = () => {
       <MobileCard
         title="Open Actions"
         icon={CheckSquare}
-        badge={dashboardData.top3Actions.length > 0 ? dashboardData.top3Actions.length.toString() : null}
+        badge={dashboardData.openActions > 0 ? dashboardData.openActions.toString() : null}
         onClick={handleViewActions}
       >
         <div className="space-y-3">
-          {dashboardData.top3Actions.length > 0 ? (
+          {dashboardData.openActions > 0 ? (
             <>
-              <p className="text-sm text-gray-600 mb-3">
-                Tomorrow's Top 3 Priorities
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboardData.openActions} {dashboardData.openActions === 1 ? 'action' : 'actions'} pending
               </p>
-              <ul className="space-y-2">
-                {dashboardData.top3Actions.map((action, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-medium mr-2 mt-0.5 flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm text-gray-900">{action}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm text-gray-600">
+                Stay on top of your follow-ups and tasks
+              </p>
             </>
           ) : (
             <>
@@ -570,7 +563,7 @@ const MobileDashboard = () => {
             }}
           >
             <CheckSquare className="w-4 h-4 mr-2" />
-            {dashboardData.top3Actions.length > 0 ? 'View Actions' : 'Add Action'}
+            {dashboardData.openActions > 0 ? 'View Actions' : 'Add Action'}
           </Button>
         </div>
       </MobileCard>
