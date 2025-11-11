@@ -474,26 +474,26 @@ const CapTrackerPanel = () => {
                     <CardTitle>Current Configuration</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="font-medium text-gray-600">Cap Amount:</span>
-                        <span className="ml-2">{formatCurrency(capConfig.annual_cap_amount)}</span>
+                        <span className="font-medium text-gray-600 block text-xs mb-1">Cap Amount:</span>
+                        <span className="font-semibold">{formatCurrency(capConfig.annual_cap_amount)}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Cap % Per Deal:</span>
-                        <span className="ml-2">{capConfig.cap_percentage}%</span>
+                        <span className="font-medium text-gray-600 block text-xs mb-1">Cap % Per Deal:</span>
+                        <span className="font-semibold">{capConfig.cap_percentage}%</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Period Type:</span>
-                        <span className="ml-2 capitalize">{capConfig.cap_period_type?.replace('_', ' ')}</span>
+                        <span className="font-medium text-gray-600 block text-xs mb-1">Period Type:</span>
+                        <span className="font-semibold capitalize">{capConfig.cap_period_type?.replace('_', ' ')}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Period Start:</span>
-                        <span className="ml-2">{new Date(capConfig.cap_period_start).toLocaleDateString()}</span>
+                        <span className="font-medium text-gray-600 block text-xs mb-1">Period Start:</span>
+                        <span className="font-semibold">{new Date(capConfig.cap_period_start).toLocaleDateString()}</span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-600">Reset Date:</span>
-                        <span className="ml-2">{new Date(capConfig.reset_date).toLocaleDateString()}</span>
+                      <div className="col-span-2">
+                        <span className="font-medium text-gray-600 block text-xs mb-1">Reset Date:</span>
+                        <span className="font-semibold">{new Date(capConfig.reset_date).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </CardContent>
