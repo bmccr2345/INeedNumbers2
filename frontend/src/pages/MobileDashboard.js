@@ -8,7 +8,8 @@ import {
   TrendingUp,
   TrendingDown,
   AlertCircle,
-  PieChart
+  PieChart,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import MobileCard from '../components/mobile/MobileCard';
