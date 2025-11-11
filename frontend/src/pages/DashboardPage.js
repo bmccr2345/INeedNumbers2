@@ -738,6 +738,39 @@ const DashboardPage = () => {
           onClick={() => setShowAccountMenu(false)}
         />
       )}
+      
+      {/* Mobile: Floating Action Button - appears on all tabs */}
+      {isMobile && (
+        <>
+          <QuickActionButton 
+            onClick={handleQuickAction} 
+            showOnboarding={false}
+          />
+          
+          {/* Mobile Quick Action Modals */}
+          <MobileActivityModal 
+            isOpen={showActivityModal} 
+            onClose={() => setShowActivityModal(false)} 
+          />
+          
+          <MobileReflectionModal 
+            isOpen={showReflectionModal} 
+            onClose={() => setShowReflectionModal(false)} 
+          />
+          
+          <MobileAddDealModal 
+            isOpen={showAddDealModal} 
+            onClose={() => setShowAddDealModal(false)}
+            onSuccess={() => window.location.reload()} 
+          />
+          
+          <MobileAddExpenseModal 
+            isOpen={showAddExpenseModal} 
+            onClose={() => setShowAddExpenseModal(false)}
+            onSuccess={() => window.location.reload()} 
+          />
+        </>
+      )}
     </div>
   );
 };
