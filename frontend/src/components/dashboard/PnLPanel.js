@@ -1174,6 +1174,61 @@ const PnLPanel = () => {
                           </tbody>
                         </table>
                       </div>
+                      
+                      {/* Mobile: Card view */}
+                      <div className="md:hidden space-y-4">
+                        {pnlSummary.deals.map((deal) => (
+                          <div key={deal.id} className="border rounded-lg p-4 space-y-3 bg-gray-50">
+                            <div className="flex justify-between items-start">
+                              <div className="font-medium text-gray-900 flex-1 pr-2">
+                                {deal.house_address}
+                              </div>
+                              <button
+                                onClick={() => handleDeleteDeal(deal.id)}
+                                className="text-red-600 hover:text-red-800 flex-shrink-0"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500 text-xs">Sale Price:</span>
+                                <div className="font-semibold">{formatCurrency(deal.amount_sold_for || 0)}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500 text-xs">Final Income:</span>
+                                <div className="font-semibold text-green-700">{formatCurrency(deal.final_income || 0)}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500 text-xs">Commission %:</span>
+                                <div className="font-medium">{deal.commission_percentage || 0}%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500 text-xs">Your Split %:</span>
+                                <div className="font-medium">{deal.your_split || 0}%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500 text-xs">Team/Brokerage:</span>
+                                <div className="font-medium">{deal.team_brokerage_split || 0}%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500 text-xs">Cap Amount:</span>
+                                <div className="font-medium">{formatCurrency(deal.cap_amount || 0)}</div>
+                              </div>
+                            </div>
+                            
+                            <div className="pt-2 border-t border-gray-200 text-xs text-gray-600">
+                              <div className="flex justify-between">
+                                <span>Lead Source: {deal.lead_source || 'N/A'}</span>
+                                <span>Closed: {new Date(deal.closing_date).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      </>
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <Building className="w-12 h-12 mx-auto mb-3 text-gray-300" />
