@@ -158,7 +158,7 @@ const MobileDashboard = () => {
         }));
       }
       
-      // Fetch action tracker count and top3 - use today's date
+      // Fetch action tracker count - use today's date
       try {
         const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
         const actionsResponse = await axios.get(
@@ -173,13 +173,9 @@ const MobileDashboard = () => {
         const completed = actionsResponse.data?.completed || {};
         const openCount = Object.values(completed).filter(val => !val).length;
         
-        // Get top3 from summary
-        const top3 = actionsResponse.data?.summary?.top3 || [];
-        
         setDashboardData(prev => ({
           ...prev,
-          openActions: openCount,
-          top3Actions: top3
+          openActions: openCount
         }));
         console.log('[MobileDashboard] Action tracker data loaded successfully');
       } catch (error) {
@@ -187,8 +183,7 @@ const MobileDashboard = () => {
         // Set default on error
         setDashboardData(prev => ({
           ...prev,
-          openActions: 0,
-          top3Actions: []
+          openActions: 0
         }));
       }
 
