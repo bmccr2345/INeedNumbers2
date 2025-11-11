@@ -118,7 +118,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/dashboard" element={<DashboardRoute />} />
-              <Route path="/calculator" element={<FreeCalculator />} />
+              <Route path="/calculator" element={<CalculatorRoute><FreeCalculator /></CalculatorRoute>} />
               <Route path="/glossary" element={<Glossary />} />
               <Route path="/sample-pdf" element={<SamplePDF />} />
               <Route path="/settings" element={<Settings />} />
