@@ -60,20 +60,20 @@ const MobileDashboard = () => {
     // If user is still loading (undefined), keep loading state
   }, [user?.id, user]);
 
-  // Check if PRO user needs onboarding wizard
-  useEffect(() => {
-    if (user?.plan === 'PRO') {
-      const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
-      const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
-      
-      if (!hasCompletedOnboarding && !hasDismissedThisSession) {
-        // Show wizard after a brief delay to let dashboard load
-        setTimeout(() => {
-          setShowOnboardingWizard(true);
-        }, 1000);
-      }
-    }
-  }, [user]);
+  // PRO onboarding wizard disabled for mobile per user request
+  // useEffect(() => {
+  //   if (user?.plan === 'PRO') {
+  //     const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
+  //     const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
+  //     
+  //     if (!hasCompletedOnboarding && !hasDismissedThisSession) {
+  //       // Show wizard after a brief delay to let dashboard load
+  //       setTimeout(() => {
+  //         setShowOnboardingWizard(true);
+  //       }, 1000);
+  //     }
+  //   }
+  // }, [user]);
 
   const fetchDashboardData = async () => {
     try {
