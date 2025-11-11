@@ -497,7 +497,7 @@ const DashboardPage = () => {
                     </button>
                   )}
                   
-                  {user?.plan === 'PRO' && (
+                  {user?.plan === 'PRO' && !isMobile && (
                     <button
                       onClick={() => {
                         setShowOnboardingWizard(true);
