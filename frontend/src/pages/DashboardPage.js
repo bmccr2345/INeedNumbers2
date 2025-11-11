@@ -30,6 +30,11 @@ import Footer from '../components/Footer';
 import { safeLocalStorage } from '../utils/safeStorage';
 import MobileBackButton from '../components/mobile/MobileBackButton';
 import { useIsMobile } from '../hooks/useMediaQuery';
+import QuickActionButton from '../components/mobile/QuickActionButton';
+import MobileActivityModal from '../components/mobile/MobileActivityModal';
+import MobileReflectionModal from '../components/mobile/MobileReflectionModal';
+import MobileAddDealModal from '../components/mobile/MobileAddDealModal';
+import MobileAddExpenseModal from '../components/mobile/MobileAddExpenseModal';
 
 // Tab panels
 import HomepagePanel from '../components/dashboard/HomepagePanel';
