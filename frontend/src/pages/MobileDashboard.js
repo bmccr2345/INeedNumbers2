@@ -481,6 +481,7 @@ const MobileDashboard = () => {
           </p>
         </div>
       </MobileCard>
+      </div>
 
       {/* Commission Cap Progress Card */}
       <MobileCard
