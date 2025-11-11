@@ -298,6 +298,83 @@ const MobileDashboard = () => {
         <AICoachBanner />
       )}
 
+      {/* Mobile-Only: Merged Financial Summary Card */}
+      <div className="md:hidden">
+        <MobileCard
+          title="Financial Summary"
+          icon={DollarSign}
+          onClick={handleViewPnL}
+        >
+          <div className="space-y-4">
+            {/* This Month's Net */}
+            <div className="pb-3 border-b border-gray-200">
+              <div className="text-xs text-gray-500 mb-1">This Month's Net</div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(dashboardData.monthlyNet)}
+                </span>
+                <span className="text-xs text-gray-500">MTD</span>
+              </div>
+            </div>
+            
+            {/* Income and Expenses Row */}
+            <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-200">
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Total Income</div>
+                <div className="text-lg font-bold text-green-700">
+                  {formatCurrency(dashboardData.totalIncome)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Total Expenses</div>
+                <div className="text-lg font-bold text-red-700">
+                  {formatCurrency(dashboardData.totalExpenses)}
+                </div>
+              </div>
+            </div>
+            
+            {/* Budget Utilization */}
+            <div>
+              <div className="text-xs text-gray-500 mb-2">Budget Utilization</div>
+              <div className="flex items-center space-x-3">
+                <div className="text-xl font-bold text-gray-900">
+                  {Math.round(dashboardData.budgetUtilization)}%
+                </div>
+                <div className="flex-1">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        dashboardData.budgetUtilization > 90 
+                          ? 'bg-red-500' 
+                          : dashboardData.budgetUtilization > 75 
+                          ? 'bg-yellow-500' 
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(dashboardData.budgetUtilization, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewPnL();
+              }}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              View Full P&L
+            </Button>
+          </div>
+        </MobileCard>
+      </div>
+
+      {/* Desktop: Individual Cards (hidden on mobile) */}
+      <div className="hidden md:contents">
       {/* This Month's Net Card */}
       <MobileCard
         title="This Month's Net"
