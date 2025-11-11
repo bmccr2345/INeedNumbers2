@@ -961,8 +961,10 @@ const PnLPanel = () => {
                   </Card>
                 </div>
 
-                {/* Cap Progress Section */}
-                <CapProgressSection />
+                {/* Cap Progress Section - Hidden on mobile */}
+                <div className="hidden sm:block">
+                  <CapProgressSection />
+                </div>
 
                 {/* Income Section (Deals) */}
                 <Card>
