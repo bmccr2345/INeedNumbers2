@@ -378,54 +378,54 @@ const CapTrackerPanel = () => {
               // Cap Progress Display
               <>
                 {/* Progress Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-3 md:gap-6">
                   <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-gray-600">Cap Progress</div>
-                          <div className="text-2xl font-bold text-blue-600">
+                    <CardContent className="pt-4 md:pt-6">
+                      <div className="flex flex-col items-center md:flex-row md:items-center md:justify-between">
+                        <div className="text-center md:text-left">
+                          <div className="text-xs md:text-sm text-gray-600">Progress</div>
+                          <div className="text-lg md:text-2xl font-bold text-blue-600">
                             {progress.percentage}%
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-gray-500 mt-1 hidden md:block">
                             {progress.isComplete ? 'Cap Complete!' : 'In Progress'}
                           </div>
                         </div>
-                        <Target className="w-8 h-8 text-blue-600" />
+                        <Target className="w-6 h-6 md:w-8 md:h-8 text-blue-600 mt-2 md:mt-0" />
                       </div>
                     </CardContent>
                   </Card>
                   
                   <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-gray-600">Amount Paid</div>
-                          <div className="text-2xl font-bold text-green-600">
-                            {formatCurrency(progress.paid)}
+                    <CardContent className="pt-4 md:pt-6">
+                      <div className="flex flex-col items-center md:flex-row md:items-center md:justify-between">
+                        <div className="text-center md:text-left">
+                          <div className="text-xs md:text-sm text-gray-600">Paid</div>
+                          <div className="text-base md:text-2xl font-bold text-green-600">
+                            {formatCurrency(progress.paid, true)}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-gray-500 mt-1 hidden md:block">
                             of {formatCurrency(progress.total)}
                           </div>
                         </div>
-                        <CheckCircle className={`w-8 h-8 ${progress.isComplete ? 'text-green-600' : 'text-gray-400'}`} />
+                        <CheckCircle className={`w-6 h-6 md:w-8 md:h-8 ${progress.isComplete ? 'text-green-600' : 'text-gray-400'} mt-2 md:mt-0`} />
                       </div>
                     </CardContent>
                   </Card>
                   
                   <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-gray-600">Remaining</div>
-                          <div className={`text-2xl font-bold ${progress.isComplete ? 'text-green-600' : 'text-orange-600'}`}>
-                            {formatCurrency(progress.remaining)}
+                    <CardContent className="pt-4 md:pt-6">
+                      <div className="flex flex-col items-center md:flex-row md:items-center md:justify-between">
+                        <div className="text-center md:text-left">
+                          <div className="text-xs md:text-sm text-gray-600">Left</div>
+                          <div className={`text-base md:text-2xl font-bold ${progress.isComplete ? 'text-green-600' : 'text-orange-600'}`}>
+                            {formatCurrency(progress.remaining, true)}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-gray-500 mt-1 hidden md:block">
                             {progress.isComplete ? 'Complete' : 'To Pay'}
                           </div>
                         </div>
-                        <DollarSign className={`w-8 h-8 ${progress.isComplete ? 'text-green-600' : 'text-orange-600'}`} />
+                        <DollarSign className={`w-6 h-6 md:w-8 md:h-8 ${progress.isComplete ? 'text-green-600' : 'text-orange-600'} mt-2 md:mt-0`} />
                       </div>
                     </CardContent>
                   </Card>
