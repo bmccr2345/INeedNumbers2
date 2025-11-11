@@ -163,7 +163,17 @@ const CapTrackerPanel = () => {
   const progress = calculateProgress();
 
   // Format currency
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount, compact = false) => {
+    if (compact && amount >= 1000) {
+      // For mobile: $5K instead of $5,000
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      }).format(amount || 0);
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
