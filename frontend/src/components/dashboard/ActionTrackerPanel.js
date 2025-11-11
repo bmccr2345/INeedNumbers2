@@ -816,25 +816,6 @@ const ActionTrackerPanel = () => {
         </Card>
       )}
 
-      {/* Tomorrow's Top 3 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tomorrow's Top 3</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-3">
-            {summary?.top3?.map((item, index) => (
-              <li key={index} className="flex items-center">
-                <span className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
-                  {index + 1}
-                </span>
-                <span className="text-gray-900">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
       {/* Reflection */}
       <Card>
         <CardHeader>
