@@ -110,7 +110,8 @@ const ActionTrackerPanel = () => {
 
     } catch (error) {
       console.error('Error loading tracker data:', error);
-      if (error.response?.status === 404) {
+      // Disable wizard on mobile per user request
+      if (!isMobile && error.response?.status === 404) {
         setIsFirstRun(true);
       }
     } finally {
