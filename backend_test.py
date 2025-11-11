@@ -10,7 +10,7 @@ import re
 import pyotp
 
 class DealPackAPITester:
-    def __init__(self, base_url="https://inn-auth-upgrade.preview.emergentagent.com"):
+    def __init__(self, base_url="https://ai-coach-enhanced.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -12051,7 +12051,7 @@ def run_branding_upload_tests():
         
         try:
             # Test with allowed origin
-            allowed_origin = "https://inn-auth-upgrade.preview.emergentagent.com"
+            allowed_origin = "https://ai-coach-enhanced.preview.emergentagent.com"
             response = requests.options(
                 f"{self.base_url}/api/health",
                 headers={
@@ -12810,7 +12810,7 @@ def run_branding_upload_tests():
             
             # Test allowed origin
             allowed_headers = {
-                'Origin': 'https://inn-auth-upgrade.preview.emergentagent.com',
+                'Origin': 'https://ai-coach-enhanced.preview.emergentagent.com',
                 'Access-Control-Request-Method': 'GET'
             }
             
@@ -13525,7 +13525,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for unauthenticated users (Starter plan)"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -13559,7 +13559,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for unauthenticated users (Pro plan)"""
         checkout_data = {
             "plan": "pro",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -13707,7 +13707,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for Starter plan"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         success, response = self.run_test(
@@ -13734,7 +13734,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout session creation for Pro plan"""
         checkout_data = {
             "plan": "pro",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -13750,7 +13750,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout with invalid plan"""
         checkout_data = {
             "plan": "invalid_plan",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -13766,7 +13766,7 @@ def run_branding_upload_tests():
         """Test Stripe checkout without authentication"""
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         return self.run_test(
@@ -17632,7 +17632,7 @@ def run_branding_upload_tests():
         
         checkout_data = {
             "plan": "starter",
-            "origin_url": "https://inn-auth-upgrade.preview.emergentagent.com"
+            "origin_url": "https://ai-coach-enhanced.preview.emergentagent.com"
         }
         
         print("   Step 1: Creating checkout session...")

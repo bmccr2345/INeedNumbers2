@@ -174,7 +174,7 @@ STRIPE_PRICE_PRO_MONTHLY="price_1S8ocz0OkW2f3TP8gflJmdy3"
 Already configured in `/app/frontend/.env`:
 ```bash
 REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_YXBwYXJlbnQtZHJhZ29uLTY1LmNsZXJrLmFjY291bnRzLmRldiQ
-REACT_APP_BACKEND_URL=https://inn-auth-upgrade.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://ai-coach-enhanced.preview.emergentagent.com
 ```
 
 ### Backend Config
@@ -290,15 +290,15 @@ Test each endpoint with curl:
 
 ```bash
 # 1. Assign Plan
-curl -X POST https://inn-auth-upgrade.preview.emergentagent.com/api/clerk/assign-plan \
+curl -X POST https://ai-coach-enhanced.preview.emergentagent.com/api/clerk/assign-plan \
   -H "Content-Type: application/json" \
   -d '{"clerk_user_id": "user_xxx", "plan": "starter"}'
 
 # 2. Get Subscription Status
-curl "https://inn-auth-upgrade.preview.emergentagent.com/api/clerk/subscription-status?clerk_user_id=user_xxx"
+curl "https://ai-coach-enhanced.preview.emergentagent.com/api/clerk/subscription-status?clerk_user_id=user_xxx"
 
 # 3. Create Checkout Session
-curl -X POST https://inn-auth-upgrade.preview.emergentagent.com/api/clerk/create-checkout \
+curl -X POST https://ai-coach-enhanced.preview.emergentagent.com/api/clerk/create-checkout \
   -H "Content-Type: application/json" \
   -d '{
     "clerk_user_id": "user_xxx",
@@ -350,7 +350,7 @@ curl -X POST https://inn-auth-upgrade.preview.emergentagent.com/api/clerk/create
 1. Install Stripe CLI: https://stripe.com/docs/stripe-cli
 2. Forward webhooks:
    ```bash
-   stripe listen --forward-to https://inn-auth-upgrade.preview.emergentagent.com/api/clerk/webhook
+   stripe listen --forward-to https://ai-coach-enhanced.preview.emergentagent.com/api/clerk/webhook
    ```
 3. Trigger test events:
    ```bash

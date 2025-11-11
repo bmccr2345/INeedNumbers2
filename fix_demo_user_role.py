@@ -107,7 +107,7 @@ async def verify_fix():
     try:
         import requests
         
-        base_url = "https://inn-auth-upgrade.preview.emergentagent.com"
+        base_url = "https://ai-coach-enhanced.preview.emergentagent.com"
         
         # Login and check role
         login_data = {
