@@ -5455,10 +5455,32 @@ def calculate_tracker_summary(settings: TrackerSettings, daily_entry: TrackerDai
         if gap > 0:
             activity_scores.append((score, activity, gap))
     
+    # Map activities to appropriate verbs
+    activity_verbs = {
+        'conversations': 'Have',
+        'appointments': 'Have',
+        'showings': 'Complete',
+        'listings': 'Secure',
+        'contracts': 'Close',
+        'closings': 'Complete',
+        'prospecting': 'Do',
+        'follow_ups': 'Complete',
+        'meetings': 'Attend',
+        'calls': 'Make'
+    }
+    
     activity_scores.sort(reverse=True)
     for _, activity, gap in activity_scores[:3]:
         activity_label = activity.replace('_', ' ').title()
-        top3.append(f"Do {gap} {activity_label}")
+        verb = activity_verbs.get(activity, 'Complete')
+        
+        # Proper singular/plural handling
+        if gap == 1:
+            # Convert plural activities to singular (e.g., "Conversations" -> "Conversation")
+            if activity_label.endswith('s') and activity not in ['prospecting', 'closings']:
+                activity_label = activity_label[:-1]
+        
+        top3.append(f"{verb} {int(gap)} {activity_label}")
     
     if not top3:
         top3.append("Front-load prospecting 30m to stay ahead")
