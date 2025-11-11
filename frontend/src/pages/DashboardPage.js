@@ -715,8 +715,8 @@ const DashboardPage = () => {
         />
       )}
 
-      {/* Pro Onboarding Wizard */}
-      {showOnboardingWizard && (
+      {/* Pro Onboarding Wizard - Desktop Only */}
+      {!isMobile && showOnboardingWizard && (
         <ProOnboardingWizard 
           isOpen={showOnboardingWizard}
           onClose={() => {
