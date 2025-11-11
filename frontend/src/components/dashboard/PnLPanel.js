@@ -966,7 +966,16 @@ const PnLPanel = () => {
 
                 {/* Income Section (Deals) */}
                 <Card>
-                  <CardHeader>
+                  {/* Mobile: Full-width header */}
+                  <div className="md:hidden bg-green-50 border-b border-green-100 px-4 py-3">
+                    <div className="flex items-center">
+                      <TrendingUp className="w-5 h-5 text-green-700 mr-2" />
+                      <h3 className="text-lg font-semibold text-green-700">Income - Closed Deals</h3>
+                    </div>
+                  </div>
+                  
+                  {/* Desktop: Original header */}
+                  <CardHeader className="hidden md:block">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-green-700">
                         <TrendingUp className="w-5 h-5 inline mr-2" />
