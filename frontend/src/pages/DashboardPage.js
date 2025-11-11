@@ -66,6 +66,25 @@ const DashboardPage = () => {
     manageFinances: true,
     myBusiness: true
   });
+  
+  // Mobile quick action modals
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [showReflectionModal, setShowReflectionModal] = useState(false);
+  const [showAddDealModal, setShowAddDealModal] = useState(false);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  
+  // Mobile quick action handler
+  const handleQuickAction = (actionType) => {
+    if (actionType === 'activity') {
+      setShowActivityModal(true);
+    } else if (actionType === 'reflection') {
+      setShowReflectionModal(true);
+    } else if (actionType === 'deal') {
+      setShowAddDealModal(true);
+    } else if (actionType === 'expense') {
+      setShowAddExpenseModal(true);
+    }
+  };
 
   // Check if Pro user needs onboarding (desktop only)
   useEffect(() => {
