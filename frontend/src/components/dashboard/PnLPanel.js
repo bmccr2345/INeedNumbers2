@@ -979,23 +979,25 @@ const PnLPanel = () => {
                   </CardHeader>
                   <CardContent>
                     {pnlSummary.deals.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr className="text-left text-sm text-gray-500 border-b">
-                              <th className="pb-2">Property Address</th>
-                              <th className="pb-2">Sale Price</th>
-                              <th className="pb-2">Commission %</th>
-                              <th className="pb-2">Split %</th>
-                              <th className="pb-2">Team/Brokerage Split %</th>
-                              <th className="pb-2">Cap Amount</th>
-                              <th className="pb-2">Final Income</th>
-                              <th className="pb-2">Lead Source</th>
-                              <th className="pb-2">Closing Date</th>
-                              <th className="pb-2">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      <>
+                        {/* Desktop: Table view */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <table className="min-w-full">
+                            <thead>
+                              <tr className="text-left text-sm text-gray-500 border-b">
+                                <th className="pb-2">Property Address</th>
+                                <th className="pb-2">Sale Price</th>
+                                <th className="pb-2">Commission %</th>
+                                <th className="pb-2">Split %</th>
+                                <th className="pb-2">Team/Brokerage Split %</th>
+                                <th className="pb-2">Cap Amount</th>
+                                <th className="pb-2">Final Income</th>
+                                <th className="pb-2">Lead Source</th>
+                                <th className="pb-2">Closing Date</th>
+                                <th className="pb-2">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
                             {pnlSummary.deals.map((deal) => (
                               <tr key={deal.id} className="border-b hover:bg-gray-50">
                                 <td className="py-2 text-sm font-medium">{deal.house_address}</td>
