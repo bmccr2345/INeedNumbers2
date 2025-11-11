@@ -76,6 +76,31 @@ function DashboardRoute() {
   );
 }
 
+/**
+ * Calculator Route Wrapper
+ * Wraps calculator pages in MobileLayout on mobile to maintain bottom navigation
+ */
+function CalculatorRoute({ children }) {
+  const isMobile = useIsMobile();
+  
+  if (isMobile) {
+    return (
+      <ErrorBoundary>
+        <MobileLayout>
+          {children}
+        </MobileLayout>
+      </ErrorBoundary>
+    );
+  }
+  
+  // On desktop, render calculator directly
+  return (
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   return (
     <div className="App">
