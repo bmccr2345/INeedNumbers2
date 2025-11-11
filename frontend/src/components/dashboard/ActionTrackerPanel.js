@@ -92,7 +92,8 @@ const ActionTrackerPanel = () => {
       setSettings(settingsResponse.data);
 
       // Check if this is first run (new settings)
-      if (!settingsResponse.data.monthlyGciTarget && !settingsResponse.data.monthlyClosingsTarget) {
+      // Disable wizard on mobile per user request
+      if (!isMobile && !settingsResponse.data.monthlyGciTarget && !settingsResponse.data.monthlyClosingsTarget) {
         setIsFirstRun(true);
       }
 
