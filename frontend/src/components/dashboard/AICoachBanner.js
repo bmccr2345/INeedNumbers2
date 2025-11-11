@@ -186,20 +186,6 @@ const AICoachBanner = () => {
             )}
           </div>
         </div>
-              <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-              {isGenerating ? 'Generating...' : 'Generate New Insights'}
-            </Button>
-            {coachData && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            )}
-          </div>
-        </div>
 
         {isExpanded && coachData && (
           <div className="mt-6 space-y-4 animate-in slide-in-from-top">
