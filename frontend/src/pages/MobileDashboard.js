@@ -519,49 +519,6 @@ const MobileDashboard = () => {
         </div>
       </MobileCard>
 
-      {/* Open Actions Card */}
-      <MobileCard
-        title="Open Actions"
-        icon={CheckSquare}
-        badge={dashboardData.openActions > 0 ? dashboardData.openActions.toString() : null}
-        onClick={handleViewActions}
-      >
-        <div className="space-y-3">
-          {dashboardData.openActions > 0 ? (
-            <>
-              <p className="text-2xl font-bold text-gray-900">
-                {dashboardData.openActions} {dashboardData.openActions === 1 ? 'action' : 'actions'} pending
-              </p>
-              <p className="text-sm text-gray-600">
-                Stay on top of your follow-ups and tasks
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-lg font-medium text-gray-900">
-                All caught up! 🎉
-              </p>
-              <p className="text-sm text-gray-600">
-                No pending actions. Add a new one to stay productive.
-              </p>
-            </>
-          )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full mt-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleViewActions();
-            }}
-          >
-            <CheckSquare className="w-4 h-4 mr-2" />
-            {dashboardData.openActions > 0 ? 'View Actions' : 'Add Action'}
-          </Button>
-        </div>
-      </MobileCard>
-
       {/* Active Deals Card - PRO users only */}
       {user?.plan === 'PRO' && (
         <ActiveDealsCard 
