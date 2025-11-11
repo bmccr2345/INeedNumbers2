@@ -120,7 +120,36 @@ const AICoachBanner = () => {
   return (
     <Card className="mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
       <CardContent className="p-6">
-        <div className="flex items-start justify-between">
+        {/* Mobile Layout */}
+        <div className="md:hidden">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-purple-100 p-3 rounded-full">
+              <Sparkles className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Fairy AI Coach
+              </h3>
+              <p className="text-sm text-gray-600">
+                {error ? error : "AI-powered insights"}
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateInsights}
+              disabled={isGenerating}
+              className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full"
+            >
+              {isGenerating ? 'Generating...' : 'Generate New Insights'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden md:flex items-start justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div className="bg-purple-100 p-3 rounded-full">
               <Sparkles className="w-6 h-6 text-purple-600" />
@@ -131,12 +160,7 @@ const AICoachBanner = () => {
                 {isGenerating && <span className="text-sm text-purple-600 animate-pulse">(Generating...)</span>}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                {error ? error : (
-                  <>
-                    <span className="hidden md:inline">Your personalized AI-powered business insights</span>
-                    <span className="md:hidden">AI-powered insights</span>
-                  </>
-                )}
+                {error ? error : "Your personalized AI-powered business insights"}
               </p>
             </div>
           </div>
