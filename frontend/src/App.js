@@ -130,13 +130,13 @@ function App() {
               
               {/* Tools Routes */}
               <Route path="/tools" element={<ToolsPage />} />
-              <Route path="/tools/commission-split" element={<CommissionSplitCalculator />} />
-              <Route path="/tools/net-sheet" element={<SellerNetSheetCalculator />} />
-              <Route path="/tools/affordability" element={<AffordabilityCalculator />} />
-              <Route path="/tools/closing-date" element={<ClosingDateCalculator />} />
-              <Route path="/affordability/shared/:calculationId" element={<AffordabilityCalculator />} />
-              <Route path="/tools/agent-pl-tracker" element={<PnLPanel />} />
-              <Route path="/tools/pnl-tracker" element={<PnLPanel />} />
+              <Route path="/tools/commission-split" element={<CalculatorRoute><CommissionSplitCalculator /></CalculatorRoute>} />
+              <Route path="/tools/net-sheet" element={<CalculatorRoute><SellerNetSheetCalculator /></CalculatorRoute>} />
+              <Route path="/tools/affordability" element={<CalculatorRoute><AffordabilityCalculator /></CalculatorRoute>} />
+              <Route path="/tools/closing-date" element={<CalculatorRoute><ClosingDateCalculator /></CalculatorRoute>} />
+              <Route path="/affordability/shared/:calculationId" element={<CalculatorRoute><AffordabilityCalculator /></CalculatorRoute>} />
+              <Route path="/tools/agent-pl-tracker" element={<CalculatorRoute><PnLPanel /></CalculatorRoute>} />
+              <Route path="/tools/pnl-tracker" element={<CalculatorRoute><PnLPanel /></CalculatorRoute>} />
               {/* Redirect old P&L Tracker URL to correct path */}
               <Route path="/agent-pnl-tracker" element={<Navigate to="/tools/agent-pl-tracker" replace />} />
               <Route path="/login" element={<Navigate to="/auth/login" replace />} />
