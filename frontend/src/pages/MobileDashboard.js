@@ -226,8 +226,8 @@ const MobileDashboard = () => {
       // Show add expense modal
       setShowAddExpenseModal(true);
     } else if (actionType === 'onboarding') {
-      // Show onboarding wizard
-      setShowOnboardingWizard(true);
+      // Onboarding wizard disabled for mobile per user request
+      // setShowOnboardingWizard(true);
     } else {
       // Default: just open action tracker
       navigate('/dashboard?openAction=true');
