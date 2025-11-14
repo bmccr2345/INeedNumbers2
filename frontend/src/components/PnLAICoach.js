@@ -11,6 +11,7 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
   const { getToken, isLoaded } = useAuth();
   const [analysis, setAnalysis] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState(0);
 
   const formatDataForDisplay = (data) => {
     if (!data) return '';
