@@ -38,6 +38,13 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
   };
 
   const generateAnalysis = async () => {
+    // Prevent rapid-fire requests (debounce for 2 seconds)
+    const now = Date.now();
+    if (now - lastRequestTime < 2000) {
+      console.log('[PnLAICoach] Request blocked - too soon after last request');
+      return;
+    }
+    
     if (!currentMonthData) {
       setAnalysis('Please ensure you have P&L data for the current month.');
       return;
@@ -45,6 +52,7 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
     
     setIsAnalyzing(true);
     setAnalysis('');
+    setLastRequestTime(now);
     
     try {
       // Parse currentMonthData if it's a string
