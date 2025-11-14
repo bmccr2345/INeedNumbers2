@@ -869,7 +869,7 @@ const PnLPanel = () => {
                   )}
                 </CardContent>
               </Card>
-              )}
+            )}
             </div>
 
             {/* Error Display */}
