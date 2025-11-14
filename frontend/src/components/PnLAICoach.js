@@ -192,6 +192,9 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
           errorMessage = 'Authentication required. Please sign in to access AI Coach.';
         } else if (error.response.status === 403) {
           errorMessage = 'AI Coach is a PRO feature. Please upgrade your plan to access personalized insights.';
+        } else if (error.response.status === 429) {
+          const retryAfter = error.response.headers?.['retry-after'] || '60';
+          errorMessage = `Rate limit reached. Please wait ${retryAfter} seconds before trying again. The AI Coach is limited to 5 requests per minute to ensure fair usage.`;
         } else if (error.response.status === 503) {
           errorMessage = 'AI Coach is currently disabled. Please check back later.';
         } else {
