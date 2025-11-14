@@ -696,19 +696,20 @@ const PnLPanel = () => {
               </CardContent>
             </Card>
 
-            {/* Active Deals Table */}
-            {activeDeals && activeDeals.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="w-5 h-5" />
-                    <span>Active Deals - Due Diligence Tracker</span>
-                    <Badge variant="secondary">{activeDeals.length}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Desktop: Table View */}
-                  {!isMobile && (
+            {/* Active Deals Table - Hidden on mobile */}
+            <div className="hidden sm:block">
+              {activeDeals && activeDeals.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <TrendingUp className="w-5 h-5" />
+                      <span>Active Deals - Due Diligence Tracker</span>
+                      <Badge variant="secondary">{activeDeals.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop: Table View */}
+                    {!isMobile && (
                     <div className="overflow-x-auto">
                       <table className="min-w-full">
                         <thead>
