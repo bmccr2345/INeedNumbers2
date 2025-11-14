@@ -235,7 +235,8 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
               </p>
               <Button
                 onClick={generateAnalysis}
-                className="bg-purple-600 hover:bg-purple-700"
+                disabled={isAnalyzing}
+                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Generate Analysis
