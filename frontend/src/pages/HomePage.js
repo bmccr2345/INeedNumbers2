@@ -322,14 +322,14 @@ const HomePage = () => {
               
               <div className="text-xl lg:text-2xl text-neutral-dark space-y-6">
                 <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-100">
-                  <h2 className="text-xl lg:text-2xl font-semibold text-deep-forest mb-4 leading-tight">
-                    I Need Numbers uses AI to turn your annual goal, your deals, and your trends into a simple daily plan you can actually follow.
-                  </h2>
-                  <p className="leading-relaxed text-lg font-medium" style={{ lineHeight: '1.7' }}>
-                    Set your goal once; the platform guides you every day so you stay on track.
+                  <p className="leading-relaxed text-lg mb-4" style={{ lineHeight: '1.7' }}>
+                    I Need Numbers uses an <span className="font-semibold text-primary">AI Coach</span> that studies your <span className="font-semibold text-primary">annual goal</span>, your <span className="font-semibold text-primary">deals</span>, and your <span className="font-semibold text-primary">trends</span>; it builds a <span className="font-semibold text-primary">daily plan</span> you can follow without thinking about it.
                   </p>
-                  <p className="leading-relaxed text-lg mt-4" style={{ lineHeight: '1.7' }}>
-                    And when you need answers fast, you've got instant access to all the must-have calculators for commissions, affordability, investments, and more; everything stays in one place so you can make smarter decisions without hunting around.
+                  <p className="leading-relaxed text-lg mb-4" style={{ lineHeight: '1.7' }}>
+                    Set your goal once. The AI Coach adjusts your tasks as your pace shifts and keeps you aligned with the target.
+                  </p>
+                  <p className="leading-relaxed text-lg" style={{ lineHeight: '1.7' }}>
+                    You also get fast access to all your essential tools; the <span className="font-semibold text-primary">commission calculator</span>, <span className="font-semibold text-primary">affordability calculator</span>, <span className="font-semibold text-primary">investment calculator</span>, and more. Everything stays in one place so you make decisions quickly and stay focused.
                   </p>
                 </div>
               </div>
