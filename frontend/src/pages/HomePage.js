@@ -322,15 +322,14 @@ const HomePage = () => {
               
               <div className="text-xl lg:text-2xl text-neutral-dark space-y-6">
                 <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-100">
-                  <h2 className="text-2xl font-semibold text-deep-forest mb-4">What It Does</h2>
-                  <p className="leading-relaxed text-lg" style={{ lineHeight: '1.7' }}>
-                    <span className="font-semibold text-primary">I Need Numbers</span> helps real-estate agents finally get a clear picture of their business.
+                  <h2 className="text-xl lg:text-2xl font-semibold text-deep-forest mb-4 leading-tight">
+                    I Need Numbers uses AI to turn your annual goal, your deals, and your trends into a simple daily plan you can actually follow.
+                  </h2>
+                  <p className="leading-relaxed text-lg font-medium" style={{ lineHeight: '1.7' }}>
+                    Set your goal once; the platform guides you every day so you stay on track.
                   </p>
-                  <p className="leading-relaxed text-lg mt-3" style={{ lineHeight: '1.7' }}>
-                    Start free with quick calculators that make every deal easier.
-                  </p>
-                  <p className="leading-relaxed text-lg mt-3" style={{ lineHeight: '1.7' }}>
-                    When you're ready, upgrade to turn those numbers into real insights—daily, weekly, and yearly.
+                  <p className="leading-relaxed text-lg mt-4" style={{ lineHeight: '1.7' }}>
+                    And when you need answers fast, you've got instant access to all the must-have calculators for commissions, affordability, investments, and more; everything stays in one place so you can make smarter decisions without hunting around.
                   </p>
                 </div>
               </div>
