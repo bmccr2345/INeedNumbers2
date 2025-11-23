@@ -540,11 +540,11 @@ const FreeCalculator = () => {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <img 
-                  src="https://customer-assets.emergentagent.com/job_agent-financials/artifacts/u7i6c8zh_Fairy_Holding_Wand.png" 
-                  alt="Fairy AI" 
+                  src={`${process.env.REACT_APP_ASSETS_URL}/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png`}
+                  alt="I Need Numbers" 
                   className="h-6 sm:h-8 w-auto"
                 />
-                <h1 className="text-base sm:text-xl md:text-2xl font-bold">Investor Deal Generator</h1>
+                <h1 className="text-base sm:text-xl md:text-2xl font-bold text-primary">Investor Deal Generator</h1>
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
