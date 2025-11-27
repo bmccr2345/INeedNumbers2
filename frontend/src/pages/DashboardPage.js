@@ -508,13 +508,13 @@ const DashboardPage = () => {
                   {user?.plan === 'PRO' && !isMobile && (
                     <button
                       onClick={() => {
-                        setShowOnboardingWizard(true);
+                        navigate('/onboarding');
                         setShowAccountMenu(false);
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
                     >
                       <Sparkles className="w-4 h-4 mr-3" />
-                      Pro Onboarding Guide
+                      Business Setup
                     </button>
                   )}
                   
