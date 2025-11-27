@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { getOnboardingStatus } from '../../services/onboardingApi';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
@@ -58,11 +59,9 @@ const WelcomeScreen = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              If you are wondering how to be successful in real estate, you are not alone. Every agent has big goals, but not everyone knows how to reach them. A clear plan makes the work lighter; agents who define their path early stay more confident through busy seasons.
-            </p>
-          </div>
+          <CoachingNugget>
+            If you are wondering how to be successful in real estate, you are not alone. Every agent has big goals, but not everyone knows how to reach them. A clear plan makes the work lighter; agents who define their path early stay more confident through busy seasons.
+          </CoachingNugget>
           <Button
             onClick={handleStart}
             className="w-full h-14 text-lg bg-primary hover:bg-primary/90"
