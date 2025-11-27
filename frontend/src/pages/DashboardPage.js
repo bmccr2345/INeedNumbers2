@@ -83,6 +83,9 @@ const DashboardPage = () => {
       setShowAddDealModal(true);
     } else if (actionType === 'expense') {
       setShowAddExpenseModal(true);
+    } else if (actionType === 'onboarding') {
+      // Navigate to onboarding flow
+      navigate('/onboarding');
     }
   };
 
