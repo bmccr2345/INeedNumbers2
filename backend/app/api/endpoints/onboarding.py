@@ -25,8 +25,7 @@ from server import db
 @router.post("/save")
 async def save_onboarding(
     request: OnboardingSaveRequest,
-    user=Depends(get_current_user_unified),
-    db=Depends(get_db)
+    user=Depends(get_current_user_unified)
 ):
     """
     Save partial onboarding data
