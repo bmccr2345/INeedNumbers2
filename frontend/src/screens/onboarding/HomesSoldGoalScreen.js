@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Home } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const HomesSoldGoalScreen = () => {
   const navigate = useNavigate();
@@ -89,11 +90,9 @@ const HomesSoldGoalScreen = () => {
             />
           )}
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Trade broad dreams for focused numbers; realistic sales targets create predictable success. It's important to set an achievable production goal as predictable goals reduce stress during slow weeks. A "high performing" agent typically sells 2 houses a month. Build up to that if you're just starting out. Don't forget, a focused sales goal adds structure; it lets you measure momentum without overwhelming yourself.
-            </p>
-          </div>
+          <CoachingNugget>
+            Trade broad dreams for focused numbers; realistic sales targets create predictable success. It's important to set an achievable production goal as predictable goals reduce stress during slow weeks. A "high performing" agent typically sells 2 houses a month. Build up to that if you're just starting out. Don't forget, a focused sales goal adds structure; it lets you measure momentum without overwhelming yourself.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
