@@ -49,7 +49,8 @@ import CapTrackerPanel from '../components/dashboard/CapTrackerPanel';
 import BrandingPanel from '../components/dashboard/BrandingPanel';
 import GoalSettingsPanel from '../components/dashboard/GoalSettingsPanel';
 import UpgradeModal from '../components/dashboard/UpgradeModal';
-import ProOnboardingWizard from '../components/ProOnboardingWizard';
+import { getOnboardingStatus } from '../services/onboardingApi';
+import { useOnboarding } from '../context/OnboardingContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
