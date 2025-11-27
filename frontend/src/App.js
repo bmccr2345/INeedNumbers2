@@ -50,6 +50,19 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MobileLayout from "./layouts/MobileLayout";
 
+// Import Onboarding Screens
+import {
+  WelcomeScreen,
+  AgentTypeScreen,
+  WhyScreen,
+  IncomeGoalScreen,
+  HomesSoldGoalScreen,
+  WeeklyHoursScreen,
+  CommissionSetupScreen,
+  WeeklyFocusScreen,
+  CompletionScreen
+} from "./screens/onboarding";
+
 /**
  * Dashboard Route Wrapper
  * Conditionally renders mobile or desktop layout based on viewport
