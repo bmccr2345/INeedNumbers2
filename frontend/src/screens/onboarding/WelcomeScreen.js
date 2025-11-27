@@ -1,15 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../context/OnboardingContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
+import { getOnboardingStatus } from '../../services/onboardingApi';
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
+  const { loadExistingProfile } = useOnboarding();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user has existing onboarding data and pre-fill
+    const loadExistingData = async () => {
+      try {
+        const status = await getOnboardingStatus();
+        if (status.onboarding_profile && Object.keys(status.onboarding_profile).length > 0) {
+          // Load existing profile into context
+          loadExistingProfile(status.onboarding_profile);
+          console.log('[Onboarding] Loaded existing profile for editing');
+        }
+      } catch (error) {
+        console.error('[Onboarding] Error loading existing profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingData();
+  }, [loadExistingProfile]);
 
   const handleStart = () => {
     navigate('/onboarding/agent-type');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center p-4">
