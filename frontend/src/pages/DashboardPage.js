@@ -741,7 +741,7 @@ const DashboardPage = () => {
         <>
           <QuickActionButton 
             onClick={handleQuickAction} 
-            showOnboarding={false}
+            showOnboarding={user?.plan === 'PRO'}
           />
           
           {/* Mobile Quick Action Modals */}
