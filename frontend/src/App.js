@@ -128,7 +128,8 @@ function App() {
             v7_fetcherPersist: true
           }}>
             <AuthProvider>
-              <Routes>
+              <OnboardingProvider>
+                <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/dashboard" element={<DashboardRoute />} />
