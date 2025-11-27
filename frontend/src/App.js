@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { AuthProvider } from "./contexts/AuthContext";
+import { OnboardingProvider } from "./context/OnboardingContext";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from 'sonner';
