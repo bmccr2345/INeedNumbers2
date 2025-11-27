@@ -157,6 +157,18 @@ function App() {
               <Route path="/login" element={<Navigate to="/auth/login" replace />} />
               <Route path="/app/branding" element={<BrandingProfilePage />} />
               
+              {/* Onboarding Routes */}
+              <Route path="/onboarding" element={<WelcomeScreen />} />
+              <Route path="/onboarding/welcome" element={<WelcomeScreen />} />
+              <Route path="/onboarding/agent-type" element={<AgentTypeScreen />} />
+              <Route path="/onboarding/why" element={<WhyScreen />} />
+              <Route path="/onboarding/income-goal" element={<IncomeGoalScreen />} />
+              <Route path="/onboarding/homes-sold-goal" element={<HomesSoldGoalScreen />} />
+              <Route path="/onboarding/weekly-hours" element={<WeeklyHoursScreen />} />
+              <Route path="/onboarding/commission-setup" element={<CommissionSetupScreen />} />
+              <Route path="/onboarding/weekly-focus" element={<WeeklyFocusScreen />} />
+              <Route path="/onboarding/completion" element={<CompletionScreen />} />
+              
               {/* Auth Routes */}
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/register" element={<RegisterPage />} />
