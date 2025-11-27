@@ -84,8 +84,7 @@ async def complete_onboarding_flow(
 
 @router.get("/status")
 async def get_onboarding_status(
-    user=Depends(get_current_user_unified),
-    db=Depends(get_db)
+    user=Depends(get_current_user_unified)
 ):
     """
     Get current onboarding status for user
