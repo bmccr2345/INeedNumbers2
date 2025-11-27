@@ -184,8 +184,9 @@ const Settings = () => {
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="branding" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="branding">Branding & Contact</TabsTrigger>
+              <TabsTrigger value="business">Business Setup</TabsTrigger>
               <TabsTrigger value="preferences" disabled>Preferences</TabsTrigger>
             </TabsList>
             
