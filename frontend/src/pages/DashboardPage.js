@@ -103,8 +103,18 @@ const DashboardPage = () => {
           }
         } catch (error) {
           console.error('[Dashboard] Error checking onboarding status:', error);
-          // If error (e.g., 401), user might not be authenticated yet
-          // Don't redirect in this case
+          
+          // Check if it's a database connection error
+          const errorMessage = error?.response?.data?.detail || error?.message || '';
+          
+          if (errorMessage.includes('SSL') || errorMessage.includes('MongoDB') || errorMessage.includes('database') || errorMessage.includes('500')) {
+            console.warn('[Dashboard] Database connection issue detected - allowing dashboard access without onboarding check');
+            // Don't redirect if database is down - let user access dashboard
+          } else if (error?.response?.status === 401) {
+            console.warn('[Dashboard] User not authenticated - not redirecting');
+            // User not authenticated yet, don't redirect
+          }
+          // For other errors, don't redirect to avoid blocking dashboard access
         }
       }
     };
