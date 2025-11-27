@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { DollarSign, Clock, Users, Heart, Building2, MoreHorizontal } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const WhyScreen = () => {
   const navigate = useNavigate();
@@ -89,11 +90,9 @@ const WhyScreen = () => {
             />
           )}
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Understanding your motivation is critical. Knowing your why will keep you steady when challenges arise. Your motivation is a compass; it helps you stay centered when the work becomes unpredictable.
-            </p>
-          </div>
+          <CoachingNugget>
+            Understanding your motivation is critical. Knowing your why will keep you steady when challenges arise. Your motivation is a compass; it helps you stay centered when the work becomes unpredictable.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
