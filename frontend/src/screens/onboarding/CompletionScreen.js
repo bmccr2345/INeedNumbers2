@@ -35,9 +35,25 @@ const CompletionScreen = () => {
       
     } catch (err) {
       console.error('[Onboarding] Error completing onboarding:', err);
-      setError('Failed to complete onboarding. Please try again.');
+      
+      // Check if it's a database connection error
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Unknown error';
+      
+      if (errorMessage.includes('SSL') || errorMessage.includes('MongoDB') || errorMessage.includes('database')) {
+        setError('Database connection issue detected. Your data cannot be saved right now, but you can continue to the dashboard. The onboarding can be completed later from Settings.');
+      } else {
+        setError(`Failed to complete onboarding: ${errorMessage}`);
+      }
+      
       setIsSubmitting(false);
     }
+  };
+
+  const handleSkipAndContinue = () => {
+    // Skip database save and go directly to dashboard
+    console.log('[Onboarding] User chose to skip and continue to dashboard');
+    resetOnboarding();
+    navigate('/dashboard');
   };
 
   return (
