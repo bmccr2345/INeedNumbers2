@@ -4,6 +4,7 @@ import { useOnboarding } from '../../context/OnboardingContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Clock } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const WeeklyHoursScreen = () => {
   const navigate = useNavigate();
@@ -53,11 +54,9 @@ const WeeklyHoursScreen = () => {
             ))}
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Strong results come from intentional time use; protect the hours that matter most. Many agents think if they "just work all the time" then they will be successful. But being intentional with your time and time blocking ensures that when you are working you're being productive, not just wasting time. Healthy boundaries drive healthy production; the hours you choose today shape your energy tomorrow.
-            </p>
-          </div>
+          <CoachingNugget>
+            Strong results come from intentional time use; protect the hours that matter most. Many agents think if they "just work all the time" then they will be successful. But being intentional with your time and time blocking ensures that when you are working you're being productive, not just wasting time. Healthy boundaries drive healthy production; the hours you choose today shape your energy tomorrow.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
