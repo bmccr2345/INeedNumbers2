@@ -723,21 +723,7 @@ const DashboardPage = () => {
         />
       )}
 
-      {/* Pro Onboarding Wizard - Desktop Only */}
-      {!isMobile && showOnboardingWizard && (
-        <ProOnboardingWizard 
-          isOpen={showOnboardingWizard}
-          onClose={() => {
-            // Set session storage to prevent showing again this session
-            sessionStorage.setItem('pro_onboarding_dismissed_session', 'true');
-            setShowOnboardingWizard(false);
-          }}
-          onComplete={() => {
-            safeLocalStorage.setItem('pro_onboarding_completed', 'true');
-            setShowOnboardingWizard(false);
-          }}
-        />
-      )}
+      {/* Old Pro Onboarding Wizard removed - using new unified onboarding flow */}
 
       {/* Click away handler for account menu */}
       {showAccountMenu && (
