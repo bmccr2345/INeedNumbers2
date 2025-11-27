@@ -57,6 +57,19 @@ const WeeklyHoursScreen = () => {
                 <div className="text-xs text-gray-500">hours</div>
               </button>
             ))}
+            {/* 40+ Option */}
+            <button
+              onClick={handleSelectFortyPlus}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                selectedHours === 45
+                  ? 'border-primary bg-primary/5 shadow-md'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
+              <Clock className="w-5 h-5 text-primary mb-2 mx-auto" />
+              <div className="text-xl font-bold text-gray-900">40+</div>
+              <div className="text-xs text-gray-500">hours</div>
+            </button>
           </div>
 
           <CoachingNugget>
