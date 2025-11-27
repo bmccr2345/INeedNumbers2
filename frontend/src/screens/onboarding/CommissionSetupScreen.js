@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Switch } from '../../components/ui/switch';
 import { Label } from '../../components/ui/label';
 import { Percent } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const CommissionSetupScreen = () => {
   const navigate = useNavigate();
@@ -142,11 +143,9 @@ const CommissionSetupScreen = () => {
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Knowing your numbers brings confidence; when your split and fees are clear, planning feels lighter.
-            </p>
-          </div>
+          <CoachingNugget>
+            Knowing your numbers brings confidence; when your split and fees are clear, planning feels lighter.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
