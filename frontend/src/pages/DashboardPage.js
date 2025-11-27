@@ -87,20 +87,28 @@ const DashboardPage = () => {
     }
   };
 
-  // Check if Pro user needs onboarding (desktop only)
+  // Check if Pro user needs onboarding (works on both mobile and desktop)
   useEffect(() => {
-    if (user && user.plan === 'PRO' && !isMobile) {
-      const hasCompletedOnboarding = safeLocalStorage.getItem('pro_onboarding_completed');
-      const hasDismissedThisSession = sessionStorage.getItem('pro_onboarding_dismissed_session');
-      
-      if (!hasCompletedOnboarding && !hasDismissedThisSession) {
-        // Show wizard after a brief delay to let dashboard load
-        setTimeout(() => {
-          setShowOnboardingWizard(true);
-        }, 1000);
+    const checkOnboardingStatus = async () => {
+      if (user && user.plan === 'PRO') {
+        try {
+          const status = await getOnboardingStatus();
+          
+          // If onboarding not completed, redirect to onboarding flow
+          if (!status.onboarding_completed) {
+            console.log('[Dashboard] Onboarding not completed, redirecting...');
+            navigate('/onboarding');
+          }
+        } catch (error) {
+          console.error('[Dashboard] Error checking onboarding status:', error);
+          // If error (e.g., 401), user might not be authenticated yet
+          // Don't redirect in this case
+        }
       }
-    }
-  }, [user, isMobile]);
+    };
+
+    checkOnboardingStatus();
+  }, [user, navigate]);
 
   // Sidebar categories with sub-tabs
   const sidebarStructure = [
