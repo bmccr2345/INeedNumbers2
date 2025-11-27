@@ -75,8 +75,22 @@ const CompletionScreen = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-700 mb-3">{error}</p>
+              {error.includes('Database') && (
+                <div className="pt-2 border-t border-red-200">
+                  <p className="text-xs text-red-600 mb-2">
+                    <strong>Technical Details:</strong> MongoDB connection is unavailable. This is an infrastructure issue that needs to be resolved in MongoDB Atlas settings.
+                  </p>
+                  <Button
+                    onClick={handleSkipAndContinue}
+                    variant="outline"
+                    className="w-full text-sm border-red-300 text-red-700 hover:bg-red-50"
+                  >
+                    Skip for now and enter dashboard
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           
