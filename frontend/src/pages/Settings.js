@@ -414,6 +414,64 @@ const Settings = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="business" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <SettingsIcon className="w-5 h-5" />
+                    <span>Business Setup & Goals</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Configure your goals, commission structure, and weekly priorities
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-6 bg-gradient-to-br from-emerald-50 to-white rounded-lg border border-emerald-200">
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-primary/10 p-3 rounded-lg">
+                        <SettingsIcon className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Re-open Onboarding
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Update your annual goals, commission structure, weekly hours, and focus areas. Your AI Coach will adjust your daily plan based on these settings.
+                        </p>
+                        <Button
+                          onClick={() => navigate('/onboarding')}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Open Business Setup
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-1">What you'll configure:</h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• Annual income & production goals</li>
+                        <li>• Commission split & fees</li>
+                        <li>• Weekly hours & focus areas</li>
+                        <li>• Agent type & motivation</li>
+                      </ul>
+                    </div>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-medium text-blue-900 mb-1">AI Coach Benefits:</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Personalized daily action plans</li>
+                        <li>• Goal-aligned task recommendations</li>
+                        <li>• Progress tracking & insights</li>
+                        <li>• Adaptive weekly scheduling</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
