@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { DollarSign } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const IncomeGoalScreen = () => {
   const navigate = useNavigate();
@@ -101,11 +102,9 @@ const IncomeGoalScreen = () => {
             </div>
           )}
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Instead of saying you want to make money, create a specific target you can measure and track. Clear income goals turn long days into intentional progress; the sharper the target, the easier it is to hit.
-            </p>
-          </div>
+          <CoachingNugget>
+            Instead of saying you want to make money, create a specific target you can measure and track. Clear income goals turn long days into intentional progress; the sharper the target, the easier it is to hit.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
