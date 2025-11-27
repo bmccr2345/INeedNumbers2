@@ -52,8 +52,7 @@ async def save_onboarding(
 
 @router.post("/complete", response_model=OnboardingCompleteResponse)
 async def complete_onboarding_flow(
-    user=Depends(get_current_user_unified),
-    db=Depends(get_db)
+    user=Depends(get_current_user_unified)
 ):
     """
     Complete onboarding and initialize user dashboard
