@@ -11,11 +11,16 @@ const WeeklyHoursScreen = () => {
   const { onboardingData, updateOnboardingData } = useOnboarding();
   const [selectedHours, setSelectedHours] = useState(onboardingData.weekly_hours || null);
 
-  const hoursOptions = [5, 10, 15, 20, 25, 30];
+  const hoursOptions = [5, 10, 15, 20, 25, 30, 40];
 
   const handleSelectHours = (hours) => {
     setSelectedHours(hours);
     updateOnboardingData('weekly_hours', hours);
+  };
+
+  const handleSelectFortyPlus = () => {
+    setSelectedHours(45); // Store 45 for "40+" to differentiate from exactly 40
+    updateOnboardingData('weekly_hours', 45);
   };
 
   const handleNext = () => {
