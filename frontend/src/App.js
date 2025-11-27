@@ -185,10 +185,10 @@ function App() {
               
               {/* Admin Routes */}
               <Route path="/app/admin" element={<AdminConsolePage />} />
-                </Routes>
-              </OnboardingProvider>
-            </AuthProvider>
-          </BrowserRouter>
+              </Routes>
+            </OnboardingProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ClerkProvider>
       </HelmetProvider>
     </div>
