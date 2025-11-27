@@ -173,9 +173,10 @@ function App() {
               
               {/* Admin Routes */}
               <Route path="/app/admin" element={<AdminConsolePage />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
+                </Routes>
+              </OnboardingProvider>
+            </AuthProvider>
+          </BrowserRouter>
       </ClerkProvider>
       </HelmetProvider>
     </div>
