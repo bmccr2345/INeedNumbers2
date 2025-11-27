@@ -4,6 +4,7 @@ import { useOnboarding } from '../../context/OnboardingContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { TrendingUp, Target, Rocket } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const AgentTypeScreen = () => {
   const navigate = useNavigate();
@@ -79,11 +80,9 @@ const AgentTypeScreen = () => {
             })}
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              There's no right pace in real estate; choose the rhythm that fits your season of life so you can grow without burnout. Weigh your personal goals. Whether you thrive in collaboration or prefer full autonomy, choose the path that supports your long-term vision.
-            </p>
-          </div>
+          <CoachingNugget>
+            There's no right pace in real estate; choose the rhythm that fits your season of life so you can grow without burnout. Weigh your personal goals. Whether you thrive in collaboration or prefer full autonomy, choose the path that supports your long-term vision.
+          </CoachingNugget>
 
           <div className="flex flex-col space-y-3">
             <Button
