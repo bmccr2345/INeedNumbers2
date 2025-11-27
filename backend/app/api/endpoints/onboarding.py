@@ -13,11 +13,13 @@ from app.services.onboarding_service import (
     complete_onboarding
 )
 from app.clerk_auth import get_current_user_unified
-from app.deps import get_db
 import logging
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# Import db from server module
+from server import db
 
 
 @router.post("/save")
