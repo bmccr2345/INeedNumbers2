@@ -8028,6 +8028,16 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Error mounting AI Coach router: {e}")
 
+# Include Onboarding router
+try:
+    from app.api.endpoints.onboarding import router as onboarding_router
+    api_router.include_router(onboarding_router, prefix="/onboarding", tags=["onboarding"])
+    logger.info("Onboarding router mounted at /api/onboarding")
+except ImportError as e:
+    logger.warning(f"Could not import Onboarding router: {e}")
+except Exception as e:
+    logger.error(f"Error mounting Onboarding router: {e}")
+
 # Include secure plans router for Stripe webhooks
 try:
     from app.routes.plans import router as plans_router
