@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Checkbox } from '../../components/ui/checkbox';
 import { Label } from '../../components/ui/label';
 import { Target, TrendingUp, CheckCircle } from 'lucide-react';
+import CoachingNugget from '../../components/CoachingNugget';
 
 const WeeklyFocusScreen = () => {
   const navigate = useNavigate();
@@ -92,11 +93,9 @@ const WeeklyFocusScreen = () => {
             })}
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Motivation fades, but consistency builds strong pipelines and repeatable results. Steady action builds trust in your own process; consistency will always outperform intensity.
-            </p>
-          </div>
+          <CoachingNugget>
+            Motivation fades, but consistency builds strong pipelines and repeatable results. Steady action builds trust in your own process; consistency will always outperform intensity.
+          </CoachingNugget>
 
           <Button
             onClick={handleNext}
