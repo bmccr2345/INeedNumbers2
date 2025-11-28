@@ -51,9 +51,14 @@ const WelcomeScreen = () => {
           <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome to I Need Numbers. Your A.I. real estate coach is here to help you stay organized, focused, and on track with the tasks that matter most.
-          </h1>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome to <span className="text-primary">I Need Numbers</span>
+            </h1>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Your A.I. Real Estate Coach is here to help you stay organized, focused, and on track
+            </h2>
+          </div>
           <p className="text-lg text-gray-600">
             We'll begin by getting a sense of your goals for the year. Ready to get started?
           </p>
