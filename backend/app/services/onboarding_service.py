@@ -59,7 +59,7 @@ async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
     """
     try:
         # Get user's onboarding profile
-        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        user = await db.users.find_one({"clerk_user_id": user_id}, {"_id": 0})
         if not user:
             raise ValueError(f"User {user_id} not found")
         
