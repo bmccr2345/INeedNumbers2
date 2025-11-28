@@ -31,7 +31,7 @@ async def save_onboarding_data(db, user_id: str, profile_data: OnboardingProfile
         
         # Update user profile with onboarding data
         result = await db.users.update_one(
-            {"id": user_id},
+            {"clerk_user_id": user_id},
             {"$set": update_data}
         )
         
