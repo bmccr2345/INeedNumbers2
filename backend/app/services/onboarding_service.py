@@ -75,7 +75,7 @@ async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
         }
         
         await db.users.update_one(
-            {"id": user_id},
+            {"clerk_user_id": user_id},
             {"$set": completion_data}
         )
         
