@@ -49,6 +49,7 @@ import BrandingProfilePage from "./pages/BrandingProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MobileLayout from "./layouts/MobileLayout";
+import MobileEntry from "./pages/MobileEntry";
 
 // Import Onboarding Screens
 import {
