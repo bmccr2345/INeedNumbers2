@@ -131,6 +131,9 @@ function App() {
             <AuthProvider>
               <OnboardingProvider>
                 <Routes>
+              {/* Mobile-only entry route - bypasses all layouts */}
+              <Route path="/mobile" element={<MobileEntry />} />
+              
               <Route path="/" element={<HomePage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/dashboard" element={<DashboardRoute />} />
