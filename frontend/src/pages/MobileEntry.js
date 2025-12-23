@@ -5,19 +5,25 @@ import { useAuth } from '@clerk/clerk-react';
 /**
  * MobileEntry - Pure authentication gate for mobile app
  * 
- * This route serves as the sole entry point for the Capacitor iOS app.
- * It performs no UI rendering except a loading state while auth resolves.
- * 
  * Behavior:
- * - While loading: Shows minimal splash screen
- * - If unauthenticated: Redirects to /auth/login
- * - If authenticated: Redirects to /dashboard
+ * - Capacitor (iOS app): Immediately redirect to /auth/login
+ * - Desktop/Web: Use Clerk auth state to determine redirect
  */
 const MobileEntry = () => {
   const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Detect if running inside Capacitor (native iOS app)
+    const isCapacitor = window.Capacitor?.isNativePlatform?.() === true;
+
+    if (isCapacitor) {
+      // Mobile app: immediately redirect to login without waiting for Clerk
+      navigate('/auth/login', { replace: true });
+      return;
+    }
+
+    // Desktop/Web: use normal Clerk auth flow
     if (!isLoaded) {
       // Still checking auth state
       return;
@@ -33,7 +39,6 @@ const MobileEntry = () => {
   }, [isLoaded, isSignedIn, navigate]);
 
   // Always render loading splash (never return null)
-  // This ensures no blank white page appears during redirect
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
