@@ -30,7 +30,6 @@ import ActiveDealsCard from './ActiveDealsCard';
 import ReflectionModal from './ReflectionModal';
 import ActivityModal from './ActivityModal';
 import FinancialOverviewModal from './FinancialOverviewModal';
-import BugTracker from './BugTracker';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
