@@ -30,7 +30,6 @@ import { useIsMobile } from '../../hooks/useMediaQuery';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import PnLAICoach from '../PnLAICoach';
- 
 
 const PnLPanel = () => {
   const navigate = useNavigate();
