@@ -600,9 +600,6 @@ const HomepagePanel = () => {
         capProgress={capProgress}
         user={user}
       />
-
-      {/* Bug Tracker */}
-      <BugTracker context="Dashboard Overview" />
     </div>
   );
 };
