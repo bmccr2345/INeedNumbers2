@@ -1941,8 +1941,7 @@ const PnLPanel = () => {
         pastSixMonthsData={getPastSixMonthsData()}
       />
 
-      {/* Bug Tracker */}
-      <BugTracker context="P&L Tracker" />
+    
     </div>
   );
 };
