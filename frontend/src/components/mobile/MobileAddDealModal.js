@@ -141,6 +141,7 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Scrollable Form Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="space-y-4">
             <div>
               <Label htmlFor="house_address" className="text-sm font-medium text-gray-700">
                 Property Address *
