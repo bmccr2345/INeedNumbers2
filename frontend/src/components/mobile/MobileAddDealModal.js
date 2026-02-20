@@ -122,10 +122,10 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
       />
       
       {/* Modal */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl animate-slide-up max-h-[85vh] overflow-y-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl animate-slide-up flex flex-col" style={{ maxHeight: '85vh' }}>
+        {/* Header - Fixed at top */}
+        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <DollarSign className="w-6 h-6 text-primary" />
               <h2 className="text-xl font-bold text-gray-900">Add Deal</h2>
@@ -137,9 +137,10 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
               <X className="w-6 h-6" />
             </button>
           </div>
+        </div>
 
-          {/* Form */}
-          <div className="space-y-4 mb-6">
+        {/* Scrollable Form Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-4" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div>
               <Label htmlFor="house_address" className="text-sm font-medium text-gray-700">
                 Property Address *
