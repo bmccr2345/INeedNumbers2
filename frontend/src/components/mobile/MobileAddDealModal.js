@@ -290,9 +290,11 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
               />
             </div>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex space-x-3">
+        {/* Action Buttons - Sticky at bottom */}
+        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-200 bg-white">
+          <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={onClose}
