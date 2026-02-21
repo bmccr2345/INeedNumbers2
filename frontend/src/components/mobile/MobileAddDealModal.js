@@ -123,9 +123,9 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
       
       {/* Modal */}
       <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl animate-slide-up flex flex-col" style={{ maxHeight: '85vh' }}>
-        {/* Header - Fixed at top */}
-        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+        {/* Header with Save Button - Fixed at top */}
+        <div className="flex-shrink-0 p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <DollarSign className="w-6 h-6 text-primary" />
               <h2 className="text-xl font-bold text-gray-900">Add Deal</h2>
@@ -137,10 +137,28 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
               <X className="w-6 h-6" />
             </button>
           </div>
+          {/* Save Button at TOP for easy access */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex-1 bg-primary hover:bg-primary/90"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? 'Saving...' : 'Save Deal'}
+            </Button>
+          </div>
         </div>
 
         {/* Scrollable Form Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="space-y-4">
             <div>
               <Label htmlFor="house_address" className="text-sm font-medium text-gray-700">
