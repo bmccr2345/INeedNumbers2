@@ -86,25 +86,13 @@ const MobileLayout = ({ children }) => {
 
   return (
     <div className="mobile-layout h-screen flex flex-col bg-gray-50">
-      {/* Mobile Header */}
-      <header className="bg-primary text-white p-4 flex items-center justify-between shadow-md">
-        <div className="flex items-center space-x-2">
-          <img 
-            src={`${process.env.REACT_APP_ASSETS_URL}/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png`}
-            alt="I Need Numbers"
-            className="h-8 w-auto brightness-0 invert"
-          />
-          <span className="font-bold text-lg">I NEED NUMBERS</span>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
-            <User className="w-5 h-5" />
-            <span className="text-sm font-medium">
-              {user?.name?.split(' ')[0] || user?.full_name?.split(' ')[0] || 'User'}
-            </span>
-          </div>
-        </div>
+      {/* Mobile Header - Minimal for iOS status bar compatibility */}
+      <header className="bg-primary text-white px-4 py-2 flex items-center justify-center shadow-md" style={{ paddingTop: 'env(safe-area-inset-top, 8px)' }}>
+        <img 
+          src={`${process.env.REACT_APP_ASSETS_URL}/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png`}
+          alt="I Need Numbers"
+          className="h-8 w-auto brightness-0 invert"
+        />
       </header>
 
       {/* Main Content Area */}
