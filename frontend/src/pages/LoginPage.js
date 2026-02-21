@@ -4,9 +4,6 @@ import { SignIn, useUser } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { navigateToHome } from '../utils/navigation';
-// Capacitor imports for iOS native OAuth compliance
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 
 const LoginPage = () => {
   const { isSignedIn, user } = useUser();
@@ -15,8 +12,13 @@ const LoginPage = () => {
   
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Detect if running inside iOS Capacitor native shell
-  const isNativeIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+  // STRICT platform detection - only true inside Capacitor iOS native shell
+  // Uses window.Capacitor (global) to avoid import-time errors on desktop
+  const isNativeIOS =
+    typeof window !== 'undefined' &&
+    window.Capacitor &&
+    window.Capacitor.getPlatform &&
+    window.Capacitor.getPlatform() === 'ios';
 
   // Clerk hosted sign-in URL for iOS native (Apple App Store compliant)
   const CLERK_HOSTED_SIGNIN_URL = 'https://apparent-dragon-65.accounts.dev/sign-in?redirect_url=ineednumbers://sso-callback';
@@ -28,13 +30,14 @@ const LoginPage = () => {
     }
   }, [isSignedIn, user, navigate, from]);
 
-  // For iOS native: Open Clerk sign-in in system browser (Apple App Store requirement)
-  // For desktop/web: Render Clerk component in-page (existing behavior)
+  // For iOS native ONLY: Open Clerk sign-in in system browser (Apple App Store requirement)
+  // Desktop/web: This effect does nothing (isNativeIOS is always false)
   useEffect(() => {
     if (isNativeIOS && !isSignedIn) {
-      // Open Clerk hosted sign-in page in system browser
-      // This complies with Apple App Store rules by not embedding OAuth in WebView
-      Browser.open({ url: CLERK_HOSTED_SIGNIN_URL });
+      // Dynamically import Browser only when needed (iOS native)
+      import('@capacitor/browser').then(({ Browser }) => {
+        Browser.open({ url: CLERK_HOSTED_SIGNIN_URL });
+      });
     }
   }, [isNativeIOS, isSignedIn]);
 
