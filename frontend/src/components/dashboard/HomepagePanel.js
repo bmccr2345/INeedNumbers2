@@ -682,6 +682,173 @@ const HomepagePanel = () => {
         capProgress={capProgress}
         user={user}
       />
+
+      {/* Add Deal Modal (Desktop Only) */}
+      {showAddDeal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
+            <CardHeader>
+              <CardTitle>Add New Deal</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddDeal} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="hp_house_address">Property Address *</Label>
+                    <Input
+                      id="hp_house_address"
+                      value={newDeal.house_address}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, house_address: e.target.value }))}
+                      placeholder="123 Main St, City, State"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_amount_sold_for">Amount Sold For *</Label>
+                    <Input
+                      id="hp_amount_sold_for"
+                      type="number"
+                      value={newDeal.amount_sold_for}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, amount_sold_for: e.target.value }))}
+                      placeholder="500000"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_commission_percent">Commission % *</Label>
+                    <Input
+                      id="hp_commission_percent"
+                      type="number"
+                      step="0.1"
+                      value={newDeal.commission_percent}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, commission_percent: e.target.value }))}
+                      placeholder="6.0"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_split_percent">Agent's Share % (Default: 100%)</Label>
+                    <Input
+                      id="hp_split_percent"
+                      type="number"
+                      step="0.1"
+                      value={newDeal.split_percent}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, split_percent: e.target.value }))}
+                      placeholder="100.0"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      What % of total commission you receive (leave blank for 100%)
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_team_brokerage_split_percent">Team/Brokerage Split % *</Label>
+                    <Input
+                      id="hp_team_brokerage_split_percent"
+                      type="number"
+                      step="0.1"
+                      value={newDeal.team_brokerage_split_percent}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, team_brokerage_split_percent: e.target.value }))}
+                      placeholder="20.0"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_lead_source">Lead Source *</Label>
+                    <select
+                      id="hp_lead_source"
+                      value={newDeal.lead_source}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, lead_source: e.target.value }))}
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select lead source</option>
+                      {leadSources.map(source => (
+                        <option key={source} value={source}>{source}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hp_contract_signed">Contract Signed *</Label>
+                    <Input
+                      id="hp_contract_signed"
+                      type="date"
+                      value={newDeal.contract_signed}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, contract_signed: e.target.value }))}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="hp_due_diligence_start">Due Diligence Start *</Label>
+                    <Input
+                      id="hp_due_diligence_start"
+                      type="date"
+                      value={newDeal.due_diligence_start}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, due_diligence_start: e.target.value }))}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="hp_due_diligence_over">Due Diligence Over *</Label>
+                    <Input
+                      id="hp_due_diligence_over"
+                      type="date"
+                      value={newDeal.due_diligence_over}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, due_diligence_over: e.target.value }))}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <Label htmlFor="hp_closing_date">Closing Date *</Label>
+                    <Input
+                      id="hp_closing_date"
+                      type="date"
+                      value={newDeal.closing_date}
+                      onChange={(e) => setNewDeal(prev => ({ ...prev, closing_date: e.target.value }))}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2 pt-4">
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    data-testid="homepage-add-deal-submit"
+                  >
+                    Add Deal
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAddDeal(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
