@@ -105,7 +105,61 @@ const HomepagePanel = () => {
     loadAllMetrics();
     loadTrackerData();
     loadCapProgress();
+    loadLeadSources();
   }, [user]);
+
+  // Load lead sources for Add Deal modal
+  const loadLeadSources = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/pnl/lead-sources`, {
+        withCredentials: true
+      });
+      setLeadSources(response.data || []);
+    } catch (error) {
+      console.error('Failed to load lead sources:', error);
+      // Fallback lead sources
+      setLeadSources(['Sphere of Influence', 'Referral', 'Open House', 'Online Lead', 'Sign Call', 'Past Client', 'Other']);
+    }
+  };
+
+  // Handle add deal from homepage
+  const handleAddDeal = async (e) => {
+    e.preventDefault();
+    try {
+      const dealData = {
+        ...newDeal,
+        amount_sold_for: parseFloat(newDeal.amount_sold_for) || 0,
+        commission_percent: parseFloat(newDeal.commission_percent) || 0,
+        split_percent: parseFloat(newDeal.split_percent) || 100,
+        team_brokerage_split_percent: parseFloat(newDeal.team_brokerage_split_percent) || 0
+      };
+
+      await axios.post(`${backendUrl}/api/pnl/deals`, dealData, {
+        withCredentials: true
+      });
+      
+      // Reset form
+      setNewDeal({
+        house_address: '',
+        amount_sold_for: '',
+        commission_percent: '',
+        split_percent: '',
+        team_brokerage_split_percent: '',
+        lead_source: '',
+        contract_signed: '',
+        due_diligence_start: '',
+        due_diligence_over: '',
+        closing_date: ''
+      });
+      setShowAddDeal(false);
+      
+      // Reload metrics to reflect new deal
+      loadAllMetrics();
+    } catch (error) {
+      console.error('Failed to add deal:', error);
+      alert('Failed to add deal. Please try again.');
+    }
+  };
 
   const loadAllMetrics = async () => {
     try {
