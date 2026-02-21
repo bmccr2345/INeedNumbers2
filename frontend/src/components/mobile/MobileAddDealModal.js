@@ -310,27 +310,6 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
           </div>
         </div>
-
-        {/* Action Buttons - Sticky at bottom */}
-        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-200 bg-white">
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex-1 bg-primary hover:bg-primary/90"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Deal'}
-            </Button>
-          </div>
-        </div>
       </div>
     </>
   );
