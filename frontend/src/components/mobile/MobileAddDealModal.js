@@ -240,21 +240,21 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
               <Label htmlFor="lead_source" className="text-sm font-medium text-gray-700">
                 Lead Source *
               </Label>
-              <Select 
-                value={formData.lead_source} 
-                onValueChange={(value) => handleChange('lead_source', value)}
+              {/* Using native select for better mobile compatibility */}
+              <select
+                id="lead_source"
+                value={formData.lead_source}
+                onChange={(e) => handleChange('lead_source', e.target.value)}
+                className="mt-1 w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+                required
               >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select lead source" />
-                </SelectTrigger>
-                <SelectContent>
-                  {leadSources.map((source) => (
-                    <SelectItem key={source} value={source}>
-                      {source}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">Select lead source</option>
+                {leadSources.map((source) => (
+                  <option key={source} value={source}>
+                    {source}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
