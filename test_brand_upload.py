@@ -5,7 +5,7 @@ import base64
 import io
 
 def test_brand_upload():
-    base_url = "https://ai-coach-enhanced.preview.emergentagent.com"
+    base_url = "https://mobile-desktop-sync-4.preview.emergentagent.com"
     
     # Step 1: Login to get cookies
     print("🔑 Logging in...")

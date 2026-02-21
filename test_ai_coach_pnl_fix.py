@@ -10,7 +10,7 @@ import sys
 def test_ai_coach_pnl_fix():
     """Test the AI Coach P&L Analysis fix to confirm JSON formatting issue is resolved"""
     
-    base_url = "https://ai-coach-enhanced.preview.emergentagent.com"
+    base_url = "https://mobile-desktop-sync-4.preview.emergentagent.com"
     
     print("🤖💰 TESTING AI COACH P&L ANALYSIS FIX...")
     print(f"Base URL: {base_url}")

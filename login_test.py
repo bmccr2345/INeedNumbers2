@@ -15,7 +15,7 @@ import time
 import re
 
 class LoginEndpointTester:
-    def __init__(self, base_url="https://ai-coach-enhanced.preview.emergentagent.com"):
+    def __init__(self, base_url="https://mobile-desktop-sync-4.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -578,7 +578,7 @@ class LoginEndpointTester:
             preflight_response = requests.options(
                 f"{self.base_url}/api/auth/login",
                 headers={
-                    'Origin': 'https://ai-coach-enhanced.preview.emergentagent.com',
+                    'Origin': 'https://mobile-desktop-sync-4.preview.emergentagent.com',
                     'Access-Control-Request-Method': 'POST',
                     'Access-Control-Request-Headers': 'Content-Type'
                 },
