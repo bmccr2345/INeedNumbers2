@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^2.8.0",
+    "@capacitor/browser": "^8.0.1",
+    "@capacitor/core": "^8.1.0",
     "@clerk/clerk-react": "^5.53.4",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.8",
