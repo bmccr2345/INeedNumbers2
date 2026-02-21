@@ -4,7 +4,6 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 /**
  * Mobile Add Expense Modal Component
@@ -35,9 +34,14 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
+      } else {
+        // Fallback categories
+        setCategories(['Marketing', 'Technology', 'Office', 'Travel', 'Education', 'Insurance', 'Dues & Subscriptions', 'Other']);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      // Fallback categories
+      setCategories(['Marketing', 'Technology', 'Office', 'Travel', 'Education', 'Insurance', 'Dues & Subscriptions', 'Other']);
     }
   };
 
@@ -107,10 +111,10 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
       />
       
       {/* Modal */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl animate-slide-up">
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl animate-slide-up flex flex-col" style={{ maxHeight: '85vh' }}>
+        {/* Header - Fixed at top */}
+        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <TrendingDown className="w-6 h-6 text-red-600" />
               <h2 className="text-xl font-bold text-gray-900">Add Expense</h2>
@@ -122,28 +126,30 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
               <X className="w-6 h-6" />
             </button>
           </div>
+        </div>
 
-          {/* Form */}
-          <div className="space-y-4 mb-6">
+        {/* Scrollable Form Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="space-y-4">
             <div>
               <Label htmlFor="category" className="text-sm font-medium text-gray-700">
                 Category *
               </Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => handleChange('category', value)}
+              {/* Using native select for better mobile compatibility */}
+              <select
+                id="category"
+                value={formData.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+                className="mt-1 w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+                required
               >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">Select category</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -189,8 +195,10 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
               />
             </div>
           </div>
+        </div>
 
-          {/* Actions */}
+        {/* Action Buttons - Sticky at bottom */}
+        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-200 bg-white">
           <div className="flex space-x-3">
             <Button
               variant="outline"
