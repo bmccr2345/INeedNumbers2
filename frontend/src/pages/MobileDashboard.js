@@ -266,15 +266,15 @@ const MobileDashboard = () => {
     return (
       <div className="flex items-center justify-center h-full p-8">
         <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <img 
+              src={`${process.env.REACT_APP_ASSETS_URL || 'https://customer-assets.emergentagent.com'}/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png`}
+              alt="I Need Numbers"
+              className="h-16 w-auto"
+            />
+          </div>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
-          {/* Debug info */}
-          <div className="mt-4 text-xs text-gray-500">
-            <p>User state: {user === undefined ? 'undefined' : user === null ? 'null' : 'exists'}</p>
-            <p>User ID: {user?.id || 'none'}</p>
-            <p>Loading: {loading.toString()}</p>
-            <p>Force timeout active: check console</p>
-          </div>
         </div>
       </div>
     );
