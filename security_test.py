@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 class SecurityTester:
-    def __init__(self, base_url="https://mobile-desktop-sync-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://deployment-fix-15.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -148,7 +148,7 @@ class SecurityTester:
         print("\n🌐 TESTING CORS ALLOWLIST...")
         
         # Test with allowed origin
-        allowed_origin = "https://mobile-desktop-sync-4.preview.emergentagent.com"
+        allowed_origin = "https://deployment-fix-15.preview.emergentagent.com"
         unauthorized_origin = "https://malicious-site.com"
         
         # Test allowed origin
