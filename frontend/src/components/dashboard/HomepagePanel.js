@@ -426,6 +426,15 @@ const HomepagePanel = () => {
               </Button>
               
               <Button
+                onClick={() => setShowAddDeal(true)}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
+                data-testid="homepage-add-deal-btn"
+              >
+                <HomeIcon className="w-4 h-4 mr-2" />
+                Add Deal
+              </Button>
+              
+              <Button
                 onClick={() => setIsActivityModalOpen(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
               >
