@@ -69,6 +69,22 @@ const HomepagePanel = () => {
   const [isFinancialOverviewModalOpen, setIsFinancialOverviewModalOpen] = useState(false);
   const [showFairyAICoach, setShowFairyAICoach] = useState(false);
 
+  // Add Deal modal state (desktop only)
+  const [showAddDeal, setShowAddDeal] = useState(false);
+  const [leadSources, setLeadSources] = useState([]);
+  const [newDeal, setNewDeal] = useState({
+    house_address: '',
+    amount_sold_for: '',
+    commission_percent: '',
+    split_percent: '',
+    team_brokerage_split_percent: '',
+    lead_source: '',
+    contract_signed: '',
+    due_diligence_start: '',
+    due_diligence_over: '',
+    closing_date: ''
+  });
+
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
   
