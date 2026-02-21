@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_pnl_deals():
-    base_url = "https://ai-coach-enhanced.preview.emergentagent.com"
+    base_url = "https://mobile-desktop-sync-4.preview.emergentagent.com"
     
     # Authenticate
     login_data = {
