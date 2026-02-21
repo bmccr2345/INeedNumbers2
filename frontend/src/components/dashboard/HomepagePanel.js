@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Home, 
+  Home as HomeIcon,
   DollarSign, 
   Calculator, 
   FileText, 
