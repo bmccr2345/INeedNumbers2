@@ -22,6 +22,7 @@ const MobileReflectionModal = ({ isOpen, onClose }) => {
       setIsSaving(true);
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+      // Send the ReflectionLogEntry structure expected by the backend
       const response = await fetch(`${backendUrl}/api/reflection-log`, {
         method: 'POST',
         headers: {
@@ -29,7 +30,8 @@ const MobileReflectionModal = ({ isOpen, onClose }) => {
         },
         credentials: 'include',
         body: JSON.stringify({
-          reflection: reflection
+          reflection: reflection.trim(),
+          mood: null
         })
       });
 
@@ -39,11 +41,13 @@ const MobileReflectionModal = ({ isOpen, onClose }) => {
         alert('Reflection logged successfully!');
         onClose();
       } else {
-        throw new Error('Failed to log reflection');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Reflection log error response:', errorData);
+        throw new Error(errorData.detail || 'Failed to log reflection');
       }
     } catch (error) {
       console.error('Error logging reflection:', error);
-      alert('Error logging reflection. Please try again.');
+      alert(`Error logging reflection: ${error.message || 'Please try again.'}`);
     } finally {
       setIsSaving(false);
     }
