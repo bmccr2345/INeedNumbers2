@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class DemoBrandingTester:
-    def __init__(self, base_url="https://mobile-desktop-sync-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://deployment-fix-15.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         self.tests_run = 0

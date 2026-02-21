@@ -107,7 +107,7 @@ async def verify_fix():
     try:
         import requests
         
-        base_url = "https://mobile-desktop-sync-4.preview.emergentagent.com"
+        base_url = "https://deployment-fix-15.preview.emergentagent.com"
         
         # Login and check role
         login_data = {
