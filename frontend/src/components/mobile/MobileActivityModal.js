@@ -37,11 +37,14 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
       
       // Convert empty strings to 0 for submission
-      const activityData = {};
-      Object.keys(activities).forEach(key => {
-        activityData[key] = activities[key] === '' ? 0 : parseInt(activities[key]);
-      });
+      const activityData = {
+        conversations: activities.conversations === '' ? 0 : parseInt(activities.conversations),
+        appointments: activities.appointments === '' ? 0 : parseInt(activities.appointments),
+        offersWritten: activities.offersWritten === '' ? 0 : parseInt(activities.offersWritten),
+        listingsTaken: activities.listingsTaken === '' ? 0 : parseInt(activities.listingsTaken)
+      };
 
+      // Send the full ActivityLogEntry structure expected by the backend
       const response = await fetch(`${backendUrl}/api/activity-log`, {
         method: 'POST',
         headers: {
@@ -51,7 +54,7 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
         body: JSON.stringify({
           activities: activityData,
           hours: {},
-          reflection: ''
+          reflection: null
         })
       });
 
@@ -66,11 +69,13 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
         alert('Activities logged successfully!');
         onClose();
       } else {
-        throw new Error('Failed to log activities');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Activity log error response:', errorData);
+        throw new Error(errorData.detail || 'Failed to log activities');
       }
     } catch (error) {
       console.error('Error logging activities:', error);
-      alert('Error logging activities. Please try again.');
+      alert(`Error logging activities: ${error.message || 'Please try again.'}`);
     } finally {
       setIsSaving(false);
     }
