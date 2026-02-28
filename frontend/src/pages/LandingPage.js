@@ -115,7 +115,8 @@ const LandingPage = () => {
               <img 
                 src="https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/s0f7rwx0_INN%20App%20Icon.png" 
                 alt="I Need Numbers" 
-                className="h-10 w-10 rounded-xl"
+                className="h-10 w-10"
+                style={{ filter: 'brightness(1.2)', mixBlendMode: 'screen' }}
               />
               <span className="text-xl font-semibold text-white tracking-wide" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 I NEED NUMBERS
