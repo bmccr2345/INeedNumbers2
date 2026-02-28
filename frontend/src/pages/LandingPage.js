@@ -122,6 +122,7 @@ const LandingPage = () => {
               </span>
             </div>
             
+            {/* Desktop nav */}
             <div className="hidden md:flex items-center space-x-6">
               <button 
                 onClick={() => navigate('/pricing')}
@@ -143,8 +144,43 @@ const LandingPage = () => {
                 Start My AI Coach
               </Button>
             </div>
+
+            {/* Mobile menu button */}
+            <button 
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="mobile-menu-btn"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-[#1a5c3a]/95 backdrop-blur-sm border-t border-white/10">
+            <div className="container mx-auto px-6 py-4 space-y-4">
+              <button 
+                onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-white/90 hover:text-white py-2 text-lg"
+              >
+                Pricing
+              </button>
+              <button 
+                onClick={() => { navigate('/auth/login'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-white/90 hover:text-white py-2 text-lg"
+              >
+                Sign In
+              </button>
+              <Button 
+                onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
+                className="w-full bg-white text-[#2FA163] hover:bg-white/90 font-medium"
+              >
+                Start My AI Coach
+              </Button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* SECTION 1: HERO (PAIN FIRST) */}
