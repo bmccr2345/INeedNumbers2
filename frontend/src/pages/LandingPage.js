@@ -112,16 +112,11 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div 
-                className="h-10 w-10 flex items-center justify-center"
-                style={{ 
-                  backgroundImage: 'url(https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/s0f7rwx0_INN%20App%20Icon.png)',
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center',
-                  filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.3))',
-                  mixBlendMode: 'lighten'
-                }}
+              <img 
+                src="https://static.prod-images.emergentagent.com/jobs/f9bdf638-ae2b-47cf-8725-a262363e948c/images/119a187f89a04d367231bcf49078a6734937d304e6c324ade5e18c95a746830d.png" 
+                alt="I Need Numbers" 
+                className="h-10 w-10"
+                style={{ filter: 'invert(1) brightness(2)' }}
               />
               <span className="text-xl font-semibold text-white tracking-wide" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 I NEED NUMBERS
