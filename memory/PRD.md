@@ -1,0 +1,85 @@
+# I Need Numbers - Product Requirements Document
+
+## Original Problem Statement
+I Need Numbers is an AI-powered business system for real estate agents. The platform provides tools for tracking deals, commissions, P&L, and an AI Coach for daily business insights.
+
+## Recent Major Work: Homepage & Pricing Redesign (Feb 2026)
+
+### Design Direction
+- **Tone**: Minimal luxury, modern, confident
+- **Mobile-first design** (real estate agents use phones)
+- **Primary color**: Brand green (#2FA163)
+- **Accent**: Subtle gold (#D4AF37) for micro-details
+- **Typography**: Playfair Display (serif) for headlines + Inter (sans) for body
+- **Positioning**: AI-powered business system, not a tool library
+
+### Homepage Structure (/)
+1. **Hero Section (Pain First)**
+   - Full-width green gradient background with cinematic agent image
+   - Rotating pain points carousel (5 items, 4-second cycle)
+   - "Start My AI Coach" CTA
+   - Mobile hamburger menu
+
+2. **Solution Mapping Section**
+   - Desktop: Two-column (pain tabs left, solution card right)
+   - Mobile: Accordion with embedded screenshots
+   - Maps each pain point to its solution
+
+3. **All Tools Section**
+   - Deal & Client Tools group
+   - Business Intelligence group
+   - No Free/Pro badges - single tier only
+   - "Everything Included. $49.99/month" CTA
+
+4. **Built by Agents Section**
+   - AI-generated lifestyle image
+   - Emotional copy: "We built what we wished existed..."
+   - CTA
+
+### Pricing Page (/pricing)
+- Single tier: $49.99/month
+- "One Plan. Everything Included."
+- "No tiers. No upsells. No confusion."
+- "Cancel anytime. No contracts."
+- Two organized feature lists
+
+## Tech Stack
+- **Frontend**: React, Tailwind CSS, CRACO
+- **Backend**: FastAPI, Python
+- **Database**: MongoDB Atlas
+- **Auth**: Clerk (production keys configured)
+- **Fonts**: Playfair Display, Inter
+
+## Key Files Modified
+- `/app/frontend/src/pages/LandingPage.js` - Complete redesign
+- `/app/frontend/src/pages/PricingPage.js` - Single tier redesign
+- `/app/frontend/src/App.js` - Updated routing (/ now shows LandingPage)
+- `/app/frontend/public/index.html` - Added Playfair Display font
+- `/app/frontend/src/index.css` - Added custom animations
+
+## Previous Issues Fixed
+1. **Clerk Production Auth**: Changed hardcoded dev URL (apparent-dragon-65.accounts.dev) to production URL (clerk.ineednumbers.com)
+2. **Blank Production Page**: Removed `.env.production` that was overriding deployment panel values
+3. **Mobile Accordion Crash**: Added bounds check for activeSolution index
+
+## Routes
+- `/` - New redesigned landing page
+- `/home-legacy` - Old homepage (preserved)
+- `/pricing` - Single tier pricing
+- `/auth/login` - Clerk login
+- `/auth/register` - Clerk registration
+- `/dashboard` - User dashboard (requires auth)
+
+## Screenshots Used
+- AI Coach: IMG_2414.jpeg
+- P&L/Expenses: IMG_2418.jpeg
+- Action Tracker: IMG_2419.jpeg
+- Calculators: IMG_2420.jpeg
+- Commission Cap: IMG_2421.jpeg
+
+## Generated Images
+- Hero: frustrated_agent_hero.png (AI-generated)
+- Built by Agents: built_by_agents_hero.png (AI-generated)
+
+## Test Report
+All tests passing - see `/app/test_reports/iteration_1.json`
