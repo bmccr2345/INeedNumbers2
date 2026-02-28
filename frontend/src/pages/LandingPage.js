@@ -206,7 +206,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a5c3a] via-[#2FA163]/90 to-[#2FA163]/70 lg:to-transparent" />
 
         <div className="container mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-32">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[50vh] py-20">
             {/* Left side - Text content */}
             <div className="space-y-8 max-w-xl">
               {/* Stacked headline */}
