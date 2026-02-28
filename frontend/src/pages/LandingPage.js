@@ -154,17 +154,19 @@ const LandingPage = () => {
           background: 'linear-gradient(135deg, #1a5c3a 0%, #2FA163 50%, #3db574 100%)',
         }}
       >
-        {/* Hero background image */}
+        {/* Hero background image - positioned on right side only */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-right bg-no-repeat hidden lg:block"
           style={{
             backgroundImage: `url(${HERO_IMAGE})`,
-            opacity: 1,
+            backgroundPosition: 'right center',
+            maskImage: 'linear-gradient(to left, black 50%, transparent 80%)',
+            WebkitMaskImage: 'linear-gradient(to left, black 50%, transparent 80%)',
           }}
         />
         
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1a5c3a]/95 via-[#2FA163]/80 to-transparent" />
+        {/* Gradient overlay for mobile and text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a5c3a] via-[#2FA163]/90 to-[#2FA163]/70 lg:to-transparent" />
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-32">
