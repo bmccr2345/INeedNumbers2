@@ -264,11 +264,6 @@ const LandingPage = () => {
             <div className="hidden lg:block" />
           </div>
         </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-white/60" />
-        </div>
       </section>
 
       {/* SECTION 2: SOLUTION MAPPING */}
