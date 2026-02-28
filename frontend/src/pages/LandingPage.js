@@ -186,7 +186,7 @@ const LandingPage = () => {
       {/* SECTION 1: HERO (PAIN FIRST) */}
       <section 
         ref={heroRef}
-        className="relative min-h-screen flex items-center overflow-hidden"
+        className="relative min-h-[50vh] flex items-center overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #1a5c3a 0%, #2FA163 50%, #3db574 100%)',
         }}
