@@ -141,7 +141,7 @@ const LandingPage = () => {
                 className="bg-white text-[#2FA163] hover:bg-white/90 font-medium px-6"
                 size="sm"
               >
-                Start My AI Coach
+                Hire My AI Coach
               </Button>
             </div>
 
@@ -176,7 +176,7 @@ const LandingPage = () => {
                 onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
                 className="w-full bg-white text-[#2FA163] hover:bg-white/90 font-medium"
               >
-                Start My AI Coach
+                Hire My AI Coach
               </Button>
             </div>
           </div>
@@ -255,7 +255,7 @@ const LandingPage = () => {
                   className="bg-white text-[#2FA163] hover:bg-white/95 text-lg px-10 py-6 font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                   data-testid="hero-cta-btn"
                 >
-                  Start My AI Coach
+                  Hire My AI Coach
                 </Button>
               </div>
             </div>
@@ -488,7 +488,7 @@ const LandingPage = () => {
                 className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                 data-testid="tools-cta-btn"
               >
-                Start My AI Coach
+                Hire My AI Coach
               </Button>
             </div>
           </div>
@@ -531,7 +531,7 @@ const LandingPage = () => {
                   className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   data-testid="built-by-agents-cta-btn"
                 >
-                  Start My AI Coach
+                  Hire My AI Coach
                 </Button>
               </div>
             </div>
