@@ -21,7 +21,8 @@ const LoginPage = () => {
     window.Capacitor.getPlatform() === 'ios';
 
   // Clerk hosted sign-in URL for iOS native (Apple App Store compliant)
-  const CLERK_HOSTED_SIGNIN_URL = 'https://apparent-dragon-65.accounts.dev/sign-in?redirect_url=ineednumbers://sso-callback';
+  // Production Clerk domain: clerk.ineednumbers.com
+  const CLERK_HOSTED_SIGNIN_URL = 'https://clerk.ineednumbers.com/sign-in?redirect_url=ineednumbers://sso-callback';
 
   // Redirect if already authenticated
   useEffect(() => {
