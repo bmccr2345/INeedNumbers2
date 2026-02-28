@@ -13,8 +13,8 @@ const SCREENSHOTS = {
   actionTracker: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/mg1mhuv0_IMG_2419.jpeg',
 };
 
-// Hero image
-const HERO_IMAGE = 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/h2ha0mdf_New%20Homepae%202.png';
+// Hero image - clean generated image without text
+const HERO_IMAGE = 'https://static.prod-images.emergentagent.com/jobs/f9bdf638-ae2b-47cf-8725-a262363e948c/images/fe4a77dd4d441e710bd6fe670b69ae561f0cc424e1a4456eee44d797e8483048.png';
 
 // Built by agents image
 const BUILT_BY_AGENTS_IMAGE = 'https://static.prod-images.emergentagent.com/jobs/f9bdf638-ae2b-47cf-8725-a262363e948c/images/98af7eea5f7f459100cc711a0280fc964378e004c6e1a8fc3fa7bcb22db75ca5.png';
