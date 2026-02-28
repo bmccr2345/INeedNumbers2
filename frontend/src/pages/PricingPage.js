@@ -225,7 +225,7 @@ const PricingPage = () => {
               className="bg-[#2FA163] hover:bg-[#268a54] text-white text-xl px-12 py-7 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               data-testid="bottom-cta-btn"
             >
-              Start My AI Coach
+              Hire My AI Coach
             </Button>
           </div>
         </div>
