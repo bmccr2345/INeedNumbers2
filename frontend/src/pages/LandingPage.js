@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { ChevronDown, ChevronRight, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, Menu, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 // Screenshot URLs for accordion sections
