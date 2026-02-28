@@ -314,24 +314,26 @@ const LandingPage = () => {
 
             {/* Right column - Active solution */}
             <div className="sticky top-8">
-              <div className="bg-gray-50 rounded-2xl p-8 shadow-sm">
-                <h3 
-                  className="text-2xl font-bold text-[#2FA163] mb-3"
-                  style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
-                >
-                  {SOLUTIONS[activeSolution].title}
-                </h3>
-                <p className="text-gray-600 text-lg mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  {SOLUTIONS[activeSolution].description}
-                </p>
-                <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                  <img 
-                    src={SOLUTIONS[activeSolution].screenshot}
-                    alt={SOLUTIONS[activeSolution].title}
-                    className="w-full h-auto"
-                  />
+              {activeSolution >= 0 && SOLUTIONS[activeSolution] && (
+                <div className="bg-gray-50 rounded-2xl p-8 shadow-sm">
+                  <h3 
+                    className="text-2xl font-bold text-[#2FA163] mb-3"
+                    style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                  >
+                    {SOLUTIONS[activeSolution].title}
+                  </h3>
+                  <p className="text-gray-600 text-lg mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {SOLUTIONS[activeSolution].description}
+                  </p>
+                  <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                    <img 
+                      src={SOLUTIONS[activeSolution].screenshot}
+                      alt={SOLUTIONS[activeSolution].title}
+                      className="w-full h-auto"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
