@@ -83,6 +83,7 @@ const LandingPage = () => {
   const { user } = useAuth();
   const [currentPainIndex, setCurrentPainIndex] = useState(0);
   const [activeSolution, setActiveSolution] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef(null);
 
   // Rotate pain points every 4 seconds
