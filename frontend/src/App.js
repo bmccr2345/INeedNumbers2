@@ -83,20 +83,25 @@ function DashboardRoute() {
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const checkoutStatus = urlParams.get('checkout');
+    const sessionId = urlParams.get('session_id');
     
     if (checkoutStatus === 'success' && !hasCheckedCheckout && clerkUser) {
       setHasCheckedCheckout(true);
       setIsRefreshing(true);
       
       console.log('[DashboardRoute] Checkout success detected, verifying subscription...');
+      console.log('[DashboardRoute] Session ID:', sessionId);
       
       const verifyAndRefresh = async () => {
         try {
-          // Call backend to verify subscription status (fallback if webhook didn't update Clerk)
+          // Call backend to verify subscription status using session_id
           const response = await fetch(`${backendUrl}/api/clerk/verify-subscription`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clerk_user_id: clerkUser.id }),
+            body: JSON.stringify({ 
+              clerk_user_id: clerkUser.id,
+              session_id: sessionId 
+            }),
             credentials: 'include'
           });
           
@@ -115,7 +120,7 @@ function DashboardRoute() {
             await refreshUser();
           }
           
-          // Clear the checkout param from URL
+          // Clear the checkout params from URL
           window.history.replaceState({}, '', window.location.pathname);
         } catch (err) {
           console.error('[DashboardRoute] Error verifying subscription:', err);
