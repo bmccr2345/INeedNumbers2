@@ -72,14 +72,55 @@ import {
  */
 function DashboardRoute() {
   const isMobile = useIsMobile();
-  const { hasActiveSubscription, loading, user } = useAuth();
-  const { isSignedIn, isLoaded } = useUser();
+  const { hasActiveSubscription, loading, user, refreshUser } = useAuth();
+  const { isSignedIn, isLoaded, user: clerkUser } = useUser();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [hasCheckedCheckout, setHasCheckedCheckout] = React.useState(false);
   
-  // Wait for auth to load
-  if (loading || !isLoaded) {
+  // Check for checkout success and refresh user data
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const checkoutStatus = urlParams.get('checkout');
+    
+    if (checkoutStatus === 'success' && !hasCheckedCheckout && clerkUser) {
+      setHasCheckedCheckout(true);
+      setIsRefreshing(true);
+      
+      console.log('[DashboardRoute] Checkout success detected, refreshing user data...');
+      
+      // Force reload Clerk user data after a short delay to allow webhook to process
+      const refreshTimer = setTimeout(async () => {
+        try {
+          // Reload the Clerk user to get updated metadata
+          await clerkUser.reload();
+          console.log('[DashboardRoute] Clerk user reloaded, metadata:', clerkUser.publicMetadata);
+          
+          // Also refresh our auth context
+          if (refreshUser) {
+            await refreshUser();
+          }
+          
+          // Clear the checkout param from URL
+          window.history.replaceState({}, '', window.location.pathname);
+        } catch (err) {
+          console.error('[DashboardRoute] Error refreshing user:', err);
+        } finally {
+          setIsRefreshing(false);
+        }
+      }, 2000); // Wait 2 seconds for webhook to process
+      
+      return () => clearTimeout(refreshTimer);
+    }
+  }, [clerkUser, hasCheckedCheckout, refreshUser]);
+  
+  // Wait for auth to load or for refresh to complete
+  if (loading || !isLoaded || isRefreshing) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2FA163]"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2FA163] mx-auto mb-4"></div>
+          {isRefreshing && <p className="text-gray-600">Activating your subscription...</p>}
+        </div>
       </div>
     );
   }
