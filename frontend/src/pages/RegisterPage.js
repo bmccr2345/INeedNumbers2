@@ -24,13 +24,18 @@ const RegisterPage = () => {
         console.log('[RegisterPage] User signed in, redirecting to checkout...');
         
         try {
+          // Get the base URL for redirects
+          const baseUrl = window.location.origin;
+          
           // Create Stripe checkout session
           const response = await axios.post(
             `${backendUrl}/api/clerk/create-checkout`,
             {
               clerk_user_id: user.id,
               plan: 'pro', // Single plan at $49.99
-              email: user.primaryEmailAddress?.emailAddress
+              email: user.primaryEmailAddress?.emailAddress,
+              success_url: `${baseUrl}/dashboard?checkout=success`,
+              cancel_url: `${baseUrl}/complete-subscription?checkout=cancelled`
             },
             {
               withCredentials: true,
