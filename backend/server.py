@@ -4381,14 +4381,14 @@ async def handle_stripe_webhook(request: Request):
 @api_router.post("/clerk/verify-subscription")
 async def verify_subscription_status(request: Request):
     """
-    Verify and activate subscription after checkout success.
-    This is a fallback endpoint in case the Stripe webhook doesn't update Clerk metadata.
+    Verify and activate subscription after checkout success using the Stripe session_id.
     
-    Body: { "clerk_user_id": "user_xxx" }
+    Body: { "clerk_user_id": "user_xxx", "session_id": "cs_xxx" }
     """
     try:
         body = await request.json()
         clerk_user_id = body.get("clerk_user_id")
+        session_id = body.get("session_id")
         
         if not clerk_user_id:
             raise HTTPException(status_code=400, detail="clerk_user_id is required")
@@ -4396,43 +4396,55 @@ async def verify_subscription_status(request: Request):
         if not stripe_billing_client:
             raise HTTPException(status_code=503, detail="Stripe billing is not configured")
         
-        # Search Stripe customers by metadata to find this user
         stripe_customer_id = None
+        subscription_id = None
+        subscription_status = None
         
-        try:
-            customers = stripe.Customer.search(
-                query=f'metadata["clerk_user_id"]:"{clerk_user_id}"',
-                limit=1
-            )
-            if customers.data:
-                stripe_customer_id = customers.data[0].id
-        except Exception as search_error:
-            logger.warning(f"Stripe customer search failed: {search_error}")
-            # Fallback: list recent customers and search
-            customers = stripe.Customer.list(limit=100)
-            for customer in customers.auto_paging_iter():
-                if customer.metadata.get("clerk_user_id") == clerk_user_id:
-                    stripe_customer_id = customer.id
-                    break
+        # If session_id is provided, retrieve the checkout session directly (most efficient)
+        if session_id:
+            try:
+                session = stripe.checkout.Session.retrieve(session_id, expand=['subscription'])
+                if session.payment_status == 'paid':
+                    stripe_customer_id = session.customer
+                    if session.subscription:
+                        subscription_id = session.subscription.id if hasattr(session.subscription, 'id') else session.subscription
+                        subscription_status = 'active'
+                    logger.info(f"Found paid session {session_id} for customer {stripe_customer_id}")
+            except Exception as session_error:
+                logger.warning(f"Could not retrieve session {session_id}: {session_error}")
+        
+        # Fallback: Search by customer metadata if no session_id or session lookup failed
+        if not stripe_customer_id:
+            try:
+                customers = stripe.Customer.search(
+                    query=f'metadata["clerk_user_id"]:"{clerk_user_id}"',
+                    limit=1
+                )
+                if customers.data:
+                    stripe_customer_id = customers.data[0].id
+            except Exception as search_error:
+                logger.warning(f"Stripe customer search failed: {search_error}")
         
         if not stripe_customer_id:
-            logger.warning(f"No Stripe customer found for clerk_user_id: {clerk_user_id}")
             return JSONResponse({
                 "success": False,
                 "has_subscription": False,
                 "message": "No Stripe customer found"
             })
         
-        # Check for active subscriptions
-        subscriptions = stripe.Subscription.list(
-            customer=stripe_customer_id,
-            status="active",
-            limit=1
-        )
+        # Get active subscription if not already found from session
+        if not subscription_id:
+            subscriptions = stripe.Subscription.list(
+                customer=stripe_customer_id,
+                status="active",
+                limit=1
+            )
+            if subscriptions.data:
+                subscription_id = subscriptions.data[0].id
+                subscription_status = 'active'
         
-        if subscriptions.data:
-            subscription = subscriptions.data[0]
-            plan = subscription.metadata.get("plan", "pro").lower()
+        if subscription_status == 'active':
+            plan = "pro"  # Single plan
             
             # Update Clerk metadata
             try:
@@ -4444,10 +4456,10 @@ async def verify_subscription_status(request: Request):
                     },
                     private_metadata={
                         "stripe_customer_id": stripe_customer_id,
-                        "stripe_subscription_id": subscription.id
+                        "stripe_subscription_id": subscription_id
                     }
                 )
-                logger.info(f"Manually verified subscription for user {clerk_user_id}")
+                logger.info(f"Updated Clerk metadata for user {clerk_user_id}")
             except Exception as clerk_error:
                 logger.warning(f"Could not update Clerk metadata: {clerk_error}")
             
