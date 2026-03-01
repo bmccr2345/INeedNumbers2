@@ -4378,6 +4378,109 @@ async def handle_stripe_webhook(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/clerk/verify-subscription")
+async def verify_subscription_status(request: Request):
+    """
+    Verify and activate subscription after checkout success.
+    This is a fallback endpoint in case the Stripe webhook doesn't update Clerk metadata.
+    
+    Body: { "clerk_user_id": "user_xxx" }
+    """
+    try:
+        body = await request.json()
+        clerk_user_id = body.get("clerk_user_id")
+        
+        if not clerk_user_id:
+            raise HTTPException(status_code=400, detail="clerk_user_id is required")
+        
+        if not stripe_billing_client:
+            raise HTTPException(status_code=503, detail="Stripe billing is not configured")
+        
+        # Look up the customer in Stripe by metadata
+        # First, try to find in MongoDB
+        user_doc = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        stripe_customer_id = None
+        
+        if user_doc and user_doc.get("stripe_customer_id"):
+            stripe_customer_id = user_doc.get("stripe_customer_id")
+        else:
+            # Search Stripe customers by metadata
+            customers = stripe.Customer.list(limit=10)
+            for customer in customers.auto_paging_iter():
+                if customer.metadata.get("clerk_user_id") == clerk_user_id:
+                    stripe_customer_id = customer.id
+                    break
+        
+        if not stripe_customer_id:
+            logger.warning(f"No Stripe customer found for clerk_user_id: {clerk_user_id}")
+            return JSONResponse({
+                "success": False,
+                "has_subscription": False,
+                "message": "No Stripe customer found"
+            })
+        
+        # Check for active subscriptions
+        subscriptions = stripe.Subscription.list(
+            customer=stripe_customer_id,
+            status="active",
+            limit=1
+        )
+        
+        if subscriptions.data:
+            subscription = subscriptions.data[0]
+            plan = subscription.metadata.get("plan", "pro").lower()
+            
+            # Update Clerk metadata
+            try:
+                await clerk_billing_client.update_user_metadata(
+                    user_id=clerk_user_id,
+                    public_metadata={
+                        "plan": plan,
+                        "subscription_status": "active"
+                    },
+                    private_metadata={
+                        "stripe_customer_id": stripe_customer_id,
+                        "stripe_subscription_id": subscription.id
+                    }
+                )
+                logger.info(f"Manually verified subscription for user {clerk_user_id}")
+            except Exception as clerk_error:
+                logger.warning(f"Could not update Clerk metadata: {clerk_error}")
+            
+            # Update MongoDB
+            await db.users.update_one(
+                {"clerk_user_id": clerk_user_id},
+                {
+                    "$set": {
+                        "plan": plan.upper(),
+                        "stripe_customer_id": stripe_customer_id,
+                        "subscription_status": "active",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                upsert=True
+            )
+            
+            return JSONResponse({
+                "success": True,
+                "has_subscription": True,
+                "plan": plan,
+                "subscription_status": "active"
+            })
+        else:
+            return JSONResponse({
+                "success": True,
+                "has_subscription": False,
+                "message": "No active subscription found"
+            })
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying subscription: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================================================
 # End Clerk Billing Integration Endpoints
 # ============================================================================
