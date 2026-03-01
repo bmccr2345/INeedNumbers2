@@ -128,6 +128,12 @@ const LandingPage = () => {
                 Pricing
               </button>
               <button 
+                onClick={() => navigate('/support')}
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              >
+                Support
+              </button>
+              <button 
                 onClick={() => navigate('/auth/login')}
                 className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
