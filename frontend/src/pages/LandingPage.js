@@ -49,7 +49,7 @@ const SOLUTIONS = [
     screenshot: SCREENSHOTS.commissionCap,
   },
   {
-    pain: "You guess during listing appointments.",
+    pain: "You don't know which online calculators to use and wish they were all in one place.",
     title: "Client Calculators",
     description: "Affordability. Seller net sheet. ROI scenarios. Instant clarity for buyers and sellers.",
     screenshot: SCREENSHOTS.calculators,
