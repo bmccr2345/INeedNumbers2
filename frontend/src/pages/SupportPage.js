@@ -266,16 +266,16 @@ const SupportPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-light via-white to-neutral-medium">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-neutral-medium/20">
+      <nav className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 onClick={() => navigateToHome(navigate, user)}
-                className="text-deep-forest hover:text-primary"
+                className="text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Home
@@ -287,7 +287,7 @@ const SupportPage = () => {
                   alt="I Need Numbers" 
                   className="h-8 w-auto"
                 />
-                <span className="text-lg font-bold text-primary font-poppins">I NEED NUMBERS</span>
+                <span className="text-lg font-bold text-[#2FA163]" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>I NEED NUMBERS</span>
               </div>
             </div>
             
@@ -295,7 +295,7 @@ const SupportPage = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate('/account')}
-                className="border-primary text-primary hover:bg-primary hover:text-white"
+                className="border-[#2FA163] text-[#2FA163] hover:bg-[#2FA163] hover:text-white"
               >
                 My Account
               </Button>
