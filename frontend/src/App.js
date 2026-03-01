@@ -50,6 +50,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MobileLayout from "./layouts/MobileLayout";
 import MobileEntry from "./pages/MobileEntry";
+import CompleteSubscriptionPage from "./pages/CompleteSubscriptionPage";
 
 // Import Onboarding Screens
 import {
