@@ -111,10 +111,13 @@ const LandingPage = () => {
       <nav className="absolute top-0 left-0 right-0 z-50 bg-transparent">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-xl font-semibold text-white tracking-wide" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
-                I NEED NUMBERS
-              </span>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/o3s06xdg_IMG_1529.jpeg" 
+                alt="I Need Numbers" 
+                className="h-12 w-auto"
+                style={{ filter: 'brightness(0) invert(1)', mixBlendMode: 'screen' }}
+              />
             </div>
             
             {/* Desktop nav */}
