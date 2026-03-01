@@ -113,7 +113,7 @@ const LandingPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img 
-                src="https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/o3s06xdg_IMG_1529.jpeg" 
+                src="https://customer-assets.emergentagent.com/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png" 
                 alt="I Need Numbers" 
                 className="h-10 w-auto"
               />
