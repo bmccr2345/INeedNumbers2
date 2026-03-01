@@ -187,7 +187,7 @@ const SupportPage = () => {
       questions: [
         {
           q: "Which listing sites can I paste for prefill?",
-          a: "Pro users can paste popular public listing URLs. If a field looks wrong, override manually."
+          a: "You can paste popular public listing URLs. If a field looks wrong, override manually."
         },
         {
           q: "Is my data private?",
