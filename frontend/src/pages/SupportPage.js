@@ -131,7 +131,7 @@ const SupportPage = () => {
         },
         {
           q: "What's in a branded PDF?",
-          a: "Your name, brokerage, logo, and contact details on every page. Available on Starter/Pro."
+          a: "Your name, brokerage, logo, and contact details on every page."
         },
         {
           q: "PDF won't generate or is missing branding.",
