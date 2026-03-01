@@ -4396,16 +4396,20 @@ async def verify_subscription_status(request: Request):
         if not stripe_billing_client:
             raise HTTPException(status_code=503, detail="Stripe billing is not configured")
         
-        # Look up the customer in Stripe by metadata
-        # First, try to find in MongoDB
-        user_doc = await db.users.find_one({"clerk_user_id": clerk_user_id})
+        # Search Stripe customers by metadata to find this user
         stripe_customer_id = None
         
-        if user_doc and user_doc.get("stripe_customer_id"):
-            stripe_customer_id = user_doc.get("stripe_customer_id")
-        else:
-            # Search Stripe customers by metadata
-            customers = stripe.Customer.list(limit=10)
+        try:
+            customers = stripe.Customer.search(
+                query=f'metadata["clerk_user_id"]:"{clerk_user_id}"',
+                limit=1
+            )
+            if customers.data:
+                stripe_customer_id = customers.data[0].id
+        except Exception as search_error:
+            logger.warning(f"Stripe customer search failed: {search_error}")
+            # Fallback: list recent customers and search
+            customers = stripe.Customer.list(limit=100)
             for customer in customers.auto_paging_iter():
                 if customer.metadata.get("clerk_user_id") == clerk_user_id:
                     stripe_customer_id = customer.id
@@ -4447,19 +4451,22 @@ async def verify_subscription_status(request: Request):
             except Exception as clerk_error:
                 logger.warning(f"Could not update Clerk metadata: {clerk_error}")
             
-            # Update MongoDB
-            await db.users.update_one(
-                {"clerk_user_id": clerk_user_id},
-                {
-                    "$set": {
-                        "plan": plan.upper(),
-                        "stripe_customer_id": stripe_customer_id,
-                        "subscription_status": "active",
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }
-                },
-                upsert=True
-            )
+            # Try to update MongoDB (non-blocking)
+            try:
+                await db.users.update_one(
+                    {"clerk_user_id": clerk_user_id},
+                    {
+                        "$set": {
+                            "plan": plan.upper(),
+                            "stripe_customer_id": stripe_customer_id,
+                            "subscription_status": "active",
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    },
+                    upsert=True
+                )
+            except Exception as mongo_error:
+                logger.warning(f"Could not update MongoDB: {mongo_error}")
             
             return JSONResponse({
                 "success": True,
