@@ -117,6 +117,12 @@ const LandingPage = () => {
                 alt="I Need Numbers" 
                 className="h-10 w-auto"
               />
+              <span 
+                className="text-xl font-bold text-[#2FA163] tracking-wide"
+                style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+              >
+                I NEED NUMBERS
+              </span>
             </div>
             
             {/* Desktop nav */}
