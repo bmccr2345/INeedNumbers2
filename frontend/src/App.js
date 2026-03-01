@@ -68,9 +68,26 @@ import {
 /**
  * Dashboard Route Wrapper
  * Conditionally renders mobile or desktop layout based on viewport
+ * Also checks subscription status and redirects to complete subscription if needed
  */
 function DashboardRoute() {
   const isMobile = useIsMobile();
+  const { hasActiveSubscription, loading, user } = useAuth();
+  const { isSignedIn, isLoaded } = useUser();
+  
+  // Wait for auth to load
+  if (loading || !isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2FA163]"></div>
+      </div>
+    );
+  }
+  
+  // If user is signed in but doesn't have an active subscription, redirect to complete subscription
+  if (isSignedIn && user && !hasActiveSubscription()) {
+    return <Navigate to="/complete-subscription" replace />;
+  }
   
   // On mobile, render MobileLayout with DashboardPage
   // MobileLayout will decide whether to show MobileDashboard or DashboardPage
