@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { SignUp, useUser } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -9,78 +9,85 @@ import axios from 'axios';
 const RegisterPage = () => {
   const { isSignedIn, user } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const [isAssigningPlan, setIsAssigningPlan] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [error, setError] = useState(null);
   
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  // Get plan from URL or localStorage
-  const getPlanSelection = () => {
-    const urlPlan = searchParams.get('plan');
-    const storedPlan = localStorage.getItem('selected_plan');
-    return urlPlan || storedPlan || 'free';
-  };
-
-  // Assign plan to user after signup
+  // After signup, redirect to Stripe checkout
   useEffect(() => {
-    const assignPlanAfterSignup = async () => {
-      if (isSignedIn && user && !isAssigningPlan) {
-        const selectedPlan = getPlanSelection();
+    const redirectToCheckout = async () => {
+      if (isSignedIn && user && !isRedirecting) {
+        setIsRedirecting(true);
+        setError(null);
         
-        console.log('[RegisterPage] User signed in, assigning plan:', selectedPlan);
-        setIsAssigningPlan(true);
+        console.log('[RegisterPage] User signed in, redirecting to checkout...');
         
         try {
-          // Assign plan via backend
+          // Create Stripe checkout session
           const response = await axios.post(
-            `${backendUrl}/api/clerk/assign-plan`,
+            `${backendUrl}/api/clerk/create-checkout`,
             {
               clerk_user_id: user.id,
-              plan: selectedPlan
+              plan: 'pro', // Single plan at $49.99
+              email: user.primaryEmailAddress?.emailAddress
             },
             {
               withCredentials: true,
-              timeout: 10000
+              timeout: 15000
             }
           );
           
-          console.log('[RegisterPage] Plan assigned:', response.data);
+          console.log('[RegisterPage] Checkout session created:', response.data);
           
-          // Clear stored plan
-          localStorage.removeItem('selected_plan');
-          
-          // Wait a moment for Clerk to sync metadata
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          
-          // Force reload the page to refresh Clerk user data
-          // This ensures AuthContext picks up the updated plan metadata
-          console.log('[RegisterPage] Reloading to sync plan metadata...');
-          
-          // Redirect based on plan - ALWAYS to dashboard for now
-          // The dashboard will handle showing the right content based on plan
-          window.location.href = '/dashboard';
+          if (response.data.url) {
+            // Redirect to Stripe Checkout
+            window.location.href = response.data.url;
+          } else {
+            throw new Error('No checkout URL returned');
+          }
           
         } catch (error) {
-          console.error('[RegisterPage] Error assigning plan:', error);
-          // On error, still redirect to dashboard
-          window.location.href = '/dashboard';
-        } finally {
-          setIsAssigningPlan(false);
+          console.error('[RegisterPage] Error creating checkout:', error);
+          setError('Unable to start checkout. Please try again.');
+          setIsRedirecting(false);
         }
       }
     };
 
-    assignPlanAfterSignup();
-  }, [isSignedIn, user, backendUrl, isAssigningPlan]);
+    redirectToCheckout();
+  }, [isSignedIn, user, backendUrl, isRedirecting]);
 
-  // Show loading state while assigning plan
-  if (isSignedIn && user && isAssigningPlan) {
+  // Show loading state while redirecting to checkout
+  if (isSignedIn && user && isRedirecting) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2FA163] mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your account...</p>
+          <p className="text-gray-600">Setting up your subscription...</p>
+          <p className="text-gray-400 text-sm mt-2">Redirecting to secure checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-5xl mb-4">!</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button 
+            onClick={() => {
+              setError(null);
+              setIsRedirecting(false);
+            }}
+            className="bg-[#2FA163] hover:bg-[#268a54] text-white"
+          >
+            Try Again
+          </Button>
         </div>
       </div>
     );
