@@ -111,13 +111,7 @@ const LandingPage = () => {
       <nav className="absolute top-0 left-0 right-0 z-50 bg-transparent">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/s0f7rwx0_INN%20App%20Icon.png" 
-                alt="I Need Numbers" 
-                className="h-10 w-10"
-                style={{ filter: 'brightness(0) invert(1)' }}
-              />
+            <div className="flex items-center">
               <span className="text-xl font-semibold text-white tracking-wide" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 I NEED NUMBERS
               </span>
