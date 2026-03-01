@@ -425,10 +425,10 @@ const SupportPage = () => {
               <CardContent className="text-red-800 space-y-3">
                 <p><strong>You can cancel your subscription at any time.</strong></p>
                 <p>Cancel via My Account → Manage Billing (Stripe Customer Portal), or email support@ineednumbers.com and we'll assist.</p>
-                <p>Your plan remains active until the end of your current billing period.</p>
+                <p>Your subscription remains active until the end of your current billing period.</p>
                 <p><strong>You will not be charged for subsequent months after cancellation.</strong></p>
-                <p>After the period ends, your account moves to Free. If you're over Free limits, items become read-only until you upgrade again.</p>
-                <p>You can re-activate a paid plan at any time in the Customer Portal.</p>
+                <p>After the period ends, your account becomes inactive. Your data isn't deleted, so you can reactivate anytime.</p>
+                <p>You can re-activate your subscription at any time in the Customer Portal.</p>
               </CardContent>
             </Card>
           </div>
