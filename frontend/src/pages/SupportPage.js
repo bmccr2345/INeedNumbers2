@@ -80,12 +80,12 @@ const SupportPage = () => {
           a: "I Need Numbers is an all-in-one toolkit built for real estate agents. It takes the math, reports, and financial tracking you deal with every day and makes them simple. With calculators (Mortgage, Commission Split, Seller Net Sheet), investor-ready PDF packets, and a personal Profit & Loss tracker, you can run your business with clarity and confidence. Whether you're answering a client's \"What will I net?\" question on the spot or keeping tabs on your own income and expenses, I Need Numbers gives you fast, professional tools in one easy platform."
         },
         {
-          q: "Which plans are available?",
-          a: "Free: single-deal calculator, basic KPIs, generic PDF, no saves.\nStarter ($19/mo): save up to 10 items, branded PDFs, share links, portfolio basics.\nPro ($49/mo): unlimited saves/portfolios, URL prefill from listings, 5-year projections, multiple brand profiles."
+          q: "How much does it cost?",
+          a: "I Need Numbers is $49.99/month. One plan, everything included. No tiers, no upsells, no confusion. You get full access to all features: AI Coach, Agent P&L Tracker, Commission Cap Report, Action Tracker, all calculators, branded PDFs, unlimited saves, and more. Cancel anytime."
         },
         {
-          q: "What's a \"save\"?",
-          a: "A deal or tool result you can revisit, edit, and share. Free has no saves; Starter has up to 10; Pro is unlimited."
+          q: "What's included in the subscription?",
+          a: "Everything! AI Coach for daily business insights, Agent P&L Tracker, Commission Cap Report, Action Tracker, Mortgage Calculator, Seller Net Sheet, Commission Split Calculator, Closing Date Calculator, Investor Deal Generator, unlimited saves, branded PDFs, share links, and portfolios."
         }
       ]
     },
@@ -93,12 +93,12 @@ const SupportPage = () => {
       title: "Account & billing",
       questions: [
         {
-          q: "How do I upgrade, downgrade, or cancel?",
+          q: "How do I cancel?",
           a: "Go to My Account → Manage Billing to open the Stripe Customer Portal. You can cancel any time; your plan stays active until the end of your current billing period, and you won't be charged for subsequent months."
         },
         {
           q: "What happens to my account after I cancel?",
-          a: "You'll keep access until the current period ends. After that, you're moved to Free. If you're over Free limits, items remain read-only until you upgrade again. Your data isn't deleted unless you request it."
+          a: "You'll keep access until the current period ends. After that, your account becomes inactive. Your data isn't deleted unless you request it, so you can reactivate anytime."
         },
         {
           q: "Do you offer refunds?",
@@ -113,8 +113,8 @@ const SupportPage = () => {
           a: "Yes—My Account has profile and password settings. If you're locked out, use \"Forgot password.\""
         },
         {
-          q: "You can cancel your subscription at any time.",
-          a: "Cancel via My Account → Manage Billing (Stripe Customer Portal), or email support@ineednumbers.com and we'll assist.\n\nYour plan remains active until the end of your current billing period.\n\nYou will not be charged for subsequent months after cancellation.\n\nAfter the period ends, your account moves to Free. If you're over Free limits, items become read-only until you upgrade again.\n\nYou can re-activate a paid plan at any time in the Customer Portal."
+          q: "Cancellation Policy",
+          a: "Cancel via My Account → Manage Billing (Stripe Customer Portal), or email support@ineednumbers.com and we'll assist.\n\nYour plan remains active until the end of your current billing period.\n\nYou will not be charged for subsequent months after cancellation.\n\nYou can re-activate your subscription at any time in the Customer Portal."
         }
       ]
     },
