@@ -170,6 +170,12 @@ const LandingPage = () => {
                 Pricing
               </button>
               <button 
+                onClick={() => { navigate('/support'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+              >
+                Support
+              </button>
+              <button 
                 onClick={() => { navigate('/auth/login'); setMobileMenuOpen(false); }}
                 className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
               >
