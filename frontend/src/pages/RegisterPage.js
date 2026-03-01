@@ -34,7 +34,7 @@ const RegisterPage = () => {
               clerk_user_id: user.id,
               plan: 'pro', // Single plan at $49.99
               email: user.primaryEmailAddress?.emailAddress,
-              success_url: `${baseUrl}/dashboard?checkout=success`,
+              success_url: `${baseUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
               cancel_url: `${baseUrl}/complete-subscription?checkout=cancelled`
             },
             {
