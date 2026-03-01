@@ -77,7 +77,9 @@ function DashboardRoute() {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [hasCheckedCheckout, setHasCheckedCheckout] = React.useState(false);
   
-  // Check for checkout success and refresh user data
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  
+  // Check for checkout success and verify/refresh subscription
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const checkoutStatus = urlParams.get('checkout');
@@ -86,11 +88,24 @@ function DashboardRoute() {
       setHasCheckedCheckout(true);
       setIsRefreshing(true);
       
-      console.log('[DashboardRoute] Checkout success detected, refreshing user data...');
+      console.log('[DashboardRoute] Checkout success detected, verifying subscription...');
       
-      // Force reload Clerk user data after a short delay to allow webhook to process
-      const refreshTimer = setTimeout(async () => {
+      const verifyAndRefresh = async () => {
         try {
+          // Call backend to verify subscription status (fallback if webhook didn't update Clerk)
+          const response = await fetch(`${backendUrl}/api/clerk/verify-subscription`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clerk_user_id: clerkUser.id }),
+            credentials: 'include'
+          });
+          
+          const result = await response.json();
+          console.log('[DashboardRoute] Subscription verification result:', result);
+          
+          // Wait a moment for updates to propagate
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Reload the Clerk user to get updated metadata
           await clerkUser.reload();
           console.log('[DashboardRoute] Clerk user reloaded, metadata:', clerkUser.publicMetadata);
@@ -103,15 +118,16 @@ function DashboardRoute() {
           // Clear the checkout param from URL
           window.history.replaceState({}, '', window.location.pathname);
         } catch (err) {
-          console.error('[DashboardRoute] Error refreshing user:', err);
+          console.error('[DashboardRoute] Error verifying subscription:', err);
         } finally {
           setIsRefreshing(false);
         }
-      }, 2000); // Wait 2 seconds for webhook to process
+      };
       
-      return () => clearTimeout(refreshTimer);
+      // Start verification after a short delay to allow Stripe webhook to process first
+      setTimeout(verifyAndRefresh, 1500);
     }
-  }, [clerkUser, hasCheckedCheckout, refreshUser]);
+  }, [clerkUser, hasCheckedCheckout, refreshUser, backendUrl]);
   
   // Wait for auth to load or for refresh to complete
   if (loading || !isLoaded || isRefreshing) {
