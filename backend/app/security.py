@@ -282,7 +282,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/clerk/subscription-status",  # Clerk subscription status
             "/api/clerk/create-checkout",  # Clerk checkout creation
             "/api/clerk/billing-portal",  # Clerk billing portal
-            "/api/clerk/webhook"  # Clerk webhooks
+            "/api/clerk/webhook",  # Clerk webhooks
+            "/api/clerk/verify-subscription"  # Clerk subscription verification
         }
     
     async def dispatch(self, request: Request, call_next: Callable):
