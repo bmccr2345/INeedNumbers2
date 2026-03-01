@@ -144,7 +144,7 @@ const SupportPage = () => {
       questions: [
         {
           q: "Where do I add my branding?",
-          a: "On the calculator page, the Agent Personalization section (above the action bar on paid plans)."
+          a: "On the calculator page, in the Agent Personalization section above the action bar."
         },
         {
           q: "Logo guidelines?",
