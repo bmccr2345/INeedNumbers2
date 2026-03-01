@@ -77,9 +77,9 @@ const RegisterPage = () => {
   // Show loading state while assigning plan
   if (isSignedIn && user && isAssigningPlan) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2FA163] mx-auto mb-4"></div>
           <p className="text-gray-600">Setting up your account...</p>
         </div>
       </div>
