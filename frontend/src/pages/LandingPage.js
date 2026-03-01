@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 // Screenshot URLs for accordion sections
 const SCREENSHOTS = {
   aiCoach: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/79m97ybe_IMG_2414.jpeg',
-  pnl: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/crhcbw0w_IMG_2418.jpeg',
+  pnl: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/w4jr8p8m_B6412CBD-4303-450B-BBB1-86761E97D7F4_1_105_c.jpeg',
   commissionCap: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/fmwl2ef7_IMG_2421.jpeg',
   calculators: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/q857eg03_IMG_2420.jpeg',
   actionTracker: 'https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/mg1mhuv0_IMG_2419.jpeg',
