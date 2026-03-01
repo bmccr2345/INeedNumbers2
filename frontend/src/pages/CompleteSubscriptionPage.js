@@ -21,12 +21,17 @@ const CompleteSubscriptionPage = () => {
     setError(null);
     
     try {
+      // Get the base URL for redirects
+      const baseUrl = window.location.origin;
+      
       const response = await axios.post(
         `${backendUrl}/api/clerk/create-checkout`,
         {
           clerk_user_id: user.id,
           plan: 'pro',
-          email: user.primaryEmailAddress?.emailAddress
+          email: user.primaryEmailAddress?.emailAddress,
+          success_url: `${baseUrl}/dashboard?checkout=success`,
+          cancel_url: `${baseUrl}/complete-subscription?checkout=cancelled`
         },
         {
           withCredentials: true,
