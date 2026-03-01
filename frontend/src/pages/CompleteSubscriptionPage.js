@@ -24,6 +24,9 @@ const CompleteSubscriptionPage = () => {
       // Get the base URL for redirects
       const baseUrl = window.location.origin;
       
+      console.log('[CompleteSubscription] Creating checkout for user:', user.id);
+      console.log('[CompleteSubscription] Email:', user.primaryEmailAddress?.emailAddress);
+      
       const response = await axios.post(
         `${backendUrl}/api/clerk/create-checkout`,
         {
@@ -39,14 +42,18 @@ const CompleteSubscriptionPage = () => {
         }
       );
       
+      console.log('[CompleteSubscription] Checkout response:', response.data);
+      
       if (response.data.url) {
         window.location.href = response.data.url;
       } else {
         throw new Error('No checkout URL returned');
       }
     } catch (err) {
-      console.error('Error creating checkout:', err);
-      setError('Unable to start checkout. Please try again.');
+      console.error('[CompleteSubscription] Error creating checkout:', err);
+      console.error('[CompleteSubscription] Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.detail || 'Unable to start checkout. Please try again.';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
