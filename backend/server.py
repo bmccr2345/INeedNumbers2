@@ -4215,12 +4215,18 @@ async def create_checkout_session(request: Request):
                 detail=f"Stripe price ID not configured for {plan} plan"
             )
         
-        # Get user email from Clerk
-        user_data = await clerk_billing_client.get_user(clerk_user_id)
-        customer_email = user_data.get("email_addresses", [{}])[0].get("email_address", "")
+        # Get user email - try from request body first, then from Clerk API
+        customer_email = body.get("email")
         
         if not customer_email:
-            raise HTTPException(status_code=400, detail="User email not found")
+            try:
+                user_data = await clerk_billing_client.get_user(clerk_user_id)
+                customer_email = user_data.get("email_addresses", [{}])[0].get("email_address", "")
+            except Exception as clerk_error:
+                logger.warning(f"Could not fetch user from Clerk: {clerk_error}")
+        
+        if not customer_email:
+            raise HTTPException(status_code=400, detail="User email not found. Please provide email in request.")
         
         # Create checkout session
         checkout_url = await stripe_billing_client.create_checkout_session(
