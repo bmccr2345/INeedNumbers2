@@ -107,15 +107,15 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 bg-transparent">
+      {/* Navigation - White bar */}
+      <nav className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img 
                 src="https://customer-assets.emergentagent.com/job_f9bdf638-ae2b-47cf-8725-a262363e948c/artifacts/o3s06xdg_IMG_1529.jpeg" 
                 alt="I Need Numbers" 
-                className="h-10 w-auto rounded-lg"
+                className="h-10 w-auto"
               />
             </div>
             
@@ -123,19 +123,19 @@ const LandingPage = () => {
             <div className="hidden md:flex items-center space-x-6">
               <button 
                 onClick={() => navigate('/pricing')}
-                className="text-white/90 hover:text-white transition-colors text-sm font-medium"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
                 Pricing
               </button>
               <button 
                 onClick={() => navigate('/auth/login')}
-                className="text-white/90 hover:text-white transition-colors text-sm font-medium"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
                 Sign In
               </button>
               <Button 
                 onClick={handleStartCoach}
-                className="bg-white text-[#2FA163] hover:bg-white/90 font-medium px-6"
+                className="bg-[#2FA163] hover:bg-[#268a54] text-white font-medium px-6"
                 size="sm"
               >
                 Hire My AI Coach
@@ -144,7 +144,7 @@ const LandingPage = () => {
 
             {/* Mobile menu button */}
             <button 
-              className="md:hidden text-white p-2"
+              className="md:hidden text-gray-700 p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-btn"
             >
@@ -155,23 +155,23 @@ const LandingPage = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-[#1a5c3a]/95 backdrop-blur-sm border-t border-white/10">
+          <div className="md:hidden border-t border-gray-100">
             <div className="container mx-auto px-6 py-4 space-y-4">
               <button 
                 onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-white/90 hover:text-white py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
               >
                 Pricing
               </button>
               <button 
                 onClick={() => { navigate('/auth/login'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-white/90 hover:text-white py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
               >
                 Sign In
               </button>
               <Button 
                 onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
-                className="w-full bg-white text-[#2FA163] hover:bg-white/90 font-medium"
+                className="w-full bg-[#2FA163] hover:bg-[#268a54] text-white font-medium"
               >
                 Hire My AI Coach
               </Button>
