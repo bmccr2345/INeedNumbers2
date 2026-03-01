@@ -24,7 +24,7 @@ const PAIN_POINTS = [
   "You don't know what to focus on today.",
   "You don't know what you're making this month.",
   "You don't know how close you are to capping.",
-  "You guess during listing appointments.",
+  "You don't know which online calculators to use and wish they were all in one place.",
   "You stay busy but not strategic.",
 ];
 
