@@ -223,32 +223,32 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[50vh] py-20">
             {/* Left side - Text content */}
-            <div className="space-y-8 max-w-xl">
-              {/* Stacked headline */}
+            <div className="space-y-6 max-w-xl">
+              {/* Stacked headline - BIGGER */}
               <div className="space-y-2">
-                <p className="text-white/90 text-2xl md:text-3xl font-light italic" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
+                <p className="text-white text-3xl md:text-4xl lg:text-5xl font-light italic" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                   You're a real estate agent.
                 </p>
-                <p className="text-white/90 text-2xl md:text-3xl font-light italic" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
+                <p className="text-white text-3xl md:text-4xl lg:text-5xl font-light italic" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                   You're busy all day.
                 </p>
-                <p className="text-white text-3xl md:text-4xl font-semibold mt-4" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
+                <p className="text-white text-3xl md:text-4xl lg:text-5xl font-semibold mt-4" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                   But...
                 </p>
               </div>
 
-              {/* Rotating pain point */}
-              <div className="min-h-[120px]">
+              {/* Rotating pain point - SMALLER */}
+              <div className="min-h-[80px]">
                 <p 
                   key={currentPainIndex}
-                  className="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight animate-fade-in"
+                  className="text-white/90 text-xl md:text-2xl lg:text-3xl font-medium leading-tight animate-fade-in"
                   style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                 >
                   {PAIN_POINTS[currentPainIndex]}
                 </p>
                 
                 {/* Progress indicator */}
-                <div className="flex space-x-2 mt-6">
+                <div className="flex space-x-2 mt-4">
                   {PAIN_POINTS.map((_, index) => (
                     <div 
                       key={index}
@@ -260,18 +260,6 @@ const LandingPage = () => {
                     />
                   ))}
                 </div>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-4">
-                <Button 
-                  onClick={handleStartCoach}
-                  size="lg"
-                  className="bg-white text-[#2FA163] hover:bg-white/95 text-lg px-10 py-6 font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
-                  data-testid="hero-cta-btn"
-                >
-                  Hire My AI Coach
-                </Button>
               </div>
             </div>
 
