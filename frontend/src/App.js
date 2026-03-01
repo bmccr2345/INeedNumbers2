@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
-import { ClerkProvider } from '@clerk/clerk-react';
-import { AuthProvider } from "./contexts/AuthContext";
+import { ClerkProvider, useUser } from '@clerk/clerk-react';
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import ErrorBoundary from "./components/ErrorBoundary";
