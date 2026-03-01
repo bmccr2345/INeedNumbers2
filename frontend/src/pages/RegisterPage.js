@@ -110,16 +110,7 @@ const RegisterPage = () => {
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Create Your Account</h1>
-          <p className="text-gray-600 mt-2">Join <span className="font-bold text-green-600" style={{fontFamily: 'Poppins, sans-serif'}}>I Need Numbers</span> and take control of your business</p>
-          
-          {/* Show selected plan */}
-          {selectedPlan && selectedPlan !== 'free' && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                Selected Plan: <span className="font-bold capitalize">{selectedPlan}</span>
-              </p>
-            </div>
-          )}
+          <p className="text-gray-600 mt-2">Join <span className="font-bold text-[#2FA163]">I Need Numbers</span> and take control of your business</p>
         </div>
 
         {/* Clerk Sign Up Component */}
