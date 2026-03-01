@@ -157,11 +157,11 @@ const SupportPage = () => {
       questions: [
         {
           q: "How do share links work?",
-          a: "Starter/Pro can create a public link to the investor-facing deal page. Free can download a generic PDF but cannot share or save."
+          a: "Create a public link to the investor-facing deal page that you can share with clients and investors."
         },
         {
           q: "Can I organize multiple deals?",
-          a: "Yes—use Portfolios for weighted IRR, average cap rate, and totals. Starter includes basics; Pro supports unlimited."
+          a: "Yes—use Portfolios for weighted IRR, average cap rate, and totals. Unlimited portfolios included."
         }
       ]
     },
