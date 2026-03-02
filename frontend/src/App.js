@@ -274,8 +274,8 @@ function App() {
               </Routes>
             </OnboardingProvider>
           </AuthProvider>
+          </ClerkProviderWithNavigation>
         </BrowserRouter>
-      </ClerkProvider>
       </HelmetProvider>
     </div>
   );
