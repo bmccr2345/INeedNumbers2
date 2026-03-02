@@ -21,8 +21,8 @@ const LoginPage = () => {
     window.Capacitor.getPlatform() === 'ios';
 
   // Clerk hosted sign-in URL for iOS native (Apple App Store compliant)
-  // Production Clerk domain: clerk.ineednumbers.com
-  const CLERK_HOSTED_SIGNIN_URL = 'https://clerk.ineednumbers.com/sign-in?redirect_url=ineednumbers://sso-callback';
+  // Uses environment variable for production flexibility
+  const CLERK_HOSTED_SIGNIN_URL = process.env.REACT_APP_CLERK_SIGNIN_URL || 'https://clerk.ineednumbers.com/sign-in?redirect_url=ineednumbers://sso-callback';
 
   // Redirect if already authenticated
   useEffect(() => {

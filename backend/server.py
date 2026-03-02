@@ -4600,7 +4600,7 @@ async def get_saved_closing_date_calculations(current_user: User = Depends(requi
     try:
         calculations = await db.closing_date_calculations.find({
             "user_id": current_user.id
-        }).sort("created_at", -1).to_list(length=None)
+        }).sort("created_at", -1).to_list(length=100)
         
         # Clean up MongoDB-specific fields for JSON serialization
         for calc in calculations:
