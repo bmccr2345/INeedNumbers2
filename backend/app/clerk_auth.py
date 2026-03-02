@@ -77,10 +77,10 @@ async def get_clerk_jwks() -> dict:
             return _jwks_cache
     
     try:
-        # Use Clerk's official JWKS endpoint
+        # Use Clerk's official JWKS endpoint - PRODUCTION instance
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                "https://apparent-dragon-65.clerk.accounts.dev/.well-known/jwks.json"
+                "https://clerk.ineednumbers.com/.well-known/jwks.json"
             )
             
             if response.status_code == 200:
