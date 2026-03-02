@@ -12,18 +12,6 @@ const LoginPage = () => {
   
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // STRICT platform detection - only true inside Capacitor iOS native shell
-  // Uses window.Capacitor (global) to avoid import-time errors on desktop
-  const isNativeIOS =
-    typeof window !== 'undefined' &&
-    window.Capacitor &&
-    window.Capacitor.getPlatform &&
-    window.Capacitor.getPlatform() === 'ios';
-
-  // Clerk hosted sign-in URL for iOS native (Apple App Store compliant)
-  // Uses environment variable for production flexibility
-  const CLERK_HOSTED_SIGNIN_URL = process.env.REACT_APP_CLERK_SIGNIN_URL || 'https://clerk.ineednumbers.com/sign-in?redirect_url=ineednumbers://sso-callback';
-
   // Redirect if already authenticated
   useEffect(() => {
     if (isSignedIn && user) {
@@ -31,37 +19,8 @@ const LoginPage = () => {
     }
   }, [isSignedIn, user, navigate, from]);
 
-  // For iOS native ONLY: Open Clerk sign-in in system browser (Apple App Store requirement)
-  // Desktop/web: This effect does nothing (isNativeIOS is always false)
-  useEffect(() => {
-    if (isNativeIOS && !isSignedIn) {
-      // Dynamically import Browser only when needed (iOS native)
-      import('@capacitor/browser').then(({ Browser }) => {
-        Browser.open({ url: CLERK_HOSTED_SIGNIN_URL });
-      });
-    }
-  }, [isNativeIOS, isSignedIn]);
-
-  // iOS Native: Show loading state while system browser handles OAuth
-  if (isNativeIOS) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png" 
-              alt="I Need Numbers" 
-              className="h-12 w-auto"
-            />
-          </div>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Opening sign-in in your browser...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop/Web: Render Clerk SignIn component (existing behavior - unchanged)
+  // Render Clerk SignIn component inline for ALL platforms (web + iOS WKWebView)
+  // No Browser.open() - Clerk renders directly inside the WebView
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
