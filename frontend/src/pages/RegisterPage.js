@@ -123,9 +123,11 @@ const RegisterPage = () => {
           <p className="text-gray-600 mt-2">Join <span className="font-bold text-[#2FA163]">I Need Numbers</span> and take control of your business</p>
         </div>
 
-        {/* Clerk Sign Up Component */}
+        {/* Clerk Sign Up Component - routing="path" prevents redirect to clerk domain in WKWebView */}
         <div className="flex justify-center">
           <SignUp 
+            routing="path"
+            path="/auth/register"
             signInUrl="/auth/login"
             appearance={{
               elements: {
