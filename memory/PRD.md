@@ -61,6 +61,7 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
 1. **Clerk Production Auth**: Changed hardcoded dev URL (apparent-dragon-65.accounts.dev) to production URL (clerk.ineednumbers.com)
 2. **Blank Production Page**: Removed `.env.production` that was overriding deployment panel values
 3. **Mobile Accordion Crash**: Added bounds check for activeSolution index
+4. **AI Coach & Deal Add Auth Bug (Mar 2026)**: Fixed JWKS URL mismatch in `/app/backend/app/clerk_auth.py` - was using dev Clerk instance (`apparent-dragon-65.clerk.accounts.dev`) instead of production (`clerk.ineednumbers.com`). This caused JWT validation to fail for all authenticated API calls.
 
 ## Routes
 - `/` - New redesigned landing page
