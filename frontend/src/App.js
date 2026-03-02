@@ -276,8 +276,8 @@ function App() {
               <Route path="/onboarding/completion" element={<CompletionScreen />} />
               
               {/* Auth Routes */}
-              <Route path="/auth/login" element={<LoginPage />} />
-              <Route path="/auth/register" element={<RegisterPage />} />
+              <Route path="/auth/login/*" element={<LoginPage />} />
+              <Route path="/auth/register/*" element={<RegisterPage />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="/set-password" element={<SetPasswordPage />} />
