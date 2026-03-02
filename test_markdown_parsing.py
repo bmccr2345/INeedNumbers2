@@ -10,7 +10,7 @@ import sys
 def test_markdown_parsing():
     """Test that backend correctly handles markdown wrapped JSON responses"""
     
-    base_url = "https://deployment-fix-15.preview.emergentagent.com"
+    base_url = "https://aicoach-auth-fix.preview.emergentagent.com"
     
     print("📝 TESTING MARKDOWN JSON PARSING FIX...")
     print(f"Base URL: {base_url}")

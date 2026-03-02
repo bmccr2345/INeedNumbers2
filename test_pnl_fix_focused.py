@@ -10,7 +10,7 @@ import sys
 def test_pnl_fix_focused():
     """Test the exact scenario from the review request"""
     
-    base_url = "https://deployment-fix-15.preview.emergentagent.com"
+    base_url = "https://aicoach-auth-fix.preview.emergentagent.com"
     
     print("🎯 FOCUSED TEST: AI Coach P&L Analysis Fix")
     print("Testing the exact scenario from the review request...")

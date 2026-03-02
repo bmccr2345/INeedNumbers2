@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_login_with_correct_password():
-    base_url = "https://deployment-fix-15.preview.emergentagent.com"
+    base_url = "https://aicoach-auth-fix.preview.emergentagent.com"
     
     print("🔐 Testing login with correct password...")
     
