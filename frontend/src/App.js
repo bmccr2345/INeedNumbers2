@@ -202,12 +202,12 @@ function App() {
       <HelmetProvider>
         <PerformanceMonitor />
         <Toaster position="top-right" richColors />
-        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-          <BrowserRouter future={{
-            v7_relativeSplatPath: true,
-            v7_startTransition: true,
-            v7_fetcherPersist: true
-          }}>
+        <BrowserRouter future={{
+          v7_relativeSplatPath: true,
+          v7_startTransition: true,
+          v7_fetcherPersist: true
+        }}>
+          <ClerkProviderWithNavigation publishableKey={CLERK_PUBLISHABLE_KEY}>
             <AuthProvider>
               <OnboardingProvider>
                 <Routes>
