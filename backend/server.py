@@ -7435,6 +7435,8 @@ async def get_cap_progress(
         # Calculate cap progress from deals within the cap period
         cap_period_start = datetime.fromisoformat(config["cap_period_start"])
         cap_period_end = datetime.fromisoformat(config["reset_date"])
+        cap_percentage = config.get("cap_percentage", 0) / 100  # Convert to decimal
+        total_cap = config["annual_cap_amount"]
         
         # Find all deals within the cap period
         deals_cursor = db.pnl_deals.find({
@@ -7443,17 +7445,44 @@ async def get_cap_progress(
                 "$gte": cap_period_start.isoformat(),
                 "$lte": cap_period_end.isoformat()
             }
-        })
+        }).sort("closing_date", 1)  # Sort by date to calculate cap correctly
         
         total_cap_paid = config.get("current_cap_paid", 0)  # Manual adjustment
         deals_contributing = 0
+        running_cap_total = total_cap_paid  # Track running total for cap limit
         
         async for deal in deals_cursor:
-            total_cap_paid += deal.get("cap_amount", 0)
-            if deal.get("cap_amount", 0) > 0:
+            # First check if deal has stored cap_amount
+            stored_cap = deal.get("cap_amount", 0)
+            
+            if stored_cap > 0:
+                # Use stored cap amount
+                total_cap_paid += stored_cap
                 deals_contributing += 1
+            else:
+                # Dynamically calculate cap contribution for deals without cap_amount
+                # This handles deals added before cap was configured
+                pre_cap_income = deal.get("pre_cap_income", 0)
+                
+                # If pre_cap_income is 0, calculate it from deal data
+                if pre_cap_income == 0:
+                    amount_sold = deal.get("amount_sold_for", 0)
+                    commission_pct = deal.get("commission_percent", 0) / 100
+                    split_pct = deal.get("split_percent", 100) / 100 if deal.get("split_percent", 0) > 0 else 1.0
+                    if amount_sold > 0 and commission_pct > 0:
+                        gross_commission = amount_sold * commission_pct
+                        pre_cap_income = gross_commission * split_pct
+                
+                if pre_cap_income > 0 and cap_percentage > 0:
+                    # Calculate what the cap would be
+                    remaining_cap = max(0, total_cap - running_cap_total)
+                    if remaining_cap > 0:
+                        calculated_cap = pre_cap_income * cap_percentage
+                        cap_contribution = min(calculated_cap, remaining_cap)
+                        total_cap_paid += cap_contribution
+                        running_cap_total += cap_contribution
+                        deals_contributing += 1
         
-        total_cap = config["annual_cap_amount"]
         remaining = max(0, total_cap - total_cap_paid)
         percentage = (total_cap_paid / total_cap * 100) if total_cap > 0 else 0
         is_complete = total_cap_paid >= total_cap
