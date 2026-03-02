@@ -80,22 +80,20 @@ async def get_clerk_jwks() -> dict:
             return _jwks_cache
     
     try:
-        # Use Clerk's official JWKS endpoint - PRODUCTION instance
+        # Use configurable JWKS URL (defaults to production ineednumbers.com)
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(
-                "https://clerk.ineednumbers.com/.well-known/jwks.json"
-            )
+            response = await client.get(CLERK_JWKS_URL)
             
             if response.status_code == 200:
                 _jwks_cache = response.json()
                 _jwks_cache_time = datetime.now()
-                logger.info("Successfully fetched and cached Clerk JWKS")
+                logger.info(f"Successfully fetched and cached Clerk JWKS from {CLERK_JWKS_URL}")
                 return _jwks_cache
             else:
-                logger.error(f"Failed to fetch Clerk JWKS: {response.status_code}")
+                logger.error(f"Failed to fetch Clerk JWKS from {CLERK_JWKS_URL}: {response.status_code}")
                 return None
     except Exception as e:
-        logger.error(f"Error fetching Clerk JWKS: {e}")
+        logger.error(f"Error fetching Clerk JWKS from {CLERK_JWKS_URL}: {e}")
         return None
 
 
