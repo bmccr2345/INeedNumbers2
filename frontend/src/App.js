@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { ClerkProvider, useUser } from '@clerk/clerk-react';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -16,6 +16,26 @@ const CLERK_PUBLISHABLE_KEY = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
 if (!CLERK_PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key");
 }
+
+// ClerkProvider wrapper that provides React Router navigation
+// This prevents WKWebView from redirecting to clerk.ineednumbers.com
+const ClerkProviderWithNavigation = ({ children, publishableKey }) => {
+  const navigate = useNavigate();
+  
+  return (
+    <ClerkProvider 
+      publishableKey={publishableKey}
+      navigate={(to) => navigate(to)}
+      // Force inline auth components instead of redirecting to Clerk domain
+      signInUrl="/auth/login"
+      signUpUrl="/auth/register"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/complete-subscription"
+    >
+      {children}
+    </ClerkProvider>
+  );
+};
 
 // Import pages
 import HomePage from "./pages/HomePage";
