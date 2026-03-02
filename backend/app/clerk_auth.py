@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 # Clerk API Configuration
 CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 CLERK_API_BASE = "https://api.clerk.com/v1"
+# CLERK_JWKS_URL must match your Clerk instance domain (from publishable key)
+# Format: https://clerk.yourdomain.com/.well-known/jwks.json
+CLERK_JWKS_URL = os.getenv("CLERK_JWKS_URL", "https://clerk.ineednumbers.com/.well-known/jwks.json")
 
 # Clerk JWKS cache
 _jwks_cache = None
