@@ -6642,7 +6642,7 @@ async def get_pnl_deals(
         deals_cursor = db.pnl_deals.find({
             "user_id": current_user.id,
             "month": month
-        }).sort("closing_date", 1)
+        }).sort("closing_date", 1).limit(100)
         
         deals = []
         async for deal_data in deals_cursor:
@@ -7099,7 +7099,7 @@ async def get_expense_categories(
         custom_categories_cursor = db.pnl_expense_categories.find({
             "user_id": current_user.id,
             "is_predefined": False
-        })
+        }).limit(50)
         
         custom_categories = []
         async for category_data in custom_categories_cursor:
