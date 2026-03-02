@@ -87,9 +87,11 @@ const LoginPage = () => {
           <p className="text-gray-600 mt-2">Sign in to your <span className="font-bold text-green-600" style={{fontFamily: 'Poppins, sans-serif'}}>I Need Numbers</span> account</p>
         </div>
 
-        {/* Clerk Sign In Component */}
+        {/* Clerk Sign In Component - routing="path" prevents redirect to clerk domain in WKWebView */}
         <div className="flex justify-center">
           <SignIn 
+            routing="path"
+            path="/auth/login"
             afterSignInUrl={from}
             appearance={{
               elements: {
