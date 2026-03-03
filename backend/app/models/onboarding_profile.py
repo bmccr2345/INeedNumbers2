@@ -18,6 +18,14 @@ class WeeklyFocus(BaseModel):
     consistency: Optional[bool] = False
 
 
+class CommissionCapSettings(BaseModel):
+    """Commission cap settings from onboarding"""
+    has_cap: Optional[bool] = False
+    annual_cap_amount: Optional[int] = None  # Total cap amount in dollars
+    cap_percentage: Optional[float] = None  # Percentage that goes toward cap
+    reset_month: Optional[int] = 1  # Month when cap resets (1-12)
+
+
 class OnboardingProfile(BaseModel):
     """Complete onboarding profile data model"""
     agent_type: Optional[str] = None  # "building_momentum", "steady_growing", "scaling_business"
@@ -27,6 +35,7 @@ class OnboardingProfile(BaseModel):
     weekly_hours: Optional[int] = None  # Hours per week to work
     commission: Optional[CommissionSettings] = None  # Commission structure
     weekly_focus: Optional[WeeklyFocus] = None  # Weekly priorities
+    commission_cap: Optional[CommissionCapSettings] = None  # Cap settings
     onboarding_completed: Optional[bool] = False
     onboarding_completed_at: Optional[datetime] = None
 
