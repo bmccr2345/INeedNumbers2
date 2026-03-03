@@ -1,101 +1,24 @@
-// Mock API services for dashboard - following backend contracts exactly
-// Phase 1: Mock data, Phase 2: Replace with real API calls
+// API services for dashboard - Returns empty data for new users
+// Real API integration for saved calculations
 
-// Sample data generators
-const generateMockMortgageHistory = () => [
-  {
-    id: 'mort_1',
-    date: '2025-01-15T10:30:00Z',
-    loanAmount: 250000,
-    rate: 6.5,
-    termYears: 30,
-    income: 80000,
-    taxesInsurance: 450,
-    payment: 1580,
-    dti: 23.7,
-    saved: true
-  },
-  {
-    id: 'mort_2', 
-    date: '2025-01-12T14:20:00Z',
-    loanAmount: 180000,
-    rate: 6.8,
-    termYears: 30,
-    payment: 1179,
-    saved: false
-  },
-  {
-    id: 'mort_3',
-    date: '2025-01-08T09:15:00Z', 
-    loanAmount: 320000,
-    rate: 6.2,
-    termYears: 30,
-    income: 95000,
-    payment: 1971,
-    dti: 24.9,
-    saved: true
-  }
-];
+import axios from 'axios';
 
-const generateMockCommissionHistory = () => [
-  {
-    id: 'comm_1',
-    date: '2025-01-14T16:45:00Z',
-    gross: 12000,
-    brokeragePct: 30,
-    referralPct: 10,
-    takeHome: 7200,
-    breakdown: { brokerage: 3600, referral: 1200, team: 0, fees: 0 }
-  },
-  {
-    id: 'comm_2',
-    date: '2025-01-10T11:30:00Z', 
-    gross: 8500,
-    brokeragePct: 25,
-    takeHome: 6375,
-    breakdown: { brokerage: 2125, referral: 0, team: 0, fees: 0 }
-  },
-  {
-    id: 'comm_3',
-    date: '2025-01-05T13:20:00Z',
-    gross: 15000,
-    brokeragePct: 35,
-    referralPct: 5,
-    teamPct: 10,
-    takeHome: 7500,
-    breakdown: { brokerage: 5250, referral: 750, team: 1500, fees: 0 }
-  }
-];
+const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
 
-const generateMockNetHistory = () => [
-  {
-    id: 'net_1',
-    date: '2025-01-13T12:00:00Z',
-    price: 425000,
-    fees: 8500,
-    closingCosts: 3200,
-    payoff: 180000,
-    net: 233300
-  },
-  {
-    id: 'net_2', 
-    date: '2025-01-09T15:30:00Z',
-    price: 320000,
-    fees: 6400,
-    closingCosts: 2800,
-    payoff: 145000,
-    net: 165800
-  },
-  {
-    id: 'net_3',
-    date: '2025-01-04T09:45:00Z',
-    price: 515000, 
-    fees: 10300,
-    closingCosts: 4100,
-    payoff: 220000,
-    net: 280600
-  }
-];
+// Helper to get auth headers
+const getAuthConfig = () => ({
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' }
+});
+
+// Empty data generators (new users see no data)
+const generateEmptyMortgageHistory = () => [];
+
+const generateEmptyCommissionHistory = () => [];
+
+const generateEmptyNetHistory = () => [];
+
+const generateEmptyInvestorPDFs = () => [];
 
 const generateMockInvestorPDFs = () => [
   {
@@ -219,9 +142,8 @@ export const mockDashboardAPI = {
     },
     
     history: async ({ limit = 50, cursor = null } = {}) => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const history = generateMockMortgageHistory();
-      return { items: history.slice(0, limit), nextCursor: null };
+      // No mortgage history API exists - return empty for new users
+      return { items: [], nextCursor: null };
     },
     
     delete: async (id) => {
@@ -250,9 +172,14 @@ export const mockDashboardAPI = {
     },
     
     history: async ({ limit = 50, cursor = null } = {}) => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const history = generateMockCommissionHistory();
-      return { items: history.slice(0, limit), nextCursor: null };
+      // Call real API for commission history
+      try {
+        const response = await axios.get(`${backendUrl}/api/commission/history`, getAuthConfig());
+        return { items: response.data || [], nextCursor: null };
+      } catch (error) {
+        console.error('Failed to load commission history:', error);
+        return { items: [], nextCursor: null };
+      }
     },
     
     delete: async (id) => {
@@ -271,9 +198,8 @@ export const mockDashboardAPI = {
     },
     
     history: async ({ limit = 50, cursor = null } = {}) => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const history = generateMockNetHistory();
-      return { items: history.slice(0, limit), nextCursor: null };
+      // No seller net history API exists - return empty for new users
+      return { items: [], nextCursor: null };
     },
     
     delete: async (id) => {
@@ -285,14 +211,8 @@ export const mockDashboardAPI = {
   // Investor PDF endpoints (Pro only)
   investor: {
     list: async ({ status = '', from = '', to = '', limit = 50, cursor = null } = {}) => {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      let items = generateMockInvestorPDFs();
-      
-      if (status) {
-        items = items.filter(item => item.status.toLowerCase() === status.toLowerCase());
-      }
-      
-      return { items: items.slice(0, limit), nextCursor: null };
+      // No investor list API exists - return empty for new users
+      return { items: [], nextCursor: null };
     },
     
     create: async (data) => {
@@ -334,9 +254,41 @@ export const mockDashboardAPI = {
 
   // P&L endpoints (Pro only)
   pnl: {
-    summary: async ({ month = '2025-01', ytd = true } = {}) => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return generateMockPnLData();
+    summary: async ({ month = null, ytd = true } = {}) => {
+      // Call real P&L API
+      try {
+        const currentMonth = month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const response = await axios.get(`${backendUrl}/api/pnl/summary?month=${currentMonth}&ytd=${ytd}`, getAuthConfig());
+        
+        // Transform to expected format
+        const data = response.data || {};
+        return {
+          kpis: {
+            month: { 
+              income: (data.monthly_income || 0) * 100, 
+              expenses: (data.monthly_expenses || 0) * 100, 
+              net: (data.monthly_net || 0) * 100 
+            },
+            ytd: { 
+              income: (data.ytd_income || 0) * 100, 
+              expenses: (data.ytd_expenses || 0) * 100, 
+              net: (data.ytd_net || 0) * 100 
+            }
+          },
+          charts: { monthlyBar: [], expensePie: [] },
+          summary: []
+        };
+      } catch (error) {
+        console.error('Failed to load P&L summary:', error);
+        return {
+          kpis: {
+            month: { income: 0, expenses: 0, net: 0 },
+            ytd: { income: 0, expenses: 0, net: 0 }
+          },
+          charts: { monthlyBar: [], expensePie: [] },
+          summary: []
+        };
+      }
     },
     
     transactions: async ({ month = '2025-01', category = '' } = {}) => {
