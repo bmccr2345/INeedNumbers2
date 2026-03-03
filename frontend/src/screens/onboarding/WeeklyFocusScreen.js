@@ -47,7 +47,7 @@ const WeeklyFocusScreen = () => {
   };
 
   const handleNext = () => {
-    navigate('/onboarding/completion');
+    navigate('/onboarding/commission-cap');
   };
 
   const hasSelection = leadGeneration || pipelineGrowth || consistency;

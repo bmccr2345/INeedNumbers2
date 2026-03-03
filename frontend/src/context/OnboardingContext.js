@@ -27,6 +27,12 @@ export const OnboardingProvider = ({ children }) => {
       lead_generation: false,
       pipeline_growth: false,
       consistency: false
+    },
+    commission_cap: {
+      has_cap: false,
+      annual_cap_amount: null,
+      cap_percentage: null,
+      reset_month: 1  // January default
     }
   });
 
@@ -57,6 +63,16 @@ export const OnboardingProvider = ({ children }) => {
     }));
   };
 
+  const updateCommissionCap = (field, value) => {
+    setOnboardingData(prev => ({
+      ...prev,
+      commission_cap: {
+        ...prev.commission_cap,
+        [field]: value
+      }
+    }));
+  };
+
   const resetOnboarding = () => {
     setOnboardingData({
       agent_type: null,
@@ -74,6 +90,12 @@ export const OnboardingProvider = ({ children }) => {
         lead_generation: false,
         pipeline_growth: false,
         consistency: false
+      },
+      commission_cap: {
+        has_cap: false,
+        annual_cap_amount: null,
+        cap_percentage: null,
+        reset_month: 1
       }
     });
   };
@@ -95,6 +117,12 @@ export const OnboardingProvider = ({ children }) => {
         lead_generation: false,
         pipeline_growth: false,
         consistency: false
+      },
+      commission_cap: profile.commission_cap || {
+        has_cap: false,
+        annual_cap_amount: null,
+        cap_percentage: null,
+        reset_month: 1
       }
     });
   };
@@ -104,6 +132,7 @@ export const OnboardingProvider = ({ children }) => {
     updateOnboardingData,
     updateCommission,
     updateWeeklyFocus,
+    updateCommissionCap,
     resetOnboarding,
     loadExistingProfile
   };

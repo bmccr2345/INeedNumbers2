@@ -89,20 +89,29 @@ const DashboardPage = () => {
     }
   };
 
-  // Check if Pro user needs onboarding (works on both mobile and desktop)
+  // Check if user needs onboarding (first-time login detection)
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (user && user.plan === 'PRO') {
+      // Check onboarding for all authenticated users, not just PRO
+      if (user) {
         try {
           const status = await getOnboardingStatus();
           
-          // If onboarding not completed, redirect to onboarding flow
+          // If onboarding not completed AND user hasn't explicitly skipped, redirect to onboarding
           if (!status.onboarding_completed) {
-            console.log('[Dashboard] Onboarding not completed, redirecting...');
+            console.log('[Dashboard] First-time user detected, redirecting to onboarding...');
             navigate('/onboarding');
+            return;
           }
         } catch (error) {
           console.error('[Dashboard] Error checking onboarding status:', error);
+          
+          // Check if it's a 404 - means user doesn't exist in DB yet (first login)
+          if (error?.response?.status === 404) {
+            console.log('[Dashboard] New user (not in DB), redirecting to onboarding...');
+            navigate('/onboarding');
+            return;
+          }
           
           // Check if it's a database connection error
           const errorMessage = error?.response?.data?.detail || error?.message || '';

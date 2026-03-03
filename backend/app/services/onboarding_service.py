@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 async def save_onboarding_data(db, user_id: str, profile_data: OnboardingProfile) -> Dict[str, Any]:
     """
     Save partial onboarding data to user profile
+    Uses upsert to create user if not exists (fixes "User not found" bug)
     
     Args:
         db: MongoDB database connection
@@ -29,16 +30,25 @@ async def save_onboarding_data(db, user_id: str, profile_data: OnboardingProfile
             "updated_at": datetime.now(timezone.utc)
         }
         
-        # Update user profile with onboarding data
+        # Use upsert to create user if not exists
         result = await db.users.update_one(
             {"clerk_user_id": user_id},
-            {"$set": update_data}
+            {
+                "$set": update_data,
+                "$setOnInsert": {
+                    "clerk_user_id": user_id,
+                    "created_at": datetime.now(timezone.utc),
+                    "first_login": None  # Will be set on first dashboard visit
+                }
+            },
+            upsert=True
         )
         
-        if result.matched_count == 0:
-            raise ValueError(f"User {user_id} not found")
+        if result.upserted_id:
+            logger.info(f"Created new user {user_id} during onboarding save")
+        else:
+            logger.info(f"Saved onboarding data for existing user {user_id}")
         
-        logger.info(f"Saved onboarding data for user {user_id}")
         return profile_data.dict()
         
     except Exception as e:
@@ -49,6 +59,7 @@ async def save_onboarding_data(db, user_id: str, profile_data: OnboardingProfile
 async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
     """
     Mark onboarding as complete and trigger initialization of goals, weekly plans, and defaults
+    Uses upsert pattern to handle users that don't exist in MongoDB yet
     
     Args:
         db: MongoDB database connection
@@ -58,21 +69,33 @@ async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
         Dictionary with profile and dashboard initialization data
     """
     try:
-        # Get user's onboarding profile
+        # Get user's onboarding profile (or create if not exists)
         user = await db.users.find_one({"clerk_user_id": user_id}, {"_id": 0})
+        
         if not user:
-            raise ValueError(f"User {user_id} not found")
+            # Create user document if it doesn't exist
+            await db.users.insert_one({
+                "clerk_user_id": user_id,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+                "first_login": datetime.now(timezone.utc),  # First login is now
+                "onboarding_profile": {}
+            })
+            logger.info(f"Created new user {user_id} during onboarding completion")
+            user = {"onboarding_profile": {}}
         
         onboarding_profile = user.get("onboarding_profile", {})
-        if not onboarding_profile:
-            raise ValueError("No onboarding profile found")
         
-        # Mark onboarding as completed
+        # Mark onboarding as completed and set first_login if not set
         completion_data = {
             "onboarding_profile.onboarding_completed": True,
             "onboarding_profile.onboarding_completed_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc)
         }
+        
+        # Set first_login if not already set
+        if not user.get("first_login"):
+            completion_data["first_login"] = datetime.now(timezone.utc)
         
         await db.users.update_one(
             {"clerk_user_id": user_id},
@@ -87,6 +110,9 @@ async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
         
         # Configure commission defaults
         commission_data = await configure_commission_defaults(db, user_id, onboarding_profile)
+        
+        # Initialize cap configuration if provided in onboarding
+        await initialize_cap_from_onboarding(db, user_id, onboarding_profile)
         
         # Create dashboard starter data
         dashboard_data = {
@@ -271,6 +297,77 @@ async def configure_commission_defaults(db, user_id: str, profile_data: Dict[str
     except Exception as e:
         logger.error(f"Error configuring commission defaults for user {user_id}: {e}")
         raise
+
+
+async def initialize_cap_from_onboarding(db, user_id: str, profile_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Initialize commission cap configuration from onboarding data
+    
+    Args:
+        db: MongoDB database connection
+        user_id: User ID
+        profile_data: Onboarding profile data
+        
+    Returns:
+        Cap configuration data or None if not configured
+    """
+    try:
+        cap_settings = profile_data.get("commission_cap", {})
+        
+        # Only create cap config if user indicated they pay a cap
+        if not cap_settings.get("has_cap", False):
+            logger.info(f"User {user_id} does not pay a cap, skipping cap initialization")
+            return None
+        
+        annual_cap = cap_settings.get("annual_cap_amount", 0)
+        cap_percentage = cap_settings.get("cap_percentage", 0)
+        reset_month = cap_settings.get("reset_month", 1)  # Default to January
+        
+        if annual_cap <= 0:
+            logger.info(f"User {user_id} has no cap amount set, skipping cap initialization")
+            return None
+        
+        # Calculate cap period dates
+        now = datetime.now(timezone.utc)
+        current_year = now.year
+        
+        # If reset month has passed this year, cap period starts this year
+        # Otherwise, it started last year
+        if now.month >= reset_month:
+            cap_start = datetime(current_year, reset_month, 1, tzinfo=timezone.utc)
+            cap_end = datetime(current_year + 1, reset_month, 1, tzinfo=timezone.utc)
+        else:
+            cap_start = datetime(current_year - 1, reset_month, 1, tzinfo=timezone.utc)
+            cap_end = datetime(current_year, reset_month, 1, tzinfo=timezone.utc)
+        
+        cap_config = {
+            "user_id": user_id,
+            "annual_cap_amount": annual_cap,
+            "cap_percentage": cap_percentage,
+            "cap_period_start": cap_start.isoformat(),
+            "reset_date": cap_end.isoformat(),
+            "current_cap_paid": 0,
+            "is_cap_hit": False,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+            "source": "onboarding"
+        }
+        
+        # Use upsert to create or update cap configuration
+        await db.cap_configurations.update_one(
+            {"user_id": user_id},
+            {"$set": cap_config},
+            upsert=True
+        )
+        
+        logger.info(f"Initialized cap configuration for user {user_id}: ${annual_cap} annual cap at {cap_percentage}%")
+        return cap_config
+        
+    except Exception as e:
+        logger.error(f"Error initializing cap for user {user_id}: {e}")
+        # Don't raise - cap initialization is not critical
+        return None
+
 
 
 def generate_first_steps_checklist(profile_data: Dict[str, Any]) -> list:

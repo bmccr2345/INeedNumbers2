@@ -82,6 +82,7 @@ import {
   WeeklyHoursScreen,
   CommissionSetupScreen,
   WeeklyFocusScreen,
+  CommissionCapScreen,
   CompletionScreen
 } from "./screens/onboarding";
 
@@ -273,6 +274,7 @@ function App() {
               <Route path="/onboarding/weekly-hours" element={<WeeklyHoursScreen />} />
               <Route path="/onboarding/commission-setup" element={<CommissionSetupScreen />} />
               <Route path="/onboarding/weekly-focus" element={<WeeklyFocusScreen />} />
+              <Route path="/onboarding/commission-cap" element={<CommissionCapScreen />} />
               <Route path="/onboarding/completion" element={<CompletionScreen />} />
               
               {/* Auth Routes */}

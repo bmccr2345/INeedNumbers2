@@ -8225,13 +8225,21 @@ async def get_onboarding_status(user=Depends(get_current_user_unified)):
     """Get current onboarding status for user"""
     try:
         user_doc = await db.users.find_one({"clerk_user_id": user.id}, {"_id": 0})
+        
         if not user_doc:
-            raise HTTPException(status_code=404, detail="User not found")
+            # User doesn't exist in MongoDB - this is a first-time login
+            # Return not completed to trigger onboarding
+            return {
+                "onboarding_completed": False,
+                "onboarding_profile": {},
+                "is_first_login": True
+            }
         
         onboarding_profile = user_doc.get("onboarding_profile", {})
         return {
             "onboarding_completed": onboarding_profile.get("onboarding_completed", False),
-            "onboarding_profile": onboarding_profile
+            "onboarding_profile": onboarding_profile,
+            "is_first_login": user_doc.get("first_login") is None
         }
     except HTTPException:
         raise
