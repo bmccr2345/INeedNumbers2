@@ -91,6 +91,7 @@ class StripeBillingClient:
             session = stripe.checkout.Session.create(
                 mode="subscription",
                 payment_method_types=["card"],
+                allow_promotion_codes=True,  # Enable coupon/promo code field
                 line_items=[{
                     "price": price_id,
                     "quantity": 1,
