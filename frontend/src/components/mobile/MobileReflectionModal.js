@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { X, Save, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -9,6 +10,7 @@ import { Label } from '../ui/label';
  * Quick popup for logging daily reflections
  */
 const MobileReflectionModal = ({ isOpen, onClose }) => {
+  const { getToken } = useAuth();
   const [reflection, setReflection] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -22,11 +24,18 @@ const MobileReflectionModal = ({ isOpen, onClose }) => {
       setIsSaving(true);
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+
       // Send the ReflectionLogEntry structure expected by the backend
       const response = await fetch(`${backendUrl}/api/reflection-log`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({

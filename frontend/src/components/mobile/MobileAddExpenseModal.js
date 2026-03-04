@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { X, Save, TrendingDown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,6 +11,7 @@ import { Textarea } from '../ui/textarea';
  * Quick popup for adding P&L expenses
  */
 const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
+  const { getToken } = useAuth();
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     description: '',
@@ -28,7 +30,10 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
   const fetchCategories = async () => {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const token = await getToken();
+      
       const response = await fetch(`${backendUrl}/api/pnl/categories`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         credentials: 'include'
       });
       if (response.ok) {
@@ -64,10 +69,17 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+
       const response = await fetch(`${backendUrl}/api/pnl/expenses`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({

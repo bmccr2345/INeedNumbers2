@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { X, Save, DollarSign } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,12 +10,13 @@ import { Label } from '../ui/label';
  * Quick popup for adding P&L deals
  */
 const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
+  const { getToken } = useAuth();
   const [leadSources, setLeadSources] = useState([]);
   const [formData, setFormData] = useState({
     house_address: '',
     amount_sold_for: '',
-    commission_percent: '6',
-    split_percent: '50',
+    commission_percent: '3',
+    split_percent: '100',
     team_brokerage_split_percent: '0',
     lead_source: '',
     contract_signed: new Date().toISOString().slice(0, 10),
@@ -33,7 +35,10 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
   const fetchLeadSources = async () => {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const token = await getToken();
+      
       const response = await fetch(`${backendUrl}/api/pnl/lead-sources`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         credentials: 'include'
       });
       if (response.ok) {
@@ -65,10 +70,17 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+
       const response = await fetch(`${backendUrl}/api/pnl/deals`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -86,8 +98,8 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
         setFormData({
           house_address: '',
           amount_sold_for: '',
-          commission_percent: '6',
-          split_percent: '50',
+          commission_percent: '3',
+          split_percent: '100',
           team_brokerage_split_percent: '0',
           lead_source: '',
           contract_signed: new Date().toISOString().slice(0, 10),

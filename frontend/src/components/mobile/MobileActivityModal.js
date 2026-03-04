@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { X, Save, TrendingUp } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,6 +10,7 @@ import { Label } from '../ui/label';
  * Quick popup for logging daily activities
  */
 const MobileActivityModal = ({ isOpen, onClose }) => {
+  const { getToken } = useAuth();
   const [activities, setActivities] = useState({
     conversations: '',
     appointments: '',
@@ -36,6 +38,12 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
       setIsSaving(true);
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
       
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+      
       // Convert empty strings to 0 for submission
       const activityData = {
         conversations: activities.conversations === '' ? 0 : parseInt(activities.conversations),
@@ -48,7 +56,8 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
       const response = await fetch(`${backendUrl}/api/activity-log`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
