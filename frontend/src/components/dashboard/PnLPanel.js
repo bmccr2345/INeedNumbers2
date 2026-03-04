@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { 
   Plus, 
   Download, 
@@ -34,6 +35,7 @@ import PnLAICoach from '../PnLAICoach';
 const PnLPanel = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { getToken } = useClerkAuth();
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const [pnlSummary, setPnlSummary] = useState(null);
@@ -174,6 +176,13 @@ const PnLPanel = () => {
   const handleAddDeal = async (e) => {
     e.preventDefault();
     try {
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
       const dealData = {
         ...newDeal,
         amount_sold_for: parseFloat(newDeal.amount_sold_for) || 0,
@@ -183,7 +192,10 @@ const PnLPanel = () => {
       };
 
       await axios.post(`${backendUrl}/api/pnl/deals`, dealData, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       // Reset form
@@ -204,9 +216,9 @@ const PnLPanel = () => {
     } catch (error) {
       console.error('Failed to add deal:', error);
       if (error.response?.status === 401) {
-        setError('Authentication required');
+        setError('Authentication required. Please sign in again.');
       } else {
-        setError('Failed to add deal');
+        setError(error.response?.data?.detail || 'Failed to add deal');
       }
     }
   };
@@ -232,8 +244,18 @@ const PnLPanel = () => {
   const handleUpdateDeal = async (e) => {
     e.preventDefault();
     try {
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
       await axios.put(`${backendUrl}/api/pnl/deals/${editingDeal.id}`, editingDeal, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       setEditingDeal(null);
@@ -256,6 +278,13 @@ const PnLPanel = () => {
   const handleAddExpense = async (e) => {
     e.preventDefault();
     try {
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
       const expenseData = {
         ...newExpense,
         amount: parseFloat(newExpense.amount) || 0,
@@ -263,7 +292,10 @@ const PnLPanel = () => {
       };
 
       await axios.post(`${backendUrl}/api/pnl/expenses`, expenseData, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       // Reset form
@@ -282,9 +314,9 @@ const PnLPanel = () => {
     } catch (error) {
       console.error('Failed to add expense:', error);
       if (error.response?.status === 401) {
-        setError('Authentication required');
+        setError('Authentication required. Please sign in again.');
       } else {
-        setError('Failed to add expense');
+        setError(error.response?.data?.detail || 'Failed to add expense');
       }
     }
   };
@@ -292,17 +324,27 @@ const PnLPanel = () => {
   // Delete deal
   const deleteDeal = async (dealId) => {
     try {
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
       await axios.delete(`${backendUrl}/api/pnl/deals/${dealId}`, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       await loadPnLData();
       await loadActiveDeals(); // Refresh active deals
     } catch (error) {
       console.error('Failed to delete deal:', error);
       if (error.response?.status === 401) {
-        setError('Authentication required');
+        setError('Authentication required. Please sign in again.');
       } else {
-        setError('Failed to delete deal');
+        setError(error.response?.data?.detail || 'Failed to delete deal');
       }
     }
   };
@@ -310,16 +352,26 @@ const PnLPanel = () => {
   // Delete expense
   const deleteExpense = async (expenseId) => {
     try {
+      // Get auth token
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
       await axios.delete(`${backendUrl}/api/pnl/expenses/${expenseId}`, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       await loadPnLData();
     } catch (error) {
       console.error('Failed to delete expense:', error);
       if (error.response?.status === 401) {
-        setError('Authentication required');
+        setError('Authentication required. Please sign in again.');
       } else {
-        setError('Failed to delete expense');
+        setError(error.response?.data?.detail || 'Failed to delete expense');
       }
     }
   };
