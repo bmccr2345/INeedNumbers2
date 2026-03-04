@@ -9,7 +9,10 @@ import {
   TrendingDown,
   AlertCircle,
   PieChart,
-  BarChart3
+  BarChart3,
+  Sparkles,
+  X,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import MobileCard from '../components/mobile/MobileCard';
@@ -46,7 +49,42 @@ const MobileDashboard = () => {
   const [showReflectionModal, setShowReflectionModal] = useState(false);
   const [showAddDealModal, setShowAddDealModal] = useState(false);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  
+  // Onboarding state
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
+  // Check onboarding status
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      // Check if banner was permanently dismissed
+      const dismissed = safeLocalStorage.getItem('onboarding_banner_dismissed');
+      if (dismissed === 'true') {
+        setBannerDismissed(true);
+        return;
+      }
+      
+      if (user?.id) {
+        try {
+          const response = await axios.get(`${backendUrl}/api/onboarding/status`, {
+            withCredentials: true,
+            timeout: 5000
+          });
+          
+          const { onboarding_completed } = response.data;
+          setNeedsOnboarding(!onboarding_completed);
+        } catch (error) {
+          console.log('[MobileDashboard] Could not check onboarding status:', error.message);
+          // Don't show banner on error - fail silently
+          setNeedsOnboarding(false);
+        }
+      }
+    };
+    
+    checkOnboardingStatus();
+  }, [user?.id, backendUrl]);
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -233,6 +271,17 @@ const MobileDashboard = () => {
     }
   };
 
+  const handleDismissBanner = (permanent = false) => {
+    setBannerDismissed(true);
+    if (permanent) {
+      safeLocalStorage.setItem('onboarding_banner_dismissed', 'true');
+    }
+  };
+
+  const handleStartOnboarding = () => {
+    navigate('/onboarding');
+  };
+
   const handleViewPnL = () => {
     // Navigate to dashboard P&L panel
     navigate('/dashboard?panel=pnl');
@@ -282,6 +331,46 @@ const MobileDashboard = () => {
 
   return (
     <div className="mobile-dashboard p-4 pb-20 space-y-4 bg-gray-50 min-h-full">
+      {/* Onboarding Banner - Shows for users who haven't completed onboarding */}
+      {needsOnboarding && !bannerDismissed && (
+        <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-4 shadow-lg relative" data-testid="onboarding-banner">
+          <button 
+            onClick={() => handleDismissBanner(false)}
+            className="absolute top-2 right-2 text-white/70 hover:text-white p-1"
+            aria-label="Dismiss banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-start gap-3 pr-6">
+            <div className="bg-white/20 rounded-full p-2 flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-base">Welcome! Let's get you set up</h3>
+              <p className="text-white/90 text-sm mt-1">
+                Complete a quick setup to personalize your dashboard and track your goals.
+              </p>
+              <div className="flex items-center gap-3 mt-3">
+                <Button
+                  onClick={handleStartOnboarding}
+                  size="sm"
+                  className="bg-white text-emerald-600 hover:bg-white/90 font-medium"
+                >
+                  Start Setup
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+                <button
+                  onClick={() => handleDismissBanner(true)}
+                  className="text-white/80 hover:text-white text-sm underline"
+                >
+                  Don't show again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Header */}
       <div className="mb-2">
         <h1 className="text-2xl font-bold text-gray-900">
@@ -572,10 +661,11 @@ const MobileDashboard = () => {
         </MobileCard>
       )}
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - shows pulsing effect when onboarding needed */}
       <QuickActionButton 
         onClick={handleQuickAction} 
-        showOnboarding={user?.plan === 'PRO'}
+        showOnboarding={needsOnboarding}
+        highlightOnboarding={needsOnboarding && !bannerDismissed}
       />
 
       {/* Activity Modal */}
