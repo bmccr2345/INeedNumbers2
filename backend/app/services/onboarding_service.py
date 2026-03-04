@@ -103,13 +103,13 @@ async def complete_onboarding(db, user_id: str) -> Dict[str, Any]:
         )
         
         # Initialize goals based on onboarding data
-        goals_data = await initialize_goals(db, user_id, onboarding_profile)
+        await initialize_goals(db, user_id, onboarding_profile)
         
         # Initialize weekly plan
         weekly_plan_data = await initialize_weekly_plan(db, user_id, onboarding_profile)
         
         # Configure commission defaults
-        commission_data = await configure_commission_defaults(db, user_id, onboarding_profile)
+        await configure_commission_defaults(db, user_id, onboarding_profile)
         
         # Initialize cap configuration if provided in onboarding
         await initialize_cap_from_onboarding(db, user_id, onboarding_profile)
