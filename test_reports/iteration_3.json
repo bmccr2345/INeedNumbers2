@@ -1,0 +1,62 @@
+{
+  "summary": "Backend API testing completed for Add Deal auth fix on P&L page. All 8 tests passed. Fixed CSRF middleware issue that was blocking unauthenticated requests from getting proper 401 responses.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/pnl/*",
+        "issue": "FIXED - CSRF middleware was returning 500 instead of allowing 401 for unauthenticated requests. Added P&L endpoints to auth_required_endpoints bypass list.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pnl_api.py",
+    "/app/test_reports/pytest/pnl_test_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Frontend fix in PnLPanel.js correctly adds Bearer token to all write operations (handleAddDeal, handleUpdateDeal, handleAddExpense, deleteDeal, deleteExpense)",
+    "Backend requires authentication via require_auth dependency for all P&L endpoints",
+    "CSRF middleware now properly bypasses P&L endpoints to allow proper 401 error responses"
+  ],
+  "updated_files": [
+    "/app/backend/app/security.py",
+    "/app/backend/tests/test_pnl_api.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "N/A - Backend only testing requested"
+  },
+  "test_credentials": "None required - testing unauthenticated access behavior",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P&L API auth fix verified. Key findings: 1) POST /api/pnl/deals returns 401 without auth (CORRECT) 2) POST /api/pnl/deals returns 401 with invalid Bearer token (CORRECT) 3) GET /api/pnl/lead-sources and /api/pnl/categories both require auth (401) 4) All endpoints accept Authorization: Bearer token format. Frontend fix adds getToken() from Clerk and includes Bearer token in axios calls.",
+  "passed_tests": [
+    "POST /api/pnl/deals returns 401 without auth - PASSED",
+    "POST /api/pnl/deals returns 401 with invalid Bearer token - PASSED",
+    "GET /api/pnl/lead-sources returns 401 without auth - PASSED",
+    "GET /api/pnl/categories returns 401 without auth - PASSED",
+    "GET /api/pnl/summary returns 401 without auth - PASSED",
+    "GET /api/health returns 200 (public endpoint) - PASSED",
+    "401 response has proper 'detail' error format - PASSED",
+    "Endpoint processes Authorization Bearer header - PASSED"
+  ],
+  "verified_frontend_fix": {
+    "file": "/app/frontend/src/components/dashboard/PnLPanel.js",
+    "changes": [
+      "handleAddDeal (line 176-224): Gets token via getToken(), adds Authorization: Bearer ${token} header",
+      "handleUpdateDeal (line 244-275): Gets token via getToken(), adds Authorization: Bearer ${token} header",
+      "handleAddExpense (line 278-322): Gets token via getToken(), adds Authorization: Bearer ${token} header",
+      "deleteDeal (line 325-350): Gets token via getToken(), adds Authorization: Bearer ${token} header",
+      "deleteExpense (line 353-377): Gets token via getToken(), adds Authorization: Bearer ${token} header"
+    ]
+  },
+  "rca_of_the_issue": "Original issue: Add Deal was failing with authentication errors. Root cause: Frontend was sending requests with withCredentials:true for cookie-based auth, but backend Clerk auth expects Bearer token in Authorization header for cross-origin requests. Fix: Added const token = await getToken() before each write operation and included headers: { 'Authorization': `Bearer ${token}` } in axios calls."
+}

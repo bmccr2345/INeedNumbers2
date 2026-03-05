@@ -309,7 +309,17 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         auth_required_endpoints = [
             "/api/brand/upload",
             "/api/dashboard/metrics",
-            "/api/user/profile"
+            "/api/user/profile",
+            "/api/pnl/deals",
+            "/api/pnl/expenses",
+            "/api/pnl/categories",
+            "/api/pnl/lead-sources",
+            "/api/pnl/summary",
+            "/api/pnl/budgets",
+            "/api/pnl/active-deals",
+            "/api/pnl/export",
+            "/api/cap-tracker/progress",
+            "/api/cap-tracker/config"
         ]
         
         if request.url.path in auth_required_endpoints:
