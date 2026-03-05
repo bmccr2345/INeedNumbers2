@@ -104,15 +104,29 @@ const PnLPanel = () => {
 
   const loadInitialData = async () => {
     try {
-      // Use cookie-based authentication - no token needed
-      // Load categories and lead sources
+      // Get auth token for API calls that require authentication
+      const token = await getToken();
+      const authConfig = {
+        withCredentials: true,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      };
+      
+      // Load categories and lead sources with auth
       const [categoriesResponse, leadSourcesResponse] = await Promise.all([
-        axios.get(`${backendUrl}/api/pnl/categories`, { withCredentials: true }).catch(() => ({ data: [] })),
-        axios.get(`${backendUrl}/api/pnl/lead-sources`, { withCredentials: true }).catch(() => ({ data: [] }))
+        axios.get(`${backendUrl}/api/pnl/categories`, authConfig).catch((err) => {
+          console.warn('[PnLPanel] Failed to load categories:', err.response?.status, err.message);
+          return { data: [] };
+        }),
+        axios.get(`${backendUrl}/api/pnl/lead-sources`, authConfig).catch((err) => {
+          console.warn('[PnLPanel] Failed to load lead sources:', err.response?.status, err.message);
+          return { data: [] };
+        })
       ]);
 
       setExpenseCategories(categoriesResponse.data);
       setLeadSources(leadSourcesResponse.data);
+      
+      console.log('[PnLPanel] Loaded lead sources:', leadSourcesResponse.data?.length || 0);
       
       // Load cap progress data
       await loadCapProgress();
@@ -130,9 +144,13 @@ const PnLPanel = () => {
       setIsLoading(true);
       setError(null);
 
+      // Get auth token
+      const token = await getToken();
+      
       const response = await axios.get(`${backendUrl}/api/pnl/summary`, {
         params: { month: selectedMonth },
-        withCredentials: true
+        withCredentials: true,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
       setPnlSummary(response.data);
@@ -153,8 +171,12 @@ const PnLPanel = () => {
 
   const loadActiveDeals = async () => {
     try {
+      // Get auth token
+      const token = await getToken();
+      
       const response = await axios.get(`${backendUrl}/api/pnl/active-deals`, {
-        withCredentials: true
+        withCredentials: true,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       setActiveDeals(response.data || []);
     } catch (error) {
@@ -534,8 +556,12 @@ const PnLPanel = () => {
   // Load cap progress data
   const loadCapProgress = async () => {
     try {
+      // Get auth token
+      const token = await getToken();
+      
       const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`, {
-        withCredentials: true
+        withCredentials: true,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       setCapProgress(response.data);
     } catch (error) {

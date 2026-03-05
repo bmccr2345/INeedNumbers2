@@ -6688,38 +6688,47 @@ async def create_pnl_deal(
         })
         
         if cap_config:
-            # Check if we're within the cap period
-            closing_date_obj = datetime.fromisoformat(deal_data.closing_date)
-            cap_period_start = datetime.fromisoformat(cap_config["cap_period_start"])
-            cap_period_end = datetime.fromisoformat(cap_config["reset_date"])
-            
-            if cap_period_start <= closing_date_obj <= cap_period_end:
-                # Calculate current cap progress
-                total_cap = cap_config["annual_cap_amount"]
-                cap_percentage = cap_config["cap_percentage"] / 100  # Convert to decimal
-                current_cap_paid = cap_config.get("current_cap_paid", 0)
+            try:
+                # Check if we're within the cap period
+                closing_date_obj = datetime.fromisoformat(deal_data.closing_date)
+                cap_period_start_str = cap_config.get("cap_period_start", "")
+                cap_period_end_str = cap_config.get("reset_date", "")
                 
-                # Find all previous deals in this cap period
-                deals_cursor = db.pnl_deals.find({
-                    "user_id": current_user.id,
-                    "closing_date": {
-                        "$gte": cap_period_start.isoformat(),
-                        "$lt": closing_date_obj.isoformat()  # Before this deal
-                    }
-                })
-                
-                # Sum up cap amounts from previous deals
-                async for previous_deal in deals_cursor:
-                    current_cap_paid += previous_deal.get("cap_amount", 0)
-                
-                # Check if cap is not yet complete
-                remaining_cap = max(0, total_cap - current_cap_paid)
-                
-                if remaining_cap > 0:
-                    # Apply fixed percentage to agent's commission
-                    calculated_cap = agent_gross_commission * cap_percentage
-                    # Don't exceed remaining cap obligation
-                    cap_amount = min(calculated_cap, remaining_cap)
+                # Only process cap if dates are valid
+                if cap_period_start_str and cap_period_end_str:
+                    cap_period_start = datetime.fromisoformat(cap_period_start_str)
+                    cap_period_end = datetime.fromisoformat(cap_period_end_str)
+                    
+                    if cap_period_start <= closing_date_obj <= cap_period_end:
+                        # Calculate current cap progress
+                        total_cap = cap_config.get("annual_cap_amount", 0)
+                        cap_percentage = cap_config.get("cap_percentage", 0) / 100  # Convert to decimal
+                        current_cap_paid = cap_config.get("current_cap_paid", 0)
+                        
+                        # Find all previous deals in this cap period
+                        deals_cursor = db.pnl_deals.find({
+                            "user_id": current_user.id,
+                            "closing_date": {
+                                "$gte": cap_period_start.isoformat(),
+                                "$lt": closing_date_obj.isoformat()  # Before this deal
+                            }
+                        })
+                        
+                        # Sum up cap amounts from previous deals
+                        async for previous_deal in deals_cursor:
+                            current_cap_paid += previous_deal.get("cap_amount", 0)
+                        
+                        # Check if cap is not yet complete
+                        remaining_cap = max(0, total_cap - current_cap_paid)
+                        
+                        if remaining_cap > 0 and cap_percentage > 0:
+                            # Apply fixed percentage to agent's commission
+                            calculated_cap = agent_gross_commission * cap_percentage
+                            # Don't exceed remaining cap obligation
+                            cap_amount = min(calculated_cap, remaining_cap)
+            except (ValueError, KeyError) as cap_error:
+                # Log cap processing error but continue with deal creation (cap_amount stays 0)
+                logger.warning(f"Error processing cap configuration for user {current_user.id}: {cap_error}")
         
         # Step 3: Apply team/brokerage split to income after cap deduction
         income_after_cap = agent_gross_commission - cap_amount
@@ -6753,9 +6762,12 @@ async def create_pnl_deal(
         await db.pnl_deals.insert_one(deal_dict)
         
         return new_deal
+    except ValueError as e:
+        logger.error(f"ValueError creating P&L deal: {e}")
+        raise HTTPException(status_code=422, detail=f"Invalid data format: {str(e)}")
     except Exception as e:
-        logger.error(f"Error creating P&L deal: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create deal")
+        logger.error(f"Error creating P&L deal: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to create deal: {str(e)}")
 
 @api_router.patch("/pnl/deals/{deal_id}")
 async def update_pnl_deal(

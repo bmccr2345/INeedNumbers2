@@ -67,6 +67,13 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
    - `commission_percentage` → `commission_percent` (wrong property name)
    - `your_split` → `split_percent` (wrong property name)
    - `team_brokerage_split` → `team_brokerage_split_percent` (wrong property name)
+6. **Add Deal Auth Bug (Mar 5, 2026)**: Fixed missing Bearer token auth headers in all PnLPanel.js API calls:
+   - `loadInitialData()` - lead sources and categories weren't loading due to 401
+   - `loadPnLData()` - summary data 
+   - `loadActiveDeals()` - active deals list
+   - `loadCapProgress()` - cap progress data
+   - Backend now returns detailed error messages instead of generic "Failed to create deal"
+   - Backend cap configuration parsing now handles missing/invalid dates gracefully
 
 ## Routes
 - `/` - New redesigned landing page
