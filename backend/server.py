@@ -6712,7 +6712,7 @@ async def create_pnl_deal(
                                 "$gte": cap_period_start.isoformat(),
                                 "$lt": closing_date_obj.isoformat()  # Before this deal
                             }
-                        })
+                        }).limit(1000)
                         
                         # Sum up cap amounts from previous deals
                         async for previous_deal in deals_cursor:
@@ -6870,7 +6870,7 @@ async def get_active_deals(
         deals_cursor = db.pnl_deals.find({
             "user_id": current_user.id,
             "closing_date": {"$gte": today}
-        }).sort("closing_date", 1)
+        }).sort("closing_date", 1).limit(500)
         
         deals = []
         async for deal_data in deals_cursor:
@@ -6895,7 +6895,7 @@ async def get_pnl_expenses(
         expenses_cursor = db.pnl_expenses.find({
             "user_id": current_user.id,
             "month": month
-        }).sort("date", 1)
+        }).sort("date", 1).limit(500)
         
         expenses = []
         async for expense_data in expenses_cursor:
@@ -7512,7 +7512,7 @@ async def get_cap_progress(
                 "$gte": cap_period_start.isoformat(),
                 "$lte": cap_period_end.isoformat()
             }
-        }).sort("closing_date", 1)  # Sort by date to calculate cap correctly
+        }).sort("closing_date", 1).limit(1000)  # Sort by date to calculate cap correctly
         
         total_cap_paid = config.get("current_cap_paid", 0)  # Manual adjustment
         deals_contributing = 0
