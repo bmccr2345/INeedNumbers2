@@ -62,18 +62,19 @@ const PnLPanel = () => {
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
 
-  // Deal form state
+  // Deal form state - initialize dates with today's date and sensible defaults
+  const today = new Date().toISOString().slice(0, 10);
   const [newDeal, setNewDeal] = useState({
     house_address: '',
     amount_sold_for: '',
-    commission_percent: '',
-    split_percent: '',
-    team_brokerage_split_percent: '',
+    commission_percent: '3',
+    split_percent: '100',
+    team_brokerage_split_percent: '0',
     lead_source: '',
-    contract_signed: '',
-    due_diligence_start: '',
-    due_diligence_over: '',
-    closing_date: ''
+    contract_signed: today,
+    due_diligence_start: today,
+    due_diligence_over: today,
+    closing_date: today
   });
 
   // Edit deal state
@@ -179,46 +180,73 @@ const PnLPanel = () => {
       // Get auth token
       const token = await getToken();
       if (!token) {
+        console.error('[PnLPanel] No auth token available');
         setError('Authentication required. Please sign in again.');
         return;
       }
 
+      // Validate required fields
+      if (!newDeal.house_address || !newDeal.amount_sold_for || !newDeal.lead_source) {
+        setError('Please fill in all required fields: Address, Amount, and Lead Source');
+        return;
+      }
+
       const dealData = {
-        ...newDeal,
+        house_address: newDeal.house_address,
         amount_sold_for: parseFloat(newDeal.amount_sold_for) || 0,
-        commission_percent: parseFloat(newDeal.commission_percent) || 0,
-        split_percent: parseFloat(newDeal.split_percent) || 0,
-        team_brokerage_split_percent: parseFloat(newDeal.team_brokerage_split_percent) || 0
+        commission_percent: parseFloat(newDeal.commission_percent) || 3,
+        split_percent: parseFloat(newDeal.split_percent) || 100,
+        team_brokerage_split_percent: parseFloat(newDeal.team_brokerage_split_percent) || 0,
+        lead_source: newDeal.lead_source,
+        contract_signed: newDeal.contract_signed,
+        due_diligence_start: newDeal.due_diligence_start,
+        due_diligence_over: newDeal.due_diligence_over,
+        closing_date: newDeal.closing_date
       };
 
-      await axios.post(`${backendUrl}/api/pnl/deals`, dealData, {
+      console.log('[PnLPanel] Submitting deal:', dealData);
+
+      const response = await axios.post(`${backendUrl}/api/pnl/deals`, dealData, {
         withCredentials: true,
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      console.log('[PnLPanel] Deal added successfully:', response.data);
       
-      // Reset form
+      // Reset form with sensible defaults
+      const resetDate = new Date().toISOString().slice(0, 10);
       setNewDeal({
         house_address: '',
         amount_sold_for: '',
-        commission_percent: '',
-        split_percent: '',
-        team_brokerage_split_percent: '',
+        commission_percent: '3',
+        split_percent: '100',
+        team_brokerage_split_percent: '0',
         lead_source: '',
-        closing_date: ''
+        contract_signed: resetDate,
+        due_diligence_start: resetDate,
+        due_diligence_over: resetDate,
+        closing_date: resetDate
       });
       setShowAddDeal(false);
+      setError(null);
       
       // Reload data
       await loadPnLData();
       await loadActiveDeals(); // Refresh active deals
     } catch (error) {
-      console.error('Failed to add deal:', error);
+      console.error('[PnLPanel] Failed to add deal:', error);
+      console.error('[PnLPanel] Error response:', error.response?.data);
+      
       if (error.response?.status === 401) {
         setError('Authentication required. Please sign in again.');
+      } else if (error.response?.status === 402) {
+        setError('PRO subscription required to add deals.');
+      } else if (error.response?.status === 422) {
+        setError('Invalid data. Please check all fields are filled correctly.');
       } else {
-        setError(error.response?.data?.detail || 'Failed to add deal');
+        setError(error.response?.data?.detail || 'Failed to add deal. Please try again.');
       }
     }
   };
