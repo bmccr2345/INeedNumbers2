@@ -7430,6 +7430,61 @@ async def create_or_update_cap_configuration(
         logger.error(f"Error creating/updating cap configuration: {e}")
         raise HTTPException(status_code=500, detail="Failed to save cap configuration")
 
+@api_router.post("/cap-tracker/repair")
+async def repair_cap_configuration(
+    current_user: User = Depends(require_auth)
+):
+    """Repair broken cap configuration by adding missing required fields"""
+    try:
+        # Find the user's cap config
+        config = await db.cap_configurations.find_one({
+            "user_id": current_user.id
+        })
+        
+        if not config:
+            return {"status": "no_config", "message": "No cap configuration found to repair"}
+        
+        # Check what fields are missing and fix them
+        updates = {}
+        
+        if "cap_period_type" not in config or not config.get("cap_period_type"):
+            updates["cap_period_type"] = "calendar_year"
+        
+        if "updated_at" not in config:
+            updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        # Remove invalid fields that shouldn't exist
+        unset_fields = {}
+        if "is_cap_hit" in config:
+            unset_fields["is_cap_hit"] = ""
+        if "source" in config:
+            unset_fields["source"] = ""
+        
+        if updates or unset_fields:
+            update_ops = {}
+            if updates:
+                update_ops["$set"] = updates
+            if unset_fields:
+                update_ops["$unset"] = unset_fields
+                
+            await db.cap_configurations.update_one(
+                {"user_id": current_user.id},
+                update_ops
+            )
+            
+            logger.info(f"Repaired cap configuration for user {current_user.id}: added {list(updates.keys())}, removed {list(unset_fields.keys())}")
+            return {
+                "status": "repaired", 
+                "added_fields": list(updates.keys()),
+                "removed_fields": list(unset_fields.keys())
+            }
+        
+        return {"status": "ok", "message": "Cap configuration is valid, no repair needed"}
+        
+    except Exception as e:
+        logger.error(f"Error repairing cap configuration: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to repair cap configuration: {str(e)}")
+
 @api_router.get("/cap-tracker/progress")
 async def get_cap_progress(
     current_user: User = Depends(require_auth)

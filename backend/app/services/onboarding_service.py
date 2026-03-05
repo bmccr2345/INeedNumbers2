@@ -344,13 +344,12 @@ async def initialize_cap_from_onboarding(db, user_id: str, profile_data: Dict[st
             "user_id": user_id,
             "annual_cap_amount": annual_cap,
             "cap_percentage": cap_percentage,
+            "cap_period_type": "calendar_year",
             "cap_period_start": cap_start.isoformat(),
             "reset_date": cap_end.isoformat(),
             "current_cap_paid": 0,
-            "is_cap_hit": False,
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc),
-            "source": "onboarding"
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
         # Use upsert to create or update cap configuration
