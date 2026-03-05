@@ -1,224 +1,66 @@
 <analysis>Here is a summary of the work done for the next agent.
 
-**original_problem_statement:** The project began with fixing a series of critical production deployment blockers, including hardcoded Clerk test keys and incorrect environment variable configurations. After stabilizing the deployment, the user requested a complete redesign of the homepage and pricing page to reflect a new, single-tier subscription model with a minimal luxury aesthetic. This was followed by implementing and debugging a new Stripe-based checkout and subscription activation flow, as users were not being prompted for payment after signing up. The final task is to investigate a bug where the AI Coach shows an Authentication required error for logged-in users.
+**original_problem_statement:** The project started with fixing a critical AI Coach authentication bug, which was traced back to the backend using a hardcoded development Clerk JWKS URL. This led to a series of production-hardening tasks, including fixing iOS/Capacitor authentication issues (redirect loops, blank screens), resolving a data isolation bug where new users saw mock data, fixing a commission cap widget that wasn't updating, and implementing a new onboarding reminder. The most recent and persistent issue has been fixing the Add Deal functionality on the mobile Finances tab, which repeatedly failed despite several attempted fixes.
 
 **User's preferred language**: The user's primary language is English. Please respond in English only.
 
 **what currently exists?**
-The application is a full-stack platform for real estate agents (React, FastAPI, MongoDB) with Clerk authentication and Stripe for payments.
-- The homepage () and pricing page () have been completely redesigned to a single-tier model (9.99/month).
-- A new Stripe-based checkout flow is implemented. After signing up via Clerk, users are redirected to complete their subscription.
-- A Stripe webhook () is configured to listen for payment events and update the user's  in Clerk to activate their 'pro' plan.
-- Several critical deployment issues related to Clerk keys and environment variables have been resolved.
-- A bug is present where the AI Coach feature is inaccessible to logged-in users.
+The application is a full-stack platform for real estate agents (React, FastAPI, MongoDB) with Clerk for authentication and Stripe for payments. It features a dashboard with P&L tracking, a commission cap calculator, and various data logging tools. The app is designed to be mobile-first, using Capacitor for the iOS native shell. It includes a multi-step onboarding flow that now configures a user's commission cap. The codebase has been significantly hardened for production, but a critical bug in the mobile Add Deal flow was the last item being worked on.
 
 **Last working item**:
--   **Last item agent was working**: Investigating a bug where the AI Coach displays an Authentication required. Please sign in to access AI Coach. message, even for users who are properly authenticated and have a PRO plan badge.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent to verify the fix and ensure no regressions in the authentication flow for other components.
--   **User Testing Done**: Y (User reported the bug with a screenshot).
+-   **Last item agent was working**: Fixing the Add Deal button on the mobile Finances page, which is rendered by the  component. The user reported that saving a deal still resulted in an error.
+-   **Status**: USER VERIFICATION PENDING
+-   **Agent Testing Done**: Y
+-   **Which testing method agent to use?**: Manual testing by user. If it fails, the agent should instruct the user on how to retrieve console logs from their device, as extensive logging has been added to the  function in .
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: (P0) AI Coach shows Authentication required for logged-in users.
--   **Issue 2**: (P1) Intermittent MongoDB Atlas Connectivity in the preview environment.
+-   **Issue 1**: (P0) Add Deal button on the mobile Finances tab is not working.
 
     **Issues Detail**:
-    -   **Issue 1**: AI Coach Authentication Bug
-        -   **Attempted fixes**: The agent was just beginning to investigate by looking at the AI Coach component. No fixes have been attempted yet.
-        -   **Next debug checklist**:
-            1.  Examine the code in  (or a similar file).
-            2.  Check how it verifies authentication. It's likely checking a state from  or  from Clerk.
-            3.  Analyze why this specific component believes the user is not authenticated, while other parts of the app (like the PRO badge display) correctly identify the user.
-            4.  Look for incorrect or missing dependencies in  hooks or race conditions where the component renders before the user authentication state is fully loaded.
-        -   **Why fix this issue and what will be achieved with the fix?**: This is a critical bug blocking a core feature of the application for paid users.
-        -   **Status**: IN PROGRESS
-        -   **Is recurring issue?**: N
-        -   **Should Test frontend/backend/both after fix?**: Frontend
-        -   **Blocked on other issue**: None.
-
-    -   **Issue 2**: Intermittent MongoDB Atlas Connectivity
-        -   **Attempted fixes**: This is a known infrastructure issue. The user previously stated they fixed it, but SSL handshake errors persist in the preview environment's backend logs. The agent implemented fallbacks in the code to make MongoDB updates non-blocking where possible.
-        -   **Next debug checklist**: If backend errors occur, check ==> /var/log/supervisor/backend.err.log <==
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [797]
-REDIS_URL not set in production - rate limiting and caching will use in-memory fallback
-S3 configuration not complete in production - file uploads will be disabled
-Using test Stripe keys in production environment
-2026-03-01 22:14:00,688 - server - INFO - Stripe initialized successfully
-2026-03-01 22:14:00,695 - server - INFO - MongoDB connected: ineednumbers
-2026-03-01 22:14:05,654 - app.mongodb_cache - ERROR - Failed to initialize MongoDB cache: bad auth : authentication failed, full error: {'ok': 0, 'errmsg': 'bad auth : authentication failed', 'code': 8000, 'codeName': 'AtlasError'}
-2026-03-01 22:14:05,655 - server - WARNING - MongoDB cache not available - rate limiting will use fallback
-2026-03-01 22:14:05,659 - server - INFO - Security headers middleware enabled
-2026-03-01 22:14:05,659 - server - INFO - CSRF protection middleware enabled
-2026-03-01 22:14:05,659 - server - INFO - Rate limiting enabled: 2000/3600s
-2026-03-01 22:14:05,659 - server - INFO - CORS configured for origins: ['http://localhost:3000', 'http://localhost:5173', 'https://aicoach-auth-fix.preview.emergentagent.com', 'https://ineednumbers.com', 'https://www.ineednumbers.com', 'https://agent-financials.emergent.host']
-2026-03-01 22:14:05,660 - server - INFO - S3 credentials not configured - using local storage fallback for file uploads
-2026-03-01 22:14:06,148 - server - INFO - New AI Coach router mounted at /api/ai-coach-v2
-2026-03-01 22:14:06,154 - server - INFO - Onboarding endpoints registered inline
-2026-03-01 22:14:06,154 - server - INFO - Secure plans router mounted for Stripe webhooks
-INFO:     Started server process [860]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-2026-03-01 22:14:09,271 - app.mongodb_cache - WARNING - Rate limiting unavailable - MongoDB not connected
-2026-03-01 22:14:09,402 - stripe - INFO - message='Request to Stripe api' method=get url=https://api.stripe.com/v1/customers/search?query=metadata[%22clerk_user_id%22]%3A%22test_user_123%22&limit=1
-2026-03-01 22:14:09,689 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/customers/search?query=metadata[%22clerk_user_id%22]%3A%22test_user_123%22&limit=1 response_code=200
-2026-03-01 22:14:09,693 - server - WARNING - No Stripe customer found for clerk_user_id: test_user_123
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [860]
-REDIS_URL not set in production - rate limiting and caching will use in-memory fallback
-S3 configuration not complete in production - file uploads will be disabled
-Using test Stripe keys in production environment
-2026-03-01 22:15:20,712 - server - INFO - Stripe initialized successfully
-2026-03-01 22:15:20,718 - server - INFO - MongoDB connected: ineednumbers
-2026-03-01 22:15:51,220 - app.mongodb_cache - ERROR - Failed to initialize MongoDB cache: SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 69a4ba7842f7604bf30f8256, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
-2026-03-01 22:15:51,220 - server - WARNING - MongoDB cache not available - rate limiting will use fallback
-2026-03-01 22:15:51,225 - server - INFO - Security headers middleware enabled
-2026-03-01 22:15:51,225 - server - INFO - CSRF protection middleware enabled
-2026-03-01 22:15:51,225 - server - INFO - Rate limiting enabled: 2000/3600s
-2026-03-01 22:15:51,225 - server - INFO - CORS configured for origins: ['http://localhost:3000', 'http://localhost:5173', 'https://aicoach-auth-fix.preview.emergentagent.com', 'https://ineednumbers.com', 'https://www.ineednumbers.com', 'https://agent-financials.emergent.host']
-2026-03-01 22:15:51,225 - server - INFO - S3 credentials not configured - using local storage fallback for file uploads
-2026-03-01 22:15:51,709 - server - INFO - New AI Coach router mounted at /api/ai-coach-v2
-2026-03-01 22:15:51,714 - server - INFO - Onboarding endpoints registered inline
-2026-03-01 22:15:51,715 - server - INFO - Secure plans router mounted for Stripe webhooks
-INFO:     Started server process [922]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [45] using WatchFiles
-REDIS_URL not set in production - rate limiting and caching will use in-memory fallback
-S3 configuration not complete in production - file uploads will be disabled
-Using test Stripe keys in production environment
-2026-03-01 23:09:34,276 - server - INFO - Stripe initialized successfully
-2026-03-01 23:09:34,302 - server - INFO - MongoDB connected: ineednumbers
-2026-03-01 23:10:04,904 - app.mongodb_cache - ERROR - Failed to initialize MongoDB cache: SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 69a4c72edbbac4f69b1aade2, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
-2026-03-01 23:10:04,904 - server - WARNING - MongoDB cache not available - rate limiting will use fallback
-2026-03-01 23:10:04,923 - server - INFO - Security headers middleware enabled
-2026-03-01 23:10:04,923 - server - INFO - CSRF protection middleware enabled
-2026-03-01 23:10:04,923 - server - INFO - Rate limiting enabled: 2000/3600s
-2026-03-01 23:10:04,923 - server - INFO - CORS configured for origins: ['http://localhost:3000', 'http://localhost:5173', 'https://aicoach-auth-fix.preview.emergentagent.com', 'https://ineednumbers.com', 'https://www.ineednumbers.com', 'https://agent-financials.emergent.host']
-2026-03-01 23:10:04,924 - server - INFO - S3 credentials not configured - using local storage fallback for file uploads
-2026-03-01 23:10:05,753 - server - INFO - New AI Coach router mounted at /api/ai-coach-v2
-2026-03-01 23:10:05,763 - server - INFO - Onboarding endpoints registered inline
-2026-03-01 23:10:05,764 - server - INFO - Secure plans router mounted for Stripe webhooks
-INFO:     Started server process [101]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [47] using WatchFiles
-REDIS_URL not set in production - rate limiting and caching will use in-memory fallback
-S3 configuration not complete in production - file uploads will be disabled
-Using test Stripe keys in production environment
-2026-03-02 00:47:36,091 - server - INFO - Stripe initialized successfully
-2026-03-02 00:47:36,118 - server - INFO - MongoDB connected: ineednumbers
-2026-03-02 00:48:06,347 - app.mongodb_cache - ERROR - Failed to initialize MongoDB cache: SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 69a4de285dcc5df23e5f2143, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-00.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-01.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('SSL handshake failed: ac-mg7tk7w-shard-00-02.xvvfduo.mongodb.net:27017: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1016) (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
-2026-03-02 00:48:06,348 - server - WARNING - MongoDB cache not available - rate limiting will use fallback
-2026-03-02 00:48:06,365 - server - INFO - Security headers middleware enabled
-2026-03-02 00:48:06,365 - server - INFO - CSRF protection middleware enabled
-2026-03-02 00:48:06,365 - server - INFO - Rate limiting enabled: 2000/3600s
-2026-03-02 00:48:06,365 - server - INFO - CORS configured for origins: ['http://localhost:3000', 'http://localhost:5173', 'https://aicoach-auth-fix.preview.emergentagent.com', 'https://ineednumbers.com', 'https://www.ineednumbers.com', 'https://agent-financials.emergent.host']
-2026-03-02 00:48:06,366 - server - INFO - S3 credentials not configured - using local storage fallback for file uploads
-2026-03-02 00:48:07,369 - server - INFO - New AI Coach router mounted at /api/ai-coach-v2
-2026-03-02 00:48:07,381 - server - INFO - Onboarding endpoints registered inline
-2026-03-02 00:48:07,383 - server - INFO - Secure plans router mounted for Stripe webhooks
-INFO:     Started server process [90]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [43] using WatchFiles
-REDIS_URL not set in production - rate limiting and caching will use in-memory fallback
-S3 configuration not complete in production - file uploads will be disabled
-Using test Stripe keys in production environment
-2026-03-02 00:58:01,499 - server - INFO - Stripe initialized successfully
-2026-03-02 00:58:01,526 - server - INFO - MongoDB connected: ineednumbers
-
-==> /var/log/supervisor/backend.out.log <==
-INFO:     127.0.0.1:58174 - "GET /api/health HTTP/1.1" 200 OK
-[CLERK AUTH] Validating session with Clerk API...
-[CLERK AUTH] Session validation failed - session_data is None
-INFO:     10.64.132.213:34922 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:60310 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:47126 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:53740 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:53986 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:35142 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:53986 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:35142 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:35142 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:58668 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:54516 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:54516 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:40518 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.147:45604 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:50320 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-[CLERK AUTH] No session token found in cookies or Authorization header
-INFO:     10.211.3.172:45042 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
-INFO:     10.211.3.172:52126 - "POST /api/clerk/create-checkout HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:43130 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:43392 - "POST /api/clerk/create-checkout HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:53696 - "POST /api/clerk/create-checkout HTTP/1.1" 200 OK
-INFO:     127.0.0.1:44660 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:44664 - "POST /api/clerk/create-checkout HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55066 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:38950 - "POST /api/clerk/verify-subscription HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:60820 - "POST /api/clerk/verify-subscription HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:40532 - "POST /api/clerk/verify-subscription HTTP/1.1" 200 OK for . The issue likely requires the user to whitelist the preview environment's IP in their MongoDB Atlas dashboard.
-        -   **Why fix this issue and what will be achieved with the fix?**: A stable database connection is required for full application functionality and reliable testing.
-        -   **Status**: BLOCKED (Requires external user action).
+    -   **Issue 1**: Add Deal on Mobile Finances Tab Fails
+        -   **Attempted fixes**:
+            1.  Added explicit  to all  write operations in  to rule out authentication issues.
+            2.  Used the testing agent to verify the backend API, which added CSRF exemptions for the P&L endpoints.
+            3.  **Latest Fix**: Identified that the initial state for date fields (, , etc.) in  was an empty string (), which fails backend Pydantic validation. The fix was to initialize these fields with today's date using , mirroring the pattern from a working component.
+        -   **Next debug checklist**: This issue should now be resolved. If the user reports it still fails, the immediate next step is to ask them to open the browser developer console on their device while reproducing the error and provide the output. The  function in  now contains detailed  and  statements to capture the exact payload and any errors returned from the API.
+        -   **Why fix this issue and what will be achieved with the fix?**: This is a critical, production-level feature essential for the app's core functionality.
+        -   **Status**: USER VERIFICATION PENDING
         -   **Is recurring issue?**: Y
-        -   **Should Test frontend/backend/both after fix?**: Both
+        -   **Should Test frontend/backend/both after fix?**: Frontend (already tested by agent, pending user verification).
         -   **Blocked on other issue**: None.
 
 **In progress Task List**:
 None.
 
 **Upcoming and Future Tasks**
--   **Desktop Feature Verification (P2)**: The original desktop regression fix for AI Coach, P&L, etc., was never explicitly verified by the user. This should be re-evaluated once the current AI Coach bug is fixed.
--   **Onboarding Flow E2E Testing (P2)**: A full end-to-end test of the user onboarding flow (sign-up, payment, first login experience) should be performed to ensure a smooth user experience.
+-   There are no new feature requests. The next step is to confirm the resolution of the critical Add Deal bug.
 
 **Completed work in this session**
--   **Production Deployment Fixes**:
-    -   Resolved hardcoded Clerk  key in  files causing the production site to use test credentials.
-    -   Fixed a blank production page by removing a faulty  file that was overriding necessary environment variables.
-    -   Fixed an issue where the production login page used a hardcoded Clerk dev instance URL.
--   **Stripe Subscription Flow Implementation & Debugging**:
-    -   Implemented a post-signup flow to direct new users to a Stripe checkout session.
-    -   Guided the user to correctly configure Stripe webhooks, API keys, and Price IDs, which were the root cause of subscription activation failures.
-    -   Fixed the checkout loop by creating a  fallback endpoint and ensuring the Clerk user object is reloaded after payment.
-    -   Correctly identified that the app relies on Clerk  for subscription status, not Clerk's built-in billing feature, and advised the user to disable it to avoid confusion.
--   **Homepage & Pricing Page Redesign**:
-    -   Executed a complete redesign based on a detailed user prompt, creating new  and  components.
-    -   Implemented a mobile-first design with a pain-point-driven hero section, a solution-mapping accordion, and a single-tier pricing model.
-    -   Performed numerous iterative UI tweaks based on user feedback (logo changes, header style, font sizes, button text, etc.).
--   **Content & Bug Fixes**:
-    -   Updated the  to remove all references to old pricing tiers.
-    -   Used the testing agent to find and fix a crash in the redesigned mobile accordion.
+-   **Critical Auth Fix**: Resolved the root cause of multiple authentication failures by replacing a hardcoded development Clerk JWKS URL in the backend with a configurable environment variable pointing to the correct production instance.
+-   **iOS/Capacitor Auth Flow**:
+    -   Fixed a redirect loop by reordering  and  and implementing a custom navigation hook.
+    -   Enabled nested Clerk routes (e.g., ) by adding  wildcards to the React Router configuration.
+    -   Stopped the app from opening an external browser for login by removing  logic from .
+    -   Advised the user on the correct  configuration in .
+-   **Data Isolation & Mock Data**:
+    -   Fixed a critical bug where new users would see hardcoded data by removing the mock API () and ensuring all dashboard components fetch from live APIs or default to an empty state.
+-   **Onboarding Enhancements**:
+    -   Fixed a user not found bug during onboarding completion by implementing an  pattern in the backend.
+    -   Added a new Commission Cap screen to the onboarding flow to initialize the user's cap settings.
+    -   Implemented a non-intrusive onboarding reminder for first-time users (a dismissible banner and a pulsing FAB button).
+-   **Mobile Modal Auth**:
+    -   Fixed failures in Log Activity, Save Reflection, and Add Deal modals by adding the  header to all  requests.
+-   **Commission Cap Widget**:
+    -   Fixed the widget showing 0% by updating the backend to dynamically calculate cap contribution from deal income instead of relying on a static  field.
+-   **Stripe Integration**:
+    -   Enabled the Add promotion code field on the Stripe checkout page.
+-   **Production Readiness**:
+    -   Conducted multiple security and deployment health checks, fixing issues in , ESLint configuration, and cleaning up unused code.
+    -   Used the testing agent to add a new backend test file () and verify API security.
 
 **Earlier issues found/mentioned but not fixed**
--   The fundamental infrastructure problem causing intermittent MongoDB Atlas connectivity () was never fully resolved.
+-   **Intermittent MongoDB Atlas Connectivity**: This is a known infrastructure issue in the preview environment due to IP whitelisting. The user has been informed that this requires their action (adding  for testing). The production environment is unaffected as its IP is already whitelisted. **Status: BLOCKED (User Action Required)**.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: MongoDB connection stability.
@@ -229,76 +71,78 @@ None.
 
 
 **Key Technical Concepts**
--   **Stripe Integration**: Using API-driven Stripe Checkout Sessions for payments and Webhooks () for subscription fulfillment.
--   **Clerk Metadata**: Storing application-specific user state (like  and ) in Clerk's . The app reads this data to control access.
--   **CRA Environment Variables**: Understanding the precedence of , , and build-time injected variables.  overrides other sources.
--   **Frontend State Caching**: Recognizing that after a webhook updates a backend user record (like Clerk metadata), the frontend's cached user object must be re-fetched to reflect the changes.
+-   **Clerk JWT Validation**: Understanding the importance of using the correct instance-specific JWKS URL for token validation.
+-   **React Router & Clerk**: Using wildcard routes () is essential for components like Clerk that manage their own nested navigation state.
+-   **Capacitor WebView Auth**: Auth flows in WKWebView require careful handling of redirects () and must avoid calling external browsers ().
+-   **API Data Validation**: Backend failures can be caused by frontend sending data that doesn't match the Pydantic model's requirements (e.g., sending empty strings for required date fields).
+-   **State Initialization**: The initial state of a React component is critical. Mismatches between different components (e.g.,  vs. ) can lead to subtle bugs.
+-   **Auth in  vs. **: Manually adding  headers is required for raw  calls, as they don't benefit from global  interceptors.
 
 **key DB schema**
-- No changes made to the DB schema.
-
-**changes in tech stack**
-- No changes made to the tech stack.
+-   **users**: Contains an  sub-document which now holds  settings.
+-   **cap_configurations**: A dedicated collection storing user-specific cap settings (, , ). It is populated upon completion of the onboarding flow.
+-   **pnl_deals**: The collection for all user deals. No schema changes were made, but the logic for reading from it was improved.
 
 **All files of reference**
--    (New redesigned homepage)
--    (New redesigned pricing page)
--    (Stripe endpoints logic)
--    (Clerk URL fix)
--    (Clerk key fix)
--    (Subscription check logic)
--    (Payment completion page)
--    (Content updates for single-tier plan)
--    (UI updates to remove pricing)
+-    (Location of the last critical bug fix).
+-    (Contains Clerk auth logic and most API endpoints).
+-    (Main React Router configuration).
+-    (Contains fixes for iOS WebView login).
+-    (Directory containing mobile-specific modals that required auth fixes).
+-    (New feature).
+-    (Backend logic for creating user records and settings).
+-    (New test file created by the testing agent).
 
 **Areas that need refactoring**:
--   API routes are still located directly in . They should be moved to dedicated router files under a structured  directory for better organization.
+-   The  interceptor in  has a potential race condition and is not reliably providing the auth token to all  calls, forcing manual token injection in components like . This should be investigated and fixed to prevent future auth bugs.
+-    remains a monolithic file containing dozens of routes. It should be broken down into smaller, domain-specific router files for better maintainability.
 
 **key api endpoints**
--   : Creates a Stripe Checkout session.
--   : Receives events from Stripe to update subscription status.
--   : Manually verifies Stripe subscription status post-checkout as a fallback to the webhook.
+-   : The endpoint for adding a deal. It requires PRO plan and a valid JWT. The request body is validated by the  Pydantic model.
+-   : Determines if the onboarding reminder banner/FAB should be shown.
+-   : Finalizes the onboarding process and triggers the creation of the user's commission cap configuration.
 
 **Critical Info for New Agent**
--   **Your immediate priority is the AI Coach authentication bug.** This is a P0 issue blocking a core feature for paying users. Start by investigating the frontend component responsible for the AI Coach.
--   **The Stripe subscription flow is working but complex.** It relies on the webhook updating Clerk's . The app then reads this metadata. The Subscriptions tab in the Clerk dashboard is irrelevant and has been disabled.
--   **The MongoDB connection in the preview environment is unreliable.** If you encounter backend errors that are not reproducible, check the supervisor logs for MongoDB connection timeouts. This is a known infrastructure issue requiring user action. Do not spend time trying to fix it from within the code.
+-   **Your immediate priority is to confirm with the user if the Add Deal feature on the mobile Finances tab is fixed.** The last change (setting default dates in ) is the most likely solution to the persistent validation error.
+-   **If the bug persists, do not attempt another code fix immediately.** Instead, guide the user to provide browser console logs from their mobile device. Extensive logging has been added to the  function to capture the exact error and request payload.
+-   The MongoDB connection issue in the preview environment is a known, external problem. Do not waste time trying to fix it in the code. Advise the user to test in their production environment.
+-   The application's auth logic is complex and has been a source of many bugs. Be extra cautious when modifying anything related to Clerk, JWTs, or API request headers.
 
 **documents and test reports created in this job**
--    was updated.
--    was generated by the testing agent for the homepage redesign.
+-   
+-   Multiple test reports were generated by the testing agent and can be found in .
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **Request**: Turn off Clerk's built-in billing feature. **Status**: COMPLETED.
-9.  **Report**: User confirmed public metadata was updated correctly after payment. **Status**: COMPLETED.
-8.  **Report**: User paid with a real card but Clerk shows them as a Free user. **Status**: COMPLETED (Agent explained this is due to Clerk's separate billing feature and the app uses , which was correct).
-7.  **Confirmation**: User provided the correct Stripe Price ID. **Status**: COMPLETED.
-6.  **Question**: User asked which Stripe key to use ( vs ). **Status**: COMPLETED (Agent clarified  is needed).
-5.  **Report**: User fixed the Stripe Secret Key. **Status**: COMPLETED.
-4.  **Report**: User sees an Invalid API Key error in production during checkout. **Status**: COMPLETED (Agent identified the wrong key format and guided the user).
-3.  **Question**: User asked where to put the Stripe Webhook Signing Secret. **Status**: COMPLETED.
-2.  **Report**: User completed Stripe webhook setup. **Status**: COMPLETED.
-1.  **Report**: I think I have a bug with the AI Coach. **Status**: PENDING. This is the current P0 blocker.
+10. **Request**: Start a security audit. **Status**: COMPLETED.
+9.  **Report**: New user sees mock data, onboarding doesn't trigger, commission cap needs to be in onboarding. **Status**: COMPLETED.
+8.  **Confirmation**: User confirms they will manually add test users via Clerk. Asks if changes are production ready. **Status**: COMPLETED.
+7.  **Report**: New user (manually created in Clerk) sees other users' data. **Status**: COMPLETED (Agent fixed mock data bug and explained why manual creation was part of the issue).
+6.  **Report**: Commission Cap widget isn't working. **Status**: COMPLETED.
+5.  **Report**: iOS app shows blank screen on . **Status**: COMPLETED.
+4.  **Report**: iOS app calls  causing an error. **Status**: COMPLETED.
+3.  **Report**: iOS app still redirecting to . Asks for review of Capacitor code. **Status**: COMPLETED.
+2.  **Report**: Still getting an error when trying to deploy after updating env vars. **Status**: COMPLETED (Agent identified platform-level issue).
+1.  **Report**: Adding a deal STILL ISNT WORKING for mobile on the Finances tab...THIS IS A CRITICAL ASPECT of this app. **Status**: PENDING (This is the last working item, a fix has been implemented and is pending user verification).
 
 **Project Health Check:**
--   **Broken**: Yes. A core feature (AI Coach) is not working for authenticated users.
--   **Mocked**: None.
+-   **Broken**: Potentially. A critical feature (Add Deal on mobile) is pending user verification after a recurring bug.
+-   **Mocked**: No. All mock data has been removed from the application.
 
 **3rd Party Integrations**
--   **Clerk.dev**: User authentication and metadata storage.
--   **Stripe**: Payment processing for subscriptions (via Checkout Sessions and Webhooks).
+-   **Clerk**: User authentication, session management, and metadata storage.
+-   **Stripe**: Subscription payments via Checkout Sessions and Webhooks.
 -   **MongoDB Atlas**: Primary database.
--   **OpenAI**: Powers the AI Coach (currently inaccessible).
--   **Capacitor**: For the native mobile app (iOS).
+-   **OpenAI**: Powers the AI Coach feature.
+-   **Capacitor**: Used for the native iOS application shell (WKWebView).
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (For the homepage redesign).
--   **Troubleshoot agent used after agent stuck in loop**: YES (For the Clerk dev mode issue).
--   **Test files created**: None.
--   **Known regressions**: The AI Coach feature appears to have regressed or is broken.
+-   **Testing agent used after significant changes**: YES. The testing agent was used multiple times, most recently to create and run 21 backend tests for the P&L API, which helped validate the latest Add Deal fix.
+-   **Troubleshoot agent used after agent stuck in loop**: YES (from previous handoff).
+-   **Test files created**: []
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
-The user is using their own credentials for testing in production. For the preview environment, test credentials might need to be created if not already present.
+The user is using their own production credentials. No credentials are provided for the agent. Testing authenticated flows requires the user to sign in on their domain.
 
 **What agent forgot to execute**
-- The agent was highly effective and addressed a long and complex series of user requests without forgetting major items. The tasks from the previous handoff (desktop verification) were superseded by higher-priority user requests (full redesign and checkout flow implementation).</analysis>
+The agent has been thorough in this session. All user-reported issues were addressed. The one area of improvement would be to refactor the  interceptor in  rather than applying manual fixes to each component that uses , but given the user's focus on fixing critical bugs, this was a reasonable trade-off.</analysis>

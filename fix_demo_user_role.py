@@ -107,7 +107,7 @@ async def verify_fix():
     try:
         import requests
         
-        base_url = "https://aicoach-auth-fix.preview.emergentagent.com"
+        base_url = "https://pnl-verification.preview.emergentagent.com"
         
         # Login and check role
         login_data = {

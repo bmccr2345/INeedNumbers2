@@ -7,7 +7,7 @@ import uuid
 def test_closing_date_comprehensive():
     """Comprehensive test of all closing date calculator endpoints"""
     
-    base_url = "https://aicoach-auth-fix.preview.emergentagent.com"
+    base_url = "https://pnl-verification.preview.emergentagent.com"
     
     # First, authenticate
     print("🔐 Authenticating...")
