@@ -104,32 +104,15 @@ const PnLPanel = () => {
 
   const loadInitialData = async () => {
     try {
-      // Get auth token for API calls that require authentication
-      const token = await getToken();
-      const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
-      
-      // Load categories and lead sources with auth token
+      // Use cookie-based authentication - no token needed
+      // Load categories and lead sources
       const [categoriesResponse, leadSourcesResponse] = await Promise.all([
-        axios.get(`${backendUrl}/api/pnl/categories`, { 
-          withCredentials: true,
-          headers: authHeaders 
-        }).catch((err) => {
-          console.warn('[PnLPanel] Failed to load categories:', err.message);
-          return { data: [] };
-        }),
-        axios.get(`${backendUrl}/api/pnl/lead-sources`, { 
-          withCredentials: true,
-          headers: authHeaders 
-        }).catch((err) => {
-          console.warn('[PnLPanel] Failed to load lead sources:', err.message);
-          return { data: [] };
-        })
+        axios.get(`${backendUrl}/api/pnl/categories`, { withCredentials: true }).catch(() => ({ data: [] })),
+        axios.get(`${backendUrl}/api/pnl/lead-sources`, { withCredentials: true }).catch(() => ({ data: [] }))
       ]);
 
       setExpenseCategories(categoriesResponse.data);
       setLeadSources(leadSourcesResponse.data);
-      
-      console.log('[PnLPanel] Lead sources loaded:', leadSourcesResponse.data?.length || 0, 'items');
       
       // Load cap progress data
       await loadCapProgress();
@@ -147,13 +130,9 @@ const PnLPanel = () => {
       setIsLoading(true);
       setError(null);
 
-      // Get auth token for API calls
-      const token = await getToken();
-      
       const response = await axios.get(`${backendUrl}/api/pnl/summary`, {
         params: { month: selectedMonth },
-        withCredentials: true,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        withCredentials: true
       });
 
       setPnlSummary(response.data);
@@ -174,12 +153,8 @@ const PnLPanel = () => {
 
   const loadActiveDeals = async () => {
     try {
-      // Get auth token for API calls
-      const token = await getToken();
-      
       const response = await axios.get(`${backendUrl}/api/pnl/active-deals`, {
-        withCredentials: true,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        withCredentials: true
       });
       setActiveDeals(response.data || []);
     } catch (error) {
@@ -474,17 +449,13 @@ const PnLPanel = () => {
   // Handle export to Excel
   const handleExport = async (period = 'month') => {
     try {
-      // Get auth token for API calls
-      const token = await getToken();
-      
       const params = period === 'month' 
         ? { month: selectedMonth } 
         : { year: selectedMonth.split('-')[0] };
       
       const response = await axios.get(`${backendUrl}/api/pnl/export`, {
         params: { ...params, format: 'excel' },
-        withCredentials: true,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        withCredentials: true
       });
       
       // This would handle the actual Excel download
@@ -561,15 +532,10 @@ const PnLPanel = () => {
   };
 
   // Load cap progress data
-  // Load cap progress data
   const loadCapProgress = async () => {
     try {
-      // Get auth token for API calls
-      const token = await getToken();
-      
       const response = await axios.get(`${backendUrl}/api/cap-tracker/progress`, {
-        withCredentials: true,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        withCredentials: true
       });
       setCapProgress(response.data);
     } catch (error) {
@@ -649,10 +615,6 @@ const PnLPanel = () => {
     if (!editingCell) return;
 
     try {
-      // Get auth token for API calls
-      const token = await getToken();
-      const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
-      
       const { type, id, field } = editingCell;
       const newValue = parseFloat(editValue) || 0;
 
@@ -661,16 +623,14 @@ const PnLPanel = () => {
         await axios.patch(`${backendUrl}/api/pnl/deals/${id}`, {
           [field]: newValue
         }, {
-          withCredentials: true,
-          headers: authHeaders
+          withCredentials: true
         });
       } else if (type === 'expense') {
         // Update expense field
         await axios.patch(`${backendUrl}/api/pnl/expenses/${id}`, {
           [field]: field === 'description' ? editValue : newValue
         }, {
-          withCredentials: true,
-          headers: authHeaders
+          withCredentials: true
         });
       }
 
