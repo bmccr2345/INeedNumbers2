@@ -1276,7 +1276,7 @@ const PnLPanel = () => {
                                 {deal.house_address}
                               </div>
                               <button
-                                onClick={() => handleDeleteDeal(deal.id)}
+                                onClick={() => deleteDeal(deal.id)}
                                 className="text-red-600 hover:text-red-800 flex-shrink-0"
                                 title="Delete"
                               >
@@ -1295,15 +1295,15 @@ const PnLPanel = () => {
                               </div>
                               <div>
                                 <span className="text-gray-500 text-xs">Commission %:</span>
-                                <div className="font-medium">{deal.commission_percentage || 0}%</div>
+                                <div className="font-medium">{deal.commission_percent || 0}%</div>
                               </div>
                               <div>
                                 <span className="text-gray-500 text-xs">Your Split %:</span>
-                                <div className="font-medium">{deal.your_split || 0}%</div>
+                                <div className="font-medium">{deal.split_percent || 0}%</div>
                               </div>
                               <div>
                                 <span className="text-gray-500 text-xs">Team/Brokerage:</span>
-                                <div className="font-medium">{deal.team_brokerage_split || 0}%</div>
+                                <div className="font-medium">{deal.team_brokerage_split_percent || 0}%</div>
                               </div>
                               <div>
                                 <span className="text-gray-500 text-xs">Cap Amount:</span>
