@@ -6690,14 +6690,34 @@ async def create_pnl_deal(
         if cap_config:
             try:
                 # Check if we're within the cap period
-                closing_date_obj = datetime.fromisoformat(deal_data.closing_date)
+                # Parse closing date - handle both naive (YYYY-MM-DD) and aware (with timezone) formats
+                closing_date_str = deal_data.closing_date
+                if 'T' in closing_date_str:
+                    closing_date_obj = datetime.fromisoformat(closing_date_str.replace('Z', '+00:00'))
+                    if closing_date_obj.tzinfo:
+                        closing_date_obj = closing_date_obj.replace(tzinfo=None)
+                else:
+                    closing_date_obj = datetime.fromisoformat(closing_date_str)
+                
                 cap_period_start_str = cap_config.get("cap_period_start", "")
                 cap_period_end_str = cap_config.get("reset_date", "")
                 
                 # Only process cap if dates are valid
                 if cap_period_start_str and cap_period_end_str:
-                    cap_period_start = datetime.fromisoformat(cap_period_start_str)
-                    cap_period_end = datetime.fromisoformat(cap_period_end_str)
+                    # Parse cap dates - handle both naive and aware formats
+                    if 'T' in cap_period_start_str:
+                        cap_period_start = datetime.fromisoformat(cap_period_start_str.replace('Z', '+00:00'))
+                        if cap_period_start.tzinfo:
+                            cap_period_start = cap_period_start.replace(tzinfo=None)
+                    else:
+                        cap_period_start = datetime.fromisoformat(cap_period_start_str)
+                    
+                    if 'T' in cap_period_end_str:
+                        cap_period_end = datetime.fromisoformat(cap_period_end_str.replace('Z', '+00:00'))
+                        if cap_period_end.tzinfo:
+                            cap_period_end = cap_period_end.replace(tzinfo=None)
+                    else:
+                        cap_period_end = datetime.fromisoformat(cap_period_end_str)
                     
                     if cap_period_start <= closing_date_obj <= cap_period_end:
                         # Calculate current cap progress
@@ -7551,8 +7571,21 @@ async def get_cap_progress(
             )
         
         # Calculate cap progress from deals within the cap period
-        cap_period_start = datetime.fromisoformat(cap_period_start_str)
-        cap_period_end = datetime.fromisoformat(cap_period_end_str)
+        # Handle both naive and timezone-aware datetime formats
+        if 'T' in cap_period_start_str:
+            cap_period_start = datetime.fromisoformat(cap_period_start_str.replace('Z', '+00:00'))
+            if cap_period_start.tzinfo:
+                cap_period_start = cap_period_start.replace(tzinfo=None)
+        else:
+            cap_period_start = datetime.fromisoformat(cap_period_start_str)
+        
+        if 'T' in cap_period_end_str:
+            cap_period_end = datetime.fromisoformat(cap_period_end_str.replace('Z', '+00:00'))
+            if cap_period_end.tzinfo:
+                cap_period_end = cap_period_end.replace(tzinfo=None)
+        else:
+            cap_period_end = datetime.fromisoformat(cap_period_end_str)
+        
         cap_percentage = config.get("cap_percentage", 5.0) / 100  # Convert to decimal, default 5%
         total_cap = annual_cap
         
