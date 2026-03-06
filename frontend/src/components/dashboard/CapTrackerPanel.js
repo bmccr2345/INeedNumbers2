@@ -182,6 +182,11 @@ const CapTrackerPanel = () => {
     }).format(amount || 0);
   };
 
+  // Format percentage to 2 decimal places
+  const formatPercentage = (value) => {
+    return Number(value || 0).toFixed(2);
+  };
+
   // Check if user has Pro access
   const hasProAccess = user?.plan === 'PRO';
 
@@ -395,7 +400,7 @@ const CapTrackerPanel = () => {
                         <div className="text-center md:text-left">
                           <div className="text-xs md:text-sm text-gray-600">Progress</div>
                           <div className="text-lg md:text-2xl font-bold text-blue-600">
-                            {progress.percentage}%
+                            {formatPercentage(progress.percentage)}%
                           </div>
                           <div className="text-xs text-gray-500 mt-1 hidden md:block">
                             {progress.isComplete ? 'Cap Complete!' : 'In Progress'}
@@ -450,7 +455,7 @@ const CapTrackerPanel = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Progress: {formatCurrency(progress.paid)} / {formatCurrency(progress.total)}</span>
-                        <span>{progress.percentage}% Complete</span>
+                        <span>{formatPercentage(progress.percentage)}% Complete</span>
                       </div>
                       
                       <div className="w-full bg-gray-200 rounded-full h-6">
