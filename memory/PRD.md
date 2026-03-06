@@ -67,13 +67,13 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
    - `commission_percentage` → `commission_percent` (wrong property name)
    - `your_split` → `split_percent` (wrong property name)
    - `team_brokerage_split` → `team_brokerage_split_percent` (wrong property name)
-6. **Add Deal Auth Bug (Mar 5, 2026)**: Fixed missing Bearer token auth headers in all PnLPanel.js API calls:
-   - `loadInitialData()` - lead sources and categories weren't loading due to 401
-   - `loadPnLData()` - summary data 
-   - `loadActiveDeals()` - active deals list
-   - `loadCapProgress()` - cap progress data
-   - Backend now returns detailed error messages instead of generic "Failed to create deal"
-   - Backend cap configuration parsing now handles missing/invalid dates gracefully
+6. **Commission Cap Breaking Add Deal (Mar 5, 2026)**: ROOT CAUSE - Onboarding service was NOT saving `cap_period_type` field which is required by CapConfiguration model. Fixed by:
+   - `/app/backend/app/services/onboarding_service.py` - Now saves `cap_period_type: "calendar_year"` and proper datetime serialization
+   - `/app/backend/server.py` GET `/cap-tracker/config` - Now auto-repairs broken data on read (adds missing `cap_period_type`, removes invalid fields)
+   - `/app/backend/server.py` GET `/cap-tracker/progress` - Added validation for required fields with helpful error message
+   - `/app/backend/server.py` POST `/cap-tracker/repair` - New endpoint to manually repair broken cap configs
+   - Added auth headers to all PnLPanel.js API calls
+   - Added `.limit()` to MongoDB queries for performance
 
 ## Routes
 - `/` - New redesigned landing page

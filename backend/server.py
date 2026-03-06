@@ -7359,12 +7359,52 @@ async def get_cap_configuration(
         if not config:
             raise HTTPException(status_code=404, detail="Cap configuration not found")
         
+        # Auto-repair: Add missing required fields if they don't exist
+        needs_repair = False
+        repair_updates = {}
+        
+        if "cap_period_type" not in config or not config.get("cap_period_type"):
+            repair_updates["cap_period_type"] = "calendar_year"
+            needs_repair = True
+            
+        if "cap_percentage" not in config:
+            repair_updates["cap_percentage"] = 5.0  # Default 5%
+            needs_repair = True
+        
+        # Remove invalid fields that shouldn't exist
+        unset_fields = {}
+        if "is_cap_hit" in config:
+            unset_fields["is_cap_hit"] = ""
+            needs_repair = True
+        if "source" in config:
+            unset_fields["source"] = ""
+            needs_repair = True
+        
+        if needs_repair:
+            update_ops = {}
+            if repair_updates:
+                update_ops["$set"] = repair_updates
+            if unset_fields:
+                update_ops["$unset"] = unset_fields
+            
+            await db.cap_configurations.update_one(
+                {"user_id": current_user.id},
+                update_ops
+            )
+            
+            # Merge repairs into config for the response
+            config.update(repair_updates)
+            for field in unset_fields:
+                config.pop(field, None)
+            
+            logger.info(f"Auto-repaired cap configuration for user {current_user.id}: added {list(repair_updates.keys())}")
+        
         return CapConfiguration(**config)
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching cap configuration: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch cap configuration")
+        logger.error(f"Error fetching cap configuration: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch cap configuration: {str(e)}")
 
 @api_router.post("/cap-tracker/config")
 async def create_or_update_cap_configuration(
@@ -7499,11 +7539,22 @@ async def get_cap_progress(
         if not config:
             raise HTTPException(status_code=404, detail="Cap configuration not found")
         
+        # Check for required fields before proceeding
+        cap_period_start_str = config.get("cap_period_start")
+        cap_period_end_str = config.get("reset_date")
+        annual_cap = config.get("annual_cap_amount")
+        
+        if not cap_period_start_str or not cap_period_end_str or annual_cap is None:
+            raise HTTPException(
+                status_code=400, 
+                detail="Cap configuration is incomplete. Please reconfigure your commission cap settings."
+            )
+        
         # Calculate cap progress from deals within the cap period
-        cap_period_start = datetime.fromisoformat(config["cap_period_start"])
-        cap_period_end = datetime.fromisoformat(config["reset_date"])
-        cap_percentage = config.get("cap_percentage", 0) / 100  # Convert to decimal
-        total_cap = config["annual_cap_amount"]
+        cap_period_start = datetime.fromisoformat(cap_period_start_str)
+        cap_period_end = datetime.fromisoformat(cap_period_end_str)
+        cap_percentage = config.get("cap_percentage", 5.0) / 100  # Convert to decimal, default 5%
+        total_cap = annual_cap
         
         # Find all deals within the cap period
         deals_cursor = db.pnl_deals.find({
