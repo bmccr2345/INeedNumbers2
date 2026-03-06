@@ -74,6 +74,12 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
    - `/app/backend/server.py` POST `/cap-tracker/repair` - New endpoint to manually repair broken cap configs
    - Added auth headers to all PnLPanel.js API calls
    - Added `.limit()` to MongoDB queries for performance
+7. **DateTime Timezone Bug (Mar 6, 2026)**: Fixed "can't compare offset-naive and offset-aware datetimes" error by normalizing all datetime comparisons to timezone-naive in Add Deal and Cap Progress endpoints
+8. **Desktop Reflection Logging Bug (Mar 6, 2026)**: Fixed `ActionTrackerPanel.js` - was calling undefined `getHeaders()` function. Added:
+   - Import `useAuth` from `@clerk/clerk-react` to get `getToken`
+   - Defined async `getHeaders()` function that properly gets auth token
+   - Updated all fetch calls to await the async headers
+   - Added `mood: null` to reflection payload to match backend model
 
 ## Routes
 - `/` - New redesigned landing page

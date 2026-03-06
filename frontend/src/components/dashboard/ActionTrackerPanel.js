@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { 
   Target, 
@@ -31,6 +32,7 @@ import Cookies from 'js-cookie';
 
 const ActionTrackerPanel = () => {
   const { user } = useAuth();
+  const { getToken } = useClerkAuth();
   const isMobile = useIsMobile();
   const [activeSubTab, setActiveSubTab] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +45,15 @@ const ActionTrackerPanel = () => {
 
   // Get backend URL
   const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  
+  // Helper function to get auth headers
+  const getHeaders = async () => {
+    const token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  };
   
   // Get current month in YYYY-MM format
   const getCurrentMonth = () => {
@@ -866,8 +877,9 @@ const ActionTrackerPanel = () => {
 
     const loadActivityLogs = async () => {
       try {
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-logs`, {
-          headers: getHeaders()
+          headers
         });
         if (response.ok) {
           const logs = await response.json();
@@ -880,8 +892,9 @@ const ActionTrackerPanel = () => {
 
     const loadReflectionLogs = async () => {
       try {
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-logs`, {
-          headers: getHeaders()
+          headers
         });
         if (response.ok) {
           const logs = await response.json();
@@ -924,9 +937,10 @@ const ActionTrackerPanel = () => {
 
       try {
         setIsLogging(true);
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log`, {
           method: 'POST',
-          headers: getHeaders(),
+          headers,
           body: JSON.stringify({
             activities: currentEntry.activities,
             hours: currentEntry.hours,
@@ -959,11 +973,13 @@ const ActionTrackerPanel = () => {
 
       try {
         setIsLogging(true);
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log`, {
           method: 'POST',
-          headers: getHeaders(),
+          headers,
           body: JSON.stringify({
-            reflection: currentEntry.reflection
+            reflection: currentEntry.reflection,
+            mood: null
           })
         });
 
@@ -986,9 +1002,10 @@ const ActionTrackerPanel = () => {
 
     const updateActivityLog = async (logId, updates) => {
       try {
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log/${logId}`, {
           method: 'PATCH',
-          headers: getHeaders(),
+          headers,
           body: JSON.stringify(updates)
         });
 
@@ -1006,9 +1023,10 @@ const ActionTrackerPanel = () => {
 
     const updateReflectionLog = async (logId, updates) => {
       try {
+        const headers = await getHeaders();
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log/${logId}`, {
           method: 'PATCH',
-          headers: getHeaders(),
+          headers,
           body: JSON.stringify(updates)
         });
 
