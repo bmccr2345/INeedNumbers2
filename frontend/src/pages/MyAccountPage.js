@@ -114,17 +114,30 @@ const MyAccountPage = () => {
       const data = result.data;
       let csvContent = '';
       
+      // Helper function to escape CSV values and prevent CSV injection
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return '';
+        const str = String(value);
+        // Escape double quotes by doubling them
+        let escaped = str.replace(/"/g, '""');
+        // Prevent CSV injection by prefixing dangerous characters with a single quote
+        if (/^[=+\-@\t\r]/.test(escaped)) {
+          escaped = "'" + escaped;
+        }
+        return `"${escaped}"`;
+      };
+      
       // Add user info section
       csvContent += 'USER INFORMATION\n';
       csvContent += 'Email,Full Name\n';
-      csvContent += `"${data.user?.email || ''}","${data.user?.full_name || ''}"\n\n`;
+      csvContent += `${escapeCSV(data.user?.email)},${escapeCSV(data.user?.full_name)}\n\n`;
       
       // Add deals section if present
       if (data.deals && data.deals.length > 0) {
         csvContent += 'DEALS\n';
         csvContent += 'Address,Sale Price,Commission %,Split %,Team/Brokerage %,Final Income,Lead Source,Contract Signed,Closing Date\n';
         data.deals.forEach(deal => {
-          csvContent += `"${deal.house_address || ''}",${deal.amount_sold_for || 0},${deal.commission_percent || 0},${deal.split_percent || 0},${deal.team_brokerage_split_percent || 0},${deal.final_income || 0},"${deal.lead_source || ''}","${deal.contract_signed || ''}","${deal.closing_date || ''}"\n`;
+          csvContent += `${escapeCSV(deal.house_address)},${deal.amount_sold_for || 0},${deal.commission_percent || 0},${deal.split_percent || 0},${deal.team_brokerage_split_percent || 0},${deal.final_income || 0},${escapeCSV(deal.lead_source)},${escapeCSV(deal.contract_signed)},${escapeCSV(deal.closing_date)}\n`;
         });
         csvContent += '\n';
       }
@@ -134,7 +147,7 @@ const MyAccountPage = () => {
         csvContent += 'EXPENSES\n';
         csvContent += 'Date,Category,Description,Amount\n';
         data.expenses.forEach(expense => {
-          csvContent += `"${expense.date || ''}","${expense.category || ''}","${expense.description || ''}",${expense.amount || 0}\n`;
+          csvContent += `${escapeCSV(expense.date)},${escapeCSV(expense.category)},${escapeCSV(expense.description)},${expense.amount || 0}\n`;
         });
         csvContent += '\n';
       }
@@ -146,7 +159,7 @@ const MyAccountPage = () => {
         data.activity_logs.forEach(log => {
           const activities = typeof log.activities === 'object' ? JSON.stringify(log.activities) : log.activities || '';
           const hours = typeof log.hours === 'object' ? JSON.stringify(log.hours) : log.hours || '';
-          csvContent += `"${log.logged_at || log.date || ''}","${activities}","${hours}","${(log.reflection || '').replace(/"/g, '""')}"\n`;
+          csvContent += `${escapeCSV(log.logged_at || log.date)},${escapeCSV(activities)},${escapeCSV(hours)},${escapeCSV(log.reflection)}\n`;
         });
         csvContent += '\n';
       }
@@ -156,7 +169,7 @@ const MyAccountPage = () => {
         csvContent += 'REFLECTION LOGS\n';
         csvContent += 'Date,Reflection,Mood\n';
         data.reflection_logs.forEach(log => {
-          csvContent += `"${log.logged_at || ''}","${(log.reflection || '').replace(/"/g, '""')}","${log.mood || ''}"\n`;
+          csvContent += `${escapeCSV(log.logged_at)},${escapeCSV(log.reflection)},${escapeCSV(log.mood)}\n`;
         });
         csvContent += '\n';
       }
@@ -165,7 +178,7 @@ const MyAccountPage = () => {
       if (data.cap_configuration) {
         csvContent += 'COMMISSION CAP CONFIGURATION\n';
         csvContent += 'Annual Cap Amount,Cap Percentage,Period Start,Reset Date\n';
-        csvContent += `${data.cap_configuration.annual_cap_amount || 0},${data.cap_configuration.cap_percentage || 0},"${data.cap_configuration.cap_period_start || ''}","${data.cap_configuration.reset_date || ''}"\n\n`;
+        csvContent += `${data.cap_configuration.annual_cap_amount || 0},${data.cap_configuration.cap_percentage || 0},${escapeCSV(data.cap_configuration.cap_period_start)},${escapeCSV(data.cap_configuration.reset_date)}\n\n`;
       }
       
       // Create and download CSV file
