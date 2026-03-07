@@ -73,6 +73,9 @@ async def log_ai_usage_background(
 ) -> None:
     """
     Non-blocking background task to log AI usage to MongoDB.
+    Performs two operations:
+      1. Insert detailed usage log to ai_usage_logs (Stage 1)
+      2. Atomic $inc update to ai_usage_monthly (Stage 2)
     Failures are logged internally only - never affects user response.
     """
     try:
@@ -83,18 +86,50 @@ async def log_ai_usage_background(
         client = AsyncIOMotorClient(mongo_url)
         db = client[db_name]
         
+        now = datetime.datetime.now(timezone.utc)
+        year_month = now.strftime("%Y-%m")
+        
+        # Round cost to 8 decimals for consistent precision before $inc
+        # This prevents floating-point drift accumulation over many increments
+        rounded_cost = round(estimated_cost, 8)
+        
+        # =================================================================
+        # STAGE 1: Insert detailed usage log
+        # =================================================================
         usage_doc = {
             "user_id": user_id,
             "model": model,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
             "total_tokens": total_tokens,
-            "estimated_cost": estimated_cost,
-            "timestamp": datetime.datetime.now(timezone.utc)
+            "estimated_cost": rounded_cost,
+            "timestamp": now
         }
         
         await db.ai_usage_logs.insert_one(usage_doc)
-        logger.info(f"AI usage logged - user: {user_id[:8]}..., tokens: {total_tokens}, cost: ${estimated_cost:.6f}")
+        logger.info(f"AI usage logged - user: {user_id[:8]}..., tokens: {total_tokens}, cost: ${rounded_cost:.6f}")
+        
+        # =================================================================
+        # STAGE 2: Atomic monthly counter update
+        # Uses $inc with upsert=True - NO read-modify-write pattern
+        # Concurrency-safe: MongoDB guarantees atomicity of update_one
+        # =================================================================
+        await db.ai_usage_monthly.update_one(
+            {"user_id": user_id, "year_month": year_month},
+            {
+                "$inc": {
+                    "total_tokens": total_tokens,
+                    "total_cost": rounded_cost,
+                    "request_count": 1
+                },
+                "$setOnInsert": {
+                    "user_id": user_id,
+                    "year_month": year_month
+                }
+            },
+            upsert=True
+        )
+        logger.info(f"AI usage monthly updated - user: {user_id[:8]}..., month: {year_month}")
         
     except Exception as e:
         # Log internally only - never fail user response

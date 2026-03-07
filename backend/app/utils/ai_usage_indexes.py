@@ -1,6 +1,6 @@
 """
-AI Usage Logs Index Management - Stage 1
-Creates and manages indexes for the ai_usage_logs collection.
+AI Usage Logs Index Management - Stage 1 & Stage 2
+Creates and manages indexes for ai_usage_logs and ai_usage_monthly collections.
 """
 import asyncio
 import os
@@ -12,10 +12,17 @@ logger = logging.getLogger(__name__)
 
 async def create_ai_usage_indexes():
     """
-    Create indexes for ai_usage_logs collection:
+    Create indexes for AI usage collections:
+    
+    ai_usage_logs (Stage 1):
     - user_id: For filtering by user
     - timestamp: For time-based queries
     - compound (user_id, timestamp): For efficient user + time range queries
+    
+    ai_usage_monthly (Stage 2):
+    - user_id: For filtering by user
+    - year_month: For filtering by month
+    - compound (user_id, year_month): For efficient lookups (unique per user-month)
     """
     try:
         mongo_url = os.environ.get("MONGO_URL")
@@ -23,22 +30,39 @@ async def create_ai_usage_indexes():
         
         client = AsyncIOMotorClient(mongo_url)
         db = client[db_name]
-        collection = db.ai_usage_logs
         
-        # Create indexes
-        await collection.create_index("user_id")
-        await collection.create_index("timestamp")
-        await collection.create_index([("user_id", 1), ("timestamp", -1)])
+        # =================================================================
+        # Stage 1: ai_usage_logs indexes
+        # =================================================================
+        print("Creating ai_usage_logs indexes...")
+        logs_collection = db.ai_usage_logs
         
+        await logs_collection.create_index("user_id")
+        await logs_collection.create_index("timestamp")
+        await logs_collection.create_index([("user_id", 1), ("timestamp", -1)])
+        
+        logs_indexes = await logs_collection.index_information()
+        print(f"  ai_usage_logs indexes: {list(logs_indexes.keys())}")
+        
+        # =================================================================
+        # Stage 2: ai_usage_monthly indexes
+        # =================================================================
+        print("Creating ai_usage_monthly indexes...")
+        monthly_collection = db.ai_usage_monthly
+        
+        await monthly_collection.create_index("user_id")
+        await monthly_collection.create_index("year_month")
+        # Compound index - also serves as unique constraint for upsert
+        await monthly_collection.create_index(
+            [("user_id", 1), ("year_month", 1)],
+            unique=True
+        )
+        
+        monthly_indexes = await monthly_collection.index_information()
+        print(f"  ai_usage_monthly indexes: {list(monthly_indexes.keys())}")
+        
+        print("\nAll AI usage indexes created successfully!")
         logger.info("AI usage indexes created successfully")
-        print("AI usage indexes created successfully:")
-        print("  - user_id")
-        print("  - timestamp")
-        print("  - compound (user_id, timestamp)")
-        
-        # List all indexes for verification
-        indexes = await collection.index_information()
-        print(f"\nCurrent indexes on ai_usage_logs: {list(indexes.keys())}")
         
         client.close()
         return True
