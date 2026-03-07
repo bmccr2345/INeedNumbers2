@@ -42,6 +42,22 @@ def calculate_ai_cost(model: str, prompt_tokens: int, completion_tokens: int) ->
     return round(input_cost + output_cost, 8)
 
 
+def _handle_logging_task_result(task: asyncio.Task) -> None:
+    """
+    Callback to handle completed logging tasks.
+    Prevents 'Task exception was never retrieved' warnings.
+    """
+    try:
+        # Retrieve exception if any (this marks it as "retrieved")
+        exc = task.exception()
+        if exc:
+            logger.error(f"AI usage logging task failed: {exc}")
+    except asyncio.CancelledError:
+        pass
+    except Exception:
+        pass
+
+
 async def log_ai_usage_background(
     user_id: str,
     model: str,
@@ -423,21 +439,32 @@ async def generate_coach(
             
             # STAGE 1: Fire non-blocking background task for AI usage logging
             # This runs completely independently - user response is returned immediately
-            if response.usage:
-                usage = response.usage
-                estimated_cost = calculate_ai_cost(
-                    settings.OPENAI_MODEL,
-                    usage.prompt_tokens,
-                    usage.completion_tokens
-                )
-                asyncio.create_task(log_ai_usage_background(
-                    user_id=user.id,
-                    model=settings.OPENAI_MODEL,
-                    prompt_tokens=usage.prompt_tokens,
-                    completion_tokens=usage.completion_tokens,
-                    total_tokens=usage.total_tokens,
-                    estimated_cost=estimated_cost
-                ))
+            try:
+                usage = getattr(response, 'usage', None)
+                if usage and hasattr(usage, 'prompt_tokens') and hasattr(usage, 'completion_tokens'):
+                    prompt_tokens = usage.prompt_tokens or 0
+                    completion_tokens = usage.completion_tokens or 0
+                    total_tokens = getattr(usage, 'total_tokens', None) or (prompt_tokens + completion_tokens)
+                    
+                    if prompt_tokens > 0 or completion_tokens > 0:
+                        estimated_cost = calculate_ai_cost(
+                            settings.OPENAI_MODEL,
+                            prompt_tokens,
+                            completion_tokens
+                        )
+                        task = asyncio.create_task(log_ai_usage_background(
+                            user_id=user.id,
+                            model=settings.OPENAI_MODEL,
+                            prompt_tokens=prompt_tokens,
+                            completion_tokens=completion_tokens,
+                            total_tokens=total_tokens,
+                            estimated_cost=estimated_cost
+                        ))
+                        # Add exception callback to prevent "Task exception was never retrieved"
+                        task.add_done_callback(_handle_logging_task_result)
+            except Exception as e:
+                # Never let logging setup affect user response
+                logger.warning(f"AI usage logging setup skipped: {e}")
             
             text = response.choices[0].message.content or ""
             logger.info(f"Received {len(text)} characters from OpenAI for user {user.id[:8]}...")
