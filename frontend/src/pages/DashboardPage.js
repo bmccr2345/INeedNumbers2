@@ -485,30 +485,6 @@ const DashboardPage = () => {
                   </button>
                   
                   <button
-                    onClick={() => navigate('/')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Home className="w-4 h-4 mr-3" />
-                    Home
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate('/tools')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Calculator className="w-4 h-4 mr-3" />
-                    Tools
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <BarChart3 className="w-4 h-4 mr-3" />
-                    Pricing
-                  </button>
-                  
-                  <button
                     onClick={() => navigate('/support')}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
@@ -516,18 +492,7 @@ const DashboardPage = () => {
                     Support
                   </button>
                   
-                  {/* Admin Console Link - Only for master_admin users */}
-                  {user?.role === 'master_admin' && (
-                    <button
-                      onClick={() => navigate('/app/admin')}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 border-t"
-                    >
-                      <Shield className="w-4 h-4 mr-3" />
-                      Admin Console
-                    </button>
-                  )}
-                  
-                  {user?.plan === 'PRO' && !isMobile && (
+                  {user?.plan === 'PRO' && (
                     <button
                       onClick={() => {
                         navigate('/onboarding');
@@ -537,6 +502,17 @@ const DashboardPage = () => {
                     >
                       <Sparkles className="w-4 h-4 mr-3" />
                       Business Setup
+                    </button>
+                  )}
+                  
+                  {/* Admin Console Link - Only for master_admin users */}
+                  {user?.role === 'master_admin' && (
+                    <button
+                      onClick={() => navigate('/app/admin')}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 border-t"
+                    >
+                      <Shield className="w-4 h-4 mr-3" />
+                      Admin Console
                     </button>
                   )}
                   
