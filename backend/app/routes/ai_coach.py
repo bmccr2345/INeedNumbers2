@@ -35,7 +35,12 @@ OPENAI_PRICING = {
 
 
 def calculate_ai_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """Calculate estimated cost based on token usage and model pricing."""
+    """
+    Calculate estimated cost based on token usage and model pricing.
+    Returns float rounded to 8 decimal places for consistent precision.
+    Note: Using float (not Decimal) as MongoDB stores as BSON double.
+    Rounding to 8 decimals avoids floating-point drift accumulation.
+    """
     pricing = OPENAI_PRICING.get(model, OPENAI_PRICING["gpt-4o-mini"])
     input_cost = (prompt_tokens / 1000) * pricing["input_per_1k"]
     output_cost = (completion_tokens / 1000) * pricing["output_per_1k"]
@@ -383,6 +388,9 @@ async def generate_coach(
                    f"activity_entries: {activity.get('entries_count', 0)}, reflections: {len(reflections)}")
         
         if stream:
+            # TODO: Implement token capture for streaming responses when OpenAI usage
+            # metadata becomes available. Currently, streaming responses do not return
+            # usage statistics in the response chunks. See: https://platform.openai.com/docs/api-reference/streaming
             async def token_generator():
                 try:
                     response = await client.chat.completions.create(
