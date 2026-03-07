@@ -303,9 +303,16 @@ export const AuthProvider = ({ children }) => {
 
   const createCustomerPortal = async () => {
     try {
-      // Uses secure endpoint that gets customer ID from authenticated user's Clerk metadata
-      // Does NOT send customer_id from frontend - backend retrieves it securely
-      const response = await axios.post(`${backendUrl}/api/billing/portal`);
+      // Use existing billing portal endpoint with clerk_user_id
+      const clerkUserId = clerkUser?.id;
+      if (!clerkUserId) {
+        return { success: false, error: 'Not authenticated' };
+      }
+      
+      const response = await axios.post(`${backendUrl}/api/clerk/billing-portal`, {
+        clerk_user_id: clerkUserId,
+        return_url: `${window.location.origin}/account`
+      });
       return { success: true, url: response.data.url };
     } catch (error) {
       console.error('Customer portal creation failed:', error);
