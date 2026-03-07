@@ -4106,6 +4106,60 @@ async def get_subscription_status(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/billing/portal")
+async def create_secure_billing_portal(
+    current_user: User = Depends(require_auth)
+):
+    """
+    Create a Stripe Billing Portal session for the authenticated user.
+    
+    Security:
+    - Requires JWT authentication
+    - Does NOT accept customer_id from request
+    - Uses only the authenticated user's stored Stripe customer ID
+    
+    Returns:
+        {"url": "https://billing.stripe.com/..."}
+    """
+    try:
+        if not stripe_billing_client:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe billing is not configured"
+            )
+        
+        # Get stripe_customer_id from Clerk private_metadata (NOT from request)
+        user_data = await clerk_billing_client.get_user(current_user.clerk_user_id)
+        private_metadata = user_data.get("private_metadata", {})
+        stripe_customer_id = private_metadata.get("stripe_customer_id")
+        
+        if not stripe_customer_id:
+            logger.warning(f"User {current_user.id} has no Stripe customer ID")
+            raise HTTPException(
+                status_code=400,
+                detail="No Stripe customer found."
+            )
+        
+        # Create billing portal session with fixed return URL
+        session = stripe.billing_portal.Session.create(
+            customer=stripe_customer_id,
+            return_url="https://ineednumbers.com/account"
+        )
+        
+        logger.info(f"Created billing portal session for user {current_user.id}")
+        
+        return {"url": session.url}
+        
+    except HTTPException:
+        raise
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error creating billing portal: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create billing portal session")
+    except Exception as e:
+        logger.error(f"Error creating billing portal session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create billing portal session")
+
+
 @api_router.post("/clerk/billing-portal")
 async def create_billing_portal_session(request: Request):
     """

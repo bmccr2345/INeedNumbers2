@@ -283,7 +283,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/clerk/create-checkout",  # Clerk checkout creation
             "/api/clerk/billing-portal",  # Clerk billing portal
             "/api/clerk/webhook",  # Clerk webhooks
-            "/api/clerk/verify-subscription"  # Clerk subscription verification
+            "/api/clerk/verify-subscription",  # Clerk subscription verification
+            "/api/billing/portal"  # Secure billing portal (JWT auth required)
         }
     
     async def dispatch(self, request: Request, call_next: Callable):

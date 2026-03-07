@@ -411,7 +411,7 @@ const MyAccountPage = () => {
                     onClick={handleManageBilling}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Manage Billing
+                    {loading ? 'Loading...' : 'Manage Subscription'}
                   </Button>
                 )}
               </CardContent>

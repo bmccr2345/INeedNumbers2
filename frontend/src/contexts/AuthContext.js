@@ -303,7 +303,9 @@ export const AuthProvider = ({ children }) => {
 
   const createCustomerPortal = async () => {
     try {
-      const response = await axios.post(`${backendUrl}/api/stripe/portal`, {});
+      // Uses secure endpoint that gets customer ID from authenticated user's Clerk metadata
+      // Does NOT send customer_id from frontend - backend retrieves it securely
+      const response = await axios.post(`${backendUrl}/api/billing/portal`);
       return { success: true, url: response.data.url };
     } catch (error) {
       console.error('Customer portal creation failed:', error);
