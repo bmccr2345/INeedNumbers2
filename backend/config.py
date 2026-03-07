@@ -62,6 +62,8 @@ class Config(BaseSettings):
     AI_COACH_RATE_LIMIT_PER_MIN: int = Field(default=10, description="AI rate limit per minute")
     AI_CACHE_TTL_SECONDS: int = Field(default=300, description="AI cache TTL")
     AI_COACH_ENABLED: bool = Field(default=False, description="Enable AI Coach")
+    AI_MONTHLY_TOKEN_LIMIT: int = Field(default=100000, description="Monthly AI token soft limit per user")
+    AI_MONTHLY_COST_LIMIT: float = Field(default=5.0, description="Monthly AI cost soft limit per user (USD)")
     
     # Auth0 Configuration (for new authentication system)
     AUTH0_DOMAIN: Optional[str] = Field(default=None, description="Auth0 tenant domain")

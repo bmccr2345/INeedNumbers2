@@ -12,13 +12,14 @@ from app.ai import make_cache_key, get_cache, set_cache, check_rate_limit
 from app.data_views import fetch_goal_settings, fetch_activity_log, fetch_reflection_log, fetch_pnl_summary
 from app.prompts import coach_system_prompt
 from app.security import enforce_body_limit
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, APIError, RateLimitError, APIConnectionError
 import asyncio
 import json
 import datetime
 from datetime import timezone
 import logging
 import re
+from typing import Optional, Dict, Any
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -140,6 +141,204 @@ async def log_ai_usage_background(
         except Exception:
             pass
 
+
+# =============================================================================
+# STAGE 3: Soft Limit Mode (Observation Only)
+# =============================================================================
+async def get_user_monthly_usage(user_id: str) -> Dict[str, Any]:
+    """
+    Fetch current month's usage for a user from ai_usage_monthly.
+    Lightweight read-only query - does not block or modify data.
+    Returns empty dict if no usage found or on error.
+    """
+    try:
+        from motor.motor_asyncio import AsyncIOMotorClient
+        mongo_url = os.environ.get("MONGO_URL")
+        db_name = os.environ.get("DB_NAME", "ineednumbers")
+        
+        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=3000)
+        db = client[db_name]
+        
+        year_month = datetime.datetime.now(timezone.utc).strftime("%Y-%m")
+        
+        doc = await asyncio.wait_for(
+            db.ai_usage_monthly.find_one(
+                {"user_id": user_id, "year_month": year_month},
+                {"_id": 0, "total_tokens": 1, "total_cost": 1, "request_count": 1}
+            ),
+            timeout=2.0  # 2 second timeout for lightweight check
+        )
+        
+        client.close()
+        
+        if doc:
+            return {
+                "total_tokens": doc.get("total_tokens", 0),
+                "total_cost": doc.get("total_cost", 0.0),
+                "request_count": doc.get("request_count", 0),
+                "year_month": year_month
+            }
+        return {"total_tokens": 0, "total_cost": 0.0, "request_count": 0, "year_month": year_month}
+        
+    except asyncio.TimeoutError:
+        logger.warning(f"Usage check timed out for user {user_id[:8]}...")
+        return {}
+    except Exception as e:
+        logger.warning(f"Usage check failed for user {user_id[:8]}...: {e}")
+        return {}
+
+
+def calculate_usage_status(
+    current_usage: Dict[str, Any],
+    token_limit: int,
+    cost_limit: float
+) -> Dict[str, Any]:
+    """
+    Calculate usage percentages and determine warning/exceeded status.
+    
+    Returns dict with:
+    - usage_percentage_tokens: float (0-100+)
+    - usage_percentage_cost: float (0-100+)
+    - usage_warning: bool (True if >= 80%)
+    - usage_exceeded: bool (True if >= 100%)
+    """
+    if not current_usage or token_limit <= 0 or cost_limit <= 0:
+        return {}
+    
+    current_tokens = current_usage.get("total_tokens", 0)
+    current_cost = current_usage.get("total_cost", 0.0)
+    
+    token_percentage = (current_tokens / token_limit) * 100 if token_limit > 0 else 0
+    cost_percentage = (current_cost / cost_limit) * 100 if cost_limit > 0 else 0
+    
+    # Round to 2 decimal places for cleaner output
+    token_percentage = round(token_percentage, 2)
+    cost_percentage = round(cost_percentage, 2)
+    
+    # Determine thresholds
+    max_percentage = max(token_percentage, cost_percentage)
+    usage_warning = max_percentage >= 80
+    usage_exceeded = max_percentage >= 100
+    
+    result = {
+        "usage_percentage_tokens": token_percentage,
+        "usage_percentage_cost": cost_percentage
+    }
+    
+    if usage_warning:
+        result["usage_warning"] = True
+    
+    if usage_exceeded:
+        result["usage_exceeded"] = True
+        logger.warning(
+            f"AI usage exceeded soft limit - tokens: {token_percentage:.1f}%, cost: {cost_percentage:.1f}%"
+        )
+    
+    return result
+
+
+async def call_openai_with_retry(
+    client: AsyncOpenAI,
+    model: str,
+    messages: list,
+    temperature: float,
+    max_tokens: int,
+    max_retries: int = 1
+) -> Any:
+    """
+    Call OpenAI API with single retry for transient errors.
+    
+    Retry logic:
+    - Maximum 1 retry (2 attempts total)
+    - Exponential backoff (1 second delay)
+    - DO NOT retry 400-level client errors
+    - DO NOT retry validation errors
+    - Only retry 5xx server errors and rate limits
+    """
+    last_exception = None
+    
+    for attempt in range(max_retries + 1):
+        try:
+            response = await client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            return response
+            
+        except RateLimitError as e:
+            # Retry rate limit errors
+            last_exception = e
+            if attempt < max_retries:
+                logger.warning(f"OpenAI rate limit hit, retrying in 1s (attempt {attempt + 1}/{max_retries + 1})")
+                await asyncio.sleep(1.0)
+            else:
+                logger.error(f"OpenAI rate limit exceeded after {max_retries + 1} attempts")
+                raise
+                
+        except APIConnectionError as e:
+            # Retry connection errors
+            last_exception = e
+            if attempt < max_retries:
+                logger.warning(f"OpenAI connection error, retrying in 1s (attempt {attempt + 1}/{max_retries + 1})")
+                await asyncio.sleep(1.0)
+            else:
+                logger.error(f"OpenAI connection failed after {max_retries + 1} attempts")
+                raise
+                
+        except APIError as e:
+            # Check if it's a server error (5xx) or client error (4xx)
+            status_code = getattr(e, 'status_code', 500)
+            
+            if status_code >= 500:
+                # Retry server errors
+                last_exception = e
+                if attempt < max_retries:
+                    logger.warning(f"OpenAI server error ({status_code}), retrying in 1s")
+                    await asyncio.sleep(1.0)
+                else:
+                    logger.error(f"OpenAI server error after {max_retries + 1} attempts")
+                    raise
+            else:
+                # DO NOT retry 4xx client errors - raise immediately
+                logger.error(f"OpenAI client error ({status_code}): {e}")
+                raise
+                
+        except Exception as e:
+            # Unknown errors - do not retry
+            logger.error(f"OpenAI unexpected error: {e}")
+            raise
+    
+    # Should not reach here, but just in case
+    if last_exception:
+        raise last_exception
+
+
+def merge_usage_status(response: Dict[str, Any], usage_status: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Merge usage_status fields into the AI response.
+    Only adds fields if usage_status contains warning or exceeded flags.
+    """
+    if not usage_status:
+        return response
+    
+    # Create a copy to avoid mutating the original
+    result = dict(response)
+    
+    # Add usage fields if warning/exceeded thresholds met
+    if usage_status.get("usage_warning") or usage_status.get("usage_exceeded"):
+        if "usage_percentage_tokens" in usage_status:
+            result["usage_percentage_tokens"] = usage_status["usage_percentage_tokens"]
+        if "usage_percentage_cost" in usage_status:
+            result["usage_percentage_cost"] = usage_status["usage_percentage_cost"]
+        if usage_status.get("usage_warning"):
+            result["usage_warning"] = True
+        if usage_status.get("usage_exceeded"):
+            result["usage_exceeded"] = True
+    
+    return result
+
 def redact_pii(text: str) -> str:
     """Basic PII scrubbing for reflections"""
     if not text:
@@ -245,6 +444,30 @@ async def generate_coach(
             detail="AI Coach rate limit exceeded. Please try again later.",
             headers={"Retry-After": str(retry_after)}
         )
+    
+    # =================================================================
+    # STAGE 3: Soft Limit Check (Observation Only - Does NOT block)
+    # =================================================================
+    usage_status = {}
+    try:
+        token_limit = settings.AI_MONTHLY_TOKEN_LIMIT
+        cost_limit = settings.AI_MONTHLY_COST_LIMIT
+        
+        if token_limit > 0 and cost_limit > 0:
+            current_usage = await get_user_monthly_usage(user.id)
+            if current_usage:
+                usage_status = calculate_usage_status(current_usage, token_limit, cost_limit)
+                
+                # Log for observability but DO NOT block
+                if usage_status.get("usage_exceeded"):
+                    logger.warning(
+                        f"User {user.id[:8]}... exceeded soft limits: "
+                        f"tokens={usage_status.get('usage_percentage_tokens', 0):.1f}%, "
+                        f"cost={usage_status.get('usage_percentage_cost', 0):.1f}%"
+                    )
+    except Exception as e:
+        # Never let limit check failure affect AI response
+        logger.warning(f"Soft limit check failed (non-blocking): {e}")
     
     body = await request.json()
     stream = bool(body.get("stream", False))  # Default to non-stream for stability
@@ -470,13 +693,15 @@ async def generate_coach(
             )
         
         else:
-            # Non-streaming path
+            # Non-streaming path with STAGE 3 retry logic
             logger.info(f"Making non-streaming OpenAI API call for user {user.id[:8]}...")
-            response = await client.chat.completions.create(
+            response = await call_openai_with_retry(
+                client=client,
                 model=settings.OPENAI_MODEL,
                 messages=messages,
                 temperature=settings.AI_COACH_TEMPERATURE,
-                max_tokens=settings.AI_COACH_MAX_TOKENS
+                max_tokens=settings.AI_COACH_MAX_TOKENS,
+                max_retries=1
             )
             logger.info(f"OpenAI API call successful for user {user.id[:8]}...")
             
@@ -552,9 +777,10 @@ async def generate_coach(
                         "raw_data": None
                     }
                 
-                # Cache successful response
+                # Cache successful response (without usage status - that's per-request)
                 set_cache(cache_key, json.dumps(formatted_response))
-                return JSONResponse(content=formatted_response)
+                # STAGE 3: Add usage status to response
+                return JSONResponse(content=merge_usage_status(formatted_response, usage_status))
             elif context == "affordability_analysis" or context == "net_sheet_analysis":
                 analysis_type = "Affordability" if context == "affordability_analysis" else "Net Sheet"
                 logger.info(f"{analysis_type} Analysis - Raw AI response: {text[:500]}...")  # Log first 500 chars
@@ -604,9 +830,10 @@ async def generate_coach(
                         "next_inputs": ["Additional data needed for comprehensive analysis"]
                     }
                 
-                # Cache successful response
+                # Cache successful response (without usage status - that's per-request)
                 set_cache(cache_key, json.dumps(analysis_response))
-                return JSONResponse(content=analysis_response)
+                # STAGE 3: Add usage status to response
+                return JSONResponse(content=merge_usage_status(analysis_response, usage_status))
             else:
                 # Standard AI Coach processing
                 # Strip markdown code block syntax if present
@@ -642,9 +869,10 @@ async def generate_coach(
                         "performance_analysis": "Start tracking your activities to see performance trends"
                     }
                 
-                # Cache successful response
+                # Cache successful response (without usage status - that's per-request)
                 set_cache(cache_key, json.dumps(obj))
-                return JSONResponse(content=obj)
+                # STAGE 3: Add usage status to response
+                return JSONResponse(content=merge_usage_status(obj, usage_status))
             
     except Exception as e:
         import traceback
