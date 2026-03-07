@@ -69,6 +69,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MobileLayout from "./layouts/MobileLayout";
 import MobileEntry from "./pages/MobileEntry";
 import CompleteSubscriptionPage from "./pages/CompleteSubscriptionPage";
+import AdminCommandCenter from "./pages/AdminCommandCenter";
 
 // Import Onboarding Screens
 import {
@@ -247,6 +248,9 @@ function App() {
               <Route path="/clerk-debug" element={<ClerkDebugPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/support" element={<SupportPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/command-center" element={<AdminCommandCenter />} />
               
               {/* Tools Routes */}
               <Route path="/tools" element={<ToolsPage />} />

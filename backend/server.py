@@ -8402,6 +8402,16 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Error mounting AI Coach router: {e}")
 
+# Include Admin Command Center router (Stage 4)
+try:
+    from app.routes.admin_command_center import router as admin_router
+    api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
+    logger.info("Admin Command Center router mounted at /api/admin")
+except ImportError as e:
+    logger.warning(f"Could not import Admin Command Center router: {e}")
+except Exception as e:
+    logger.error(f"Error mounting Admin Command Center router: {e}")
+
 # ============================================
 # ONBOARDING ENDPOINTS (Inline - needs db access)
 # ============================================
@@ -9073,8 +9083,24 @@ async def migrate_users_to_atlas(request: Request):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Start admin metrics scheduler on startup
+@app.on_event("startup")
+async def start_admin_scheduler():
+    try:
+        from app.utils.admin_scheduler import start_scheduler
+        start_scheduler()
+        logger.info("Admin metrics scheduler initialized")
+    except Exception as e:
+        logger.warning(f"Could not start admin scheduler: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    # Stop admin scheduler
+    try:
+        from app.utils.admin_scheduler import stop_scheduler
+        stop_scheduler()
+    except Exception:
+        pass
     client.close()
 
 if __name__ == "__main__":

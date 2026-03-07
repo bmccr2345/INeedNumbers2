@@ -1,6 +1,6 @@
 """
-AI Usage Logs Index Management - Stage 1 & Stage 2
-Creates and manages indexes for ai_usage_logs and ai_usage_monthly collections.
+AI Usage Logs Index Management - Stage 1, 2 & 4
+Creates and manages indexes for ai_usage_logs, ai_usage_monthly, and admin_system_metrics collections.
 """
 import asyncio
 import os
@@ -23,6 +23,9 @@ async def create_ai_usage_indexes():
     - user_id: For filtering by user
     - year_month: For filtering by month
     - compound (user_id, year_month): For efficient lookups (unique per user-month)
+    
+    admin_system_metrics (Stage 4):
+    - aggregated_at: For getting latest metrics and cleanup
     """
     try:
         mongo_url = os.environ.get("MONGO_URL")
@@ -60,6 +63,17 @@ async def create_ai_usage_indexes():
         
         monthly_indexes = await monthly_collection.index_information()
         print(f"  ai_usage_monthly indexes: {list(monthly_indexes.keys())}")
+        
+        # =================================================================
+        # Stage 4: admin_system_metrics indexes
+        # =================================================================
+        print("Creating admin_system_metrics indexes...")
+        admin_collection = db.admin_system_metrics
+        
+        await admin_collection.create_index([("aggregated_at", -1)])
+        
+        admin_indexes = await admin_collection.index_information()
+        print(f"  admin_system_metrics indexes: {list(admin_indexes.keys())}")
         
         print("\nAll AI usage indexes created successfully!")
         logger.info("AI usage indexes created successfully")
