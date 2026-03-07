@@ -8208,6 +8208,72 @@ async def update_reflection_log(
         logger.error(f"Error updating reflection log: {e}")
         raise HTTPException(status_code=500, detail="Failed to update reflection log")
 
+@api_router.get("/user/export")
+async def export_user_data(
+    current_user: User = Depends(require_auth)
+):
+    """Export all user data for GDPR compliance"""
+    try:
+        user_id = current_user.id
+        
+        # Get user basic info
+        user_info = {
+            "email": current_user.email,
+            "full_name": current_user.full_name
+        }
+        
+        # Get all deals
+        deals = []
+        deals_cursor = db.pnl_deals.find({"user_id": user_id}).limit(10000)
+        async for deal in deals_cursor:
+            deal.pop("_id", None)
+            deals.append(deal)
+        
+        # Get all expenses
+        expenses = []
+        expenses_cursor = db.pnl_expenses.find({"user_id": user_id}).limit(10000)
+        async for expense in expenses_cursor:
+            expense.pop("_id", None)
+            expenses.append(expense)
+        
+        # Get activity logs
+        activity_logs = []
+        activity_cursor = db.activity_logs.find({"user_id": user_id}).limit(10000)
+        async for log in activity_cursor:
+            log.pop("_id", None)
+            activity_logs.append(log)
+        
+        # Get reflection logs
+        reflection_logs = []
+        reflection_cursor = db.reflection_logs.find({"user_id": user_id}).limit(10000)
+        async for log in reflection_cursor:
+            log.pop("_id", None)
+            reflection_logs.append(log)
+        
+        # Get cap configuration
+        cap_config = await db.cap_configurations.find_one({"user_id": user_id})
+        if cap_config:
+            cap_config.pop("_id", None)
+        
+        # Get tracker settings
+        tracker_settings = await db.tracker_settings.find_one({"user_id": user_id})
+        if tracker_settings:
+            tracker_settings.pop("_id", None)
+        
+        return {
+            "user": user_info,
+            "deals": deals,
+            "expenses": expenses,
+            "activity_logs": activity_logs,
+            "reflection_logs": reflection_logs,
+            "cap_configuration": cap_config,
+            "tracker_settings": tracker_settings,
+            "exported_at": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error exporting user data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export user data")
+
 @api_router.get("/health")
 async def api_health_check():
     """Basic health check endpoint - lightweight for load balancers"""

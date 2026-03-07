@@ -110,14 +110,71 @@ const MyAccountPage = () => {
     const result = await exportUserData();
     
     if (result.success) {
-      // Create and download JSON file
-      const dataStr = JSON.stringify(result.data, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      // Convert data to CSV format
+      const data = result.data;
+      let csvContent = '';
+      
+      // Add user info section
+      csvContent += 'USER INFORMATION\n';
+      csvContent += 'Email,Full Name\n';
+      csvContent += `"${data.user?.email || ''}","${data.user?.full_name || ''}"\n\n`;
+      
+      // Add deals section if present
+      if (data.deals && data.deals.length > 0) {
+        csvContent += 'DEALS\n';
+        csvContent += 'Address,Sale Price,Commission %,Split %,Team/Brokerage %,Final Income,Lead Source,Contract Signed,Closing Date\n';
+        data.deals.forEach(deal => {
+          csvContent += `"${deal.house_address || ''}",${deal.amount_sold_for || 0},${deal.commission_percent || 0},${deal.split_percent || 0},${deal.team_brokerage_split_percent || 0},${deal.final_income || 0},"${deal.lead_source || ''}","${deal.contract_signed || ''}","${deal.closing_date || ''}"\n`;
+        });
+        csvContent += '\n';
+      }
+      
+      // Add expenses section if present
+      if (data.expenses && data.expenses.length > 0) {
+        csvContent += 'EXPENSES\n';
+        csvContent += 'Date,Category,Description,Amount\n';
+        data.expenses.forEach(expense => {
+          csvContent += `"${expense.date || ''}","${expense.category || ''}","${expense.description || ''}",${expense.amount || 0}\n`;
+        });
+        csvContent += '\n';
+      }
+      
+      // Add activity logs section if present
+      if (data.activity_logs && data.activity_logs.length > 0) {
+        csvContent += 'ACTIVITY LOGS\n';
+        csvContent += 'Date,Activities,Hours,Reflection\n';
+        data.activity_logs.forEach(log => {
+          const activities = typeof log.activities === 'object' ? JSON.stringify(log.activities) : log.activities || '';
+          const hours = typeof log.hours === 'object' ? JSON.stringify(log.hours) : log.hours || '';
+          csvContent += `"${log.logged_at || log.date || ''}","${activities}","${hours}","${(log.reflection || '').replace(/"/g, '""')}"\n`;
+        });
+        csvContent += '\n';
+      }
+      
+      // Add reflection logs section if present
+      if (data.reflection_logs && data.reflection_logs.length > 0) {
+        csvContent += 'REFLECTION LOGS\n';
+        csvContent += 'Date,Reflection,Mood\n';
+        data.reflection_logs.forEach(log => {
+          csvContent += `"${log.logged_at || ''}","${(log.reflection || '').replace(/"/g, '""')}","${log.mood || ''}"\n`;
+        });
+        csvContent += '\n';
+      }
+      
+      // Add cap configuration if present
+      if (data.cap_configuration) {
+        csvContent += 'COMMISSION CAP CONFIGURATION\n';
+        csvContent += 'Annual Cap Amount,Cap Percentage,Period Start,Reset Date\n';
+        csvContent += `${data.cap_configuration.annual_cap_amount || 0},${data.cap_configuration.cap_percentage || 0},"${data.cap_configuration.cap_period_start || ''}","${data.cap_configuration.reset_date || ''}"\n\n`;
+      }
+      
+      // Create and download CSV file
+      const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(dataBlob);
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ineednumbers-data-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `ineednumbers-data-${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -267,13 +324,6 @@ const MyAccountPage = () => {
                     <p className="text-lg font-medium text-deep-forest">{user.full_name}</p>
                   </div>
                 )}
-                
-                <div>
-                  <Label className="text-sm font-medium text-neutral-dark">Member Since</Label>
-                  <p className="text-lg font-medium text-deep-forest">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </p>
-                </div>
               </CardContent>
             </Card>
 
@@ -403,14 +453,6 @@ const MyAccountPage = () => {
 
           {/* Action Buttons */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => navigate('/calculator')}
-              className="bg-primary hover:bg-secondary text-white font-poppins"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Go to Calculator
-            </Button>
-
             <Button
               variant="outline"
               onClick={handleExportData}
