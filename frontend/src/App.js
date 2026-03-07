@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { ClerkProvider, useUser } from '@clerk/clerk-react';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -17,15 +17,13 @@ if (!CLERK_PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key");
 }
 
-// ClerkProvider wrapper that provides React Router navigation
-// This prevents WKWebView from redirecting to clerk.ineednumbers.com
+// ClerkProvider wrapper - handles auth redirects without interfering with Clerk's internal navigation
+// The signInUrl/signUpUrl props prevent external redirects to clerk domain
+// Removed navigate prop to fix double-email issue in 2FA flow (was causing duplicate API calls)
 const ClerkProviderWithNavigation = ({ children, publishableKey }) => {
-  const navigate = useNavigate();
-  
   return (
     <ClerkProvider 
       publishableKey={publishableKey}
-      navigate={(to) => navigate(to)}
       // Force inline auth components instead of redirecting to Clerk domain
       signInUrl="/auth/login"
       signUpUrl="/auth/register"

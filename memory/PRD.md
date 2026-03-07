@@ -80,6 +80,9 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
    - Defined async `getHeaders()` function that properly gets auth token
    - Updated all fetch calls to await the async headers
    - Added `mood: null` to reflection payload to match backend model
+9. **Commission Cap Percentage Display (Mar 6, 2026)**: Fixed floating point precision showing "9.58000000000002%" instead of "9.58%" via `formatPercentage()` with `.toFixed(2)`
+10. **Desktop Account Dropdown (Mar 6, 2026)**: Simplified to: Profile & Billing, Support, Business Setup, Logout
+11. **Double Email 2FA Bug (Mar 7, 2026)**: Fixed Clerk sending 2 emails during 2FA login. ROOT CAUSE - custom `navigate` prop in ClerkProvider conflicted with Clerk's internal navigation. Fixed by removing the `navigate` prop; `signInUrl`/`signUpUrl` props already prevent external redirects.
 
 ## Routes
 - `/` - New redesigned landing page
