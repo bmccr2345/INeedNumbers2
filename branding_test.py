@@ -14,7 +14,7 @@ import time
 import io
 
 class BrandingUploadTester:
-    def __init__(self, base_url="https://pnl-verification.preview.emergentagent.com"):
+    def __init__(self, base_url="https://coach-metrics-5.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

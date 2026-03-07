@@ -16,11 +16,73 @@ from openai import AsyncOpenAI
 import asyncio
 import json
 import datetime
+from datetime import timezone
 import logging
 import re
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# =============================================================================
+# STAGE 1: AI Token Logging - Pricing Table & Non-blocking Logger
+# =============================================================================
+OPENAI_PRICING = {
+    "gpt-4o-mini": {
+        "input_per_1k": 0.00015,
+        "output_per_1k": 0.0006
+    }
+}
+
+
+def calculate_ai_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
+    """Calculate estimated cost based on token usage and model pricing."""
+    pricing = OPENAI_PRICING.get(model, OPENAI_PRICING["gpt-4o-mini"])
+    input_cost = (prompt_tokens / 1000) * pricing["input_per_1k"]
+    output_cost = (completion_tokens / 1000) * pricing["output_per_1k"]
+    return round(input_cost + output_cost, 8)
+
+
+async def log_ai_usage_background(
+    user_id: str,
+    model: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    total_tokens: int,
+    estimated_cost: float
+) -> None:
+    """
+    Non-blocking background task to log AI usage to MongoDB.
+    Failures are logged internally only - never affects user response.
+    """
+    try:
+        from motor.motor_asyncio import AsyncIOMotorClient
+        mongo_url = os.environ.get("MONGO_URL")
+        db_name = os.environ.get("DB_NAME", "ineednumbers")
+        
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[db_name]
+        
+        usage_doc = {
+            "user_id": user_id,
+            "model": model,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+            "estimated_cost": estimated_cost,
+            "timestamp": datetime.datetime.now(timezone.utc)
+        }
+        
+        await db.ai_usage_logs.insert_one(usage_doc)
+        logger.info(f"AI usage logged - user: {user_id[:8]}..., tokens: {total_tokens}, cost: ${estimated_cost:.6f}")
+        
+    except Exception as e:
+        # Log internally only - never fail user response
+        logger.error(f"AI usage logging failed (non-blocking): {e}")
+    finally:
+        try:
+            client.close()
+        except Exception:
+            pass
 
 def redact_pii(text: str) -> str:
     """Basic PII scrubbing for reflections"""
@@ -358,6 +420,24 @@ async def generate_coach(
                 max_tokens=settings.AI_COACH_MAX_TOKENS
             )
             logger.info(f"OpenAI API call successful for user {user.id[:8]}...")
+            
+            # STAGE 1: Fire non-blocking background task for AI usage logging
+            # This runs completely independently - user response is returned immediately
+            if response.usage:
+                usage = response.usage
+                estimated_cost = calculate_ai_cost(
+                    settings.OPENAI_MODEL,
+                    usage.prompt_tokens,
+                    usage.completion_tokens
+                )
+                asyncio.create_task(log_ai_usage_background(
+                    user_id=user.id,
+                    model=settings.OPENAI_MODEL,
+                    prompt_tokens=usage.prompt_tokens,
+                    completion_tokens=usage.completion_tokens,
+                    total_tokens=usage.total_tokens,
+                    estimated_cost=estimated_cost
+                ))
             
             text = response.choices[0].message.content or ""
             logger.info(f"Received {len(text)} characters from OpenAI for user {user.id[:8]}...")

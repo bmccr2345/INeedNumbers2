@@ -14,7 +14,7 @@ def test_plan_gating_with_free_user():
     print("=" * 60)
     
     tester = DealPackAPITester()
-    base_url = "https://pnl-verification.preview.emergentagent.com"
+    base_url = "https://coach-metrics-5.preview.emergentagent.com"
     
     # Try to find a FREE user or create test scenario
     print("🔍 Looking for FREE user to test plan gating...")
