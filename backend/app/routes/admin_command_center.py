@@ -360,11 +360,13 @@ async def aggregate_admin_metrics():
         # Insert new metrics document (keep history)
         await db.admin_system_metrics.insert_one(metrics_doc)
         
-        # Cleanup old metrics (keep last 48 hours = 96 documents at 30min intervals)
-        cutoff = now - timedelta(hours=48)
-        await db.admin_system_metrics.delete_many({"aggregated_at": {"$lt": cutoff}})
+        # Cleanup old metrics - retain for 30 days minimum
+        # At 30-min intervals = ~1440 documents per 30 days
+        # Estimated storage: ~1KB per doc = ~1.5MB total (minimal impact)
+        cutoff = now - timedelta(days=30)
+        deleted = await db.admin_system_metrics.delete_many({"aggregated_at": {"$lt": cutoff}})
         
-        logger.info(f"Admin metrics aggregation complete: {len(alerts)} alerts")
+        logger.info(f"Admin metrics aggregation complete: {len(alerts)} alerts, {deleted.deleted_count} old docs cleaned")
         
         client.close()
         return metrics_doc
@@ -406,7 +408,11 @@ async def get_metrics_history(
     """
     Get historical metrics for charts.
     Returns last N hours of aggregated data.
+    Max retention: 30 days (720 hours).
     """
+    # Cap at 30 days to match retention policy
+    hours = min(hours, 720)
+    
     try:
         mongo_url = os.environ.get("MONGO_URL")
         db_name = os.environ.get("DB_NAME", "ineednumbers")

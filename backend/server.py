@@ -8402,15 +8402,22 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Error mounting AI Coach router: {e}")
 
-# Include Admin Command Center router (Stage 4)
-try:
-    from app.routes.admin_command_center import router as admin_router
-    api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
-    logger.info("Admin Command Center router mounted at /api/admin")
-except ImportError as e:
-    logger.warning(f"Could not import Admin Command Center router: {e}")
-except Exception as e:
-    logger.error(f"Error mounting Admin Command Center router: {e}")
+# Include Admin Command Center router (Stage 4) - PRODUCTION ONLY
+# Admin routes are only registered in production environment for security
+_admin_env = os.environ.get("NODE_ENV", "development")
+_is_production = _admin_env.lower() == "production"
+
+if _is_production:
+    try:
+        from app.routes.admin_command_center import router as admin_router
+        api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
+        logger.info("Admin Command Center router mounted at /api/admin (production)")
+    except ImportError as e:
+        logger.warning(f"Could not import Admin Command Center router: {e}")
+    except Exception as e:
+        logger.error(f"Error mounting Admin Command Center router: {e}")
+else:
+    logger.info(f"Admin Command Center NOT registered (NODE_ENV={_admin_env}, not production)")
 
 # ============================================
 # ONBOARDING ENDPOINTS (Inline - needs db access)
@@ -9083,19 +9090,24 @@ async def migrate_users_to_atlas(request: Request):
 # Include the router in the main app
 app.include_router(api_router)
 
-# Start admin metrics scheduler on startup
+# Start admin metrics scheduler on startup - PRODUCTION ONLY
 @app.on_event("startup")
 async def start_admin_scheduler():
+    _scheduler_env = os.environ.get("NODE_ENV", "development")
+    if _scheduler_env.lower() != "production":
+        logger.info(f"Admin scheduler NOT started (NODE_ENV={_scheduler_env}, not production)")
+        return
+    
     try:
         from app.utils.admin_scheduler import start_scheduler
         start_scheduler()
-        logger.info("Admin metrics scheduler initialized")
+        logger.info("Admin metrics scheduler initialized (production)")
     except Exception as e:
         logger.warning(f"Could not start admin scheduler: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    # Stop admin scheduler
+    # Stop admin scheduler (only if running)
     try:
         from app.utils.admin_scheduler import stop_scheduler
         stop_scheduler()
