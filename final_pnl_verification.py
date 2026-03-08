@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 def final_verification():
-    base_url = "https://coach-metrics-5.preview.emergentagent.com"
+    base_url = "https://staging-app-35.preview.emergentagent.com"
     
     # Authenticate
     login_data = {

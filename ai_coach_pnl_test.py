@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 
 class AICoachPnLTester:
-    def __init__(self, base_url="https://coach-metrics-5.preview.emergentagent.com"):
+    def __init__(self, base_url="https://staging-app-35.preview.emergentagent.com"):
         self.base_url = base_url
         self.auth_token = None
         self.test_user_email = "demo@demo.com"

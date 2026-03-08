@@ -17,7 +17,7 @@ def test_pdf_endpoints_without_auth():
     print("🔍 TESTING PDF ENDPOINTS WITHOUT AUTHENTICATION")
     print("=" * 60)
     
-    base_url = "https://coach-metrics-5.preview.emergentagent.com"
+    base_url = "https://staging-app-35.preview.emergentagent.com"
     
     # Test data for seller net sheet
     seller_net_data = {
@@ -112,7 +112,7 @@ def test_branding_resolve_endpoint():
     """Test the branding resolve endpoint"""
     print("\n🎨 Testing Branding Resolve Endpoint...")
     
-    base_url = "https://coach-metrics-5.preview.emergentagent.com"
+    base_url = "https://staging-app-35.preview.emergentagent.com"
     
     try:
         response = requests.get(

@@ -1,0 +1,179 @@
+<analysis>Here is a summary of the work done for the next agent.
+
+**original_problem_statement:** The user's initial goal was to implement a production-grade AI usage instrumentation system and an internal Admin Command Center across four stages.
+*   **Stage 1:** Non-blocking AI token logging.
+*   **Stage 2:** Atomic monthly usage counters.
+*   **Stage 3:** Configurable monthly limit enforcement (soft-limit observation mode implemented).
+*   **Stage 4:** A secure, read-only Admin Command Center.
+
+After completing these stages, a critical production issue arose. The user then requested to refactor the Admin Command Center into a separate standalone frontend application to be hosted on a subdomain (), and to put that task on the back burner to fix the main production application, which is currently down.
+
+**User's preferred language**: The user's primary language is English. Please respond in English only.
+
+**what currently exists?**
+A full-stack application for real estate agents with a React frontend, FastAPI backend, and MongoDB database. All four stages of the AI instrumentation and Admin Command Center project were completed. This included backend logic for logging, aggregation, a background scheduler, and a new API for the admin dashboard.
+
+The architecture was then refactored to separate the Admin Command Center. The admin UI components were removed from the main  and a new, minimal React app was created at . A  package of this new app was created for the user to deploy separately.
+
+During this process, a critical production bug was introduced. The main application () is currently down due to CORS errors, which were found to be caused by the frontend being built with an incorrect .
+
+**Last working item**:
+-   **Last item agent was working**: Fixing the root cause of the production outage. The agent correctly identified that the frontend was making API calls to an old, incorrect backend URL () instead of the correct one (). This was due to an incorrect value for  in  at build time. The agent was about to correct this file.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: After fixing the environment variable, the agent must rebuild the frontend. Use the  to verify the main dashboard loads data correctly in the preview environment. After successful verification, call the  to confirm readiness before finishing.
+-   **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1**: (P0) The main production application at  is down and showing a blank dashboard due to CORS errors.
+    -   **Attempted fixes**: The agent initially suspected a server-side CORS issue and reverted the  setting in  to . This was a misdiagnosis; the issue is client-side in the frontend's build configuration.
+    -   **Next debug checklist**:
+        1.  Edit  to ensure  is set to .
+        2.  Rebuild the frontend application by running yarn run v1.22.22
+$ craco build
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  339.75 kB (+20 B)  build/static/js/main.eb9e9c78.js
+  15.68 kB           build/static/css/main.40a41a63.css
+  599 B (+3 B)       build/static/js/658.4cbe58f4.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  yarn global add serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+Done in 61.47s..
+        3.  Restart the frontend service with frontend: stopped
+frontend: started to ensure the web server serves the new build.
+        4.  Verify the fix by taking a screenshot of the preview environment's dashboard to confirm data loads and CORS errors are gone.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical P0 bug. Fixing it will restore full functionality to the user's live production application.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: None
+
+**In progress Task List**:
+There are no in-progress tasks. The sole focus is resolving the P0 production outage.
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks**:
+    -   (P1) Deploy the fixed main application to production.
+-   **Future Tasks**:
+    -   Assist the user with deploying the separate  application.
+    -   Refactor  to break it down into smaller, domain-specific router files.
+    -   Investigate and refactor a potential race condition in the  interceptor in .
+    -   Reinstate a stricter CORS policy on the backend after the production app is stable.
+
+**Completed work in this session**
+-   **AI Instrumentation (Stages 1-3)**: Implemented non-blocking AI usage logging, atomic monthly counters, and a soft-limit observation mode with OpenAI retry logic in .
+-   **Admin Command Center (Stage 4)**: Built the backend API (), a background aggregation scheduler (), and the initial frontend UI.
+-   **Stage 4 Hardening**: Made the admin features production-only, implemented a distributed lock for the scheduler to ensure multi-worker safety, increased data retention to 30 days, and added observability logging.
+-   **Ops Dashboard Refactor**: Moved the Admin Command Center UI from the main frontend app to a new, separate React app located at .
+-   **Production Debugging**: Diagnosed a stale build issue and subsequently identified an incorrect  as the root cause of a critical production outage.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Intermittent MongoDB Atlas Connectivity**: A known infrastructure issue in the preview environment due to IP whitelisting. This does not affect production. **Status: BLOCKED (Platform Issue)**.
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: MongoDB connection stability in the preview environment.
+-   **Recurrence count**: High.
+-   **Status**: BLOCKED.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Non-Blocking & Atomic Operations**: Using  and MongoDB's  for performant, safe data logging.
+-   **Background Schedulers**: Using a background task to periodically aggregate data for the admin dashboard.
+-   **Distributed Locking**: Using MongoDB for a simple, atomic lock to prevent duplicate scheduler runs in a multi-worker environment.
+-   **CORS (Cross-Origin Resource Sharing)**: The root cause of the current production outage. The browser blocks requests when the  header doesn't permit the frontend's domain.
+-   **Stale Frontend Builds**: A deployment issue where new source code is not compiled into the final bundle, causing features to be missing.
+
+**key DB schema**
+-   **ai_usage_logs**: 
+-   **ai_usage_monthly**: 
+-   **admin_system_metrics**: 
+-   **admin_scheduler_lock**: 
+
+**All files of reference**
+-   : **CRITICAL FILE**. Contains the incorrect  that needs to be fixed.
+-   : Contains the  setting, which was reverted to  as a temporary measure.
+-   : Contains implementation for Stages 1-3 of AI instrumentation.
+-   : Contains the API logic for the Admin Command Center.
+-   : Contains the logic for the background aggregation job, including the distributed lock.
+-   : The new directory containing the standalone admin dashboard.
+
+**Areas that need refactoring**:
+-    is a large monolithic file that could be broken into smaller routers.
+-   The  interceptor in  has a potential race condition noted in previous handoffs.
+
+**key api endpoints**
+-   : Instrumented with usage logging and soft limits.
+-   : Secure endpoint for the Admin Command Center.
+-   : Used for health checks.
+
+**Critical Info for New Agent**
+-   **The absolute top priority (P0) is to fix the production application.** The application is down due to a frontend build misconfiguration.
+-   The root cause is the  in  points to the wrong domain. It must be set to .
+-   After updating the  file, you **MUST** rebuild the frontend (yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) and restart the service for the fix to take effect.
+-   The Admin Command Center task is on hold. The code for it has been moved to  and is intended for a completely separate deployment, which the user will handle later. Do not work on the ops dashboard.
+-   The backend  was set to  to debug the production issue. While this is not the root cause, it is a security risk and should be reverted to a strict allowlist once the production app is confirmed stable.
+
+**documents and test reports created in this job**
+-   : A zip archive of the new ops-frontend application created for the user.
+-   
+-   
+-   
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+10. User confirms the download link for the ops-frontend package worked and asks what to deploy for the main app. **Status**: Addressed.
+9.  Agent provides a summary of changes and instructs the user to Re-deploy. **Status**: COMPLETED.
+8.  User reports the new ops app (in a separate project) is not working. **Status**: Addressed by providing debugging steps.
+7.  User reports the AI in the new app is struggling and asks for documentation. **Status**: Addressed by providing a setup guide.
+6.  User reports their main app is now all messed up and puts the command center on the back burner. **Status**: IN PROGRESS.
+5.  Agent identifies the CORS error and reverts the backend CORS setting to . **Status**: COMPLETED.
+4.  User reports CORS errors persist after re-deploying and provides console logs. **Status**: IN PROGRESS.
+3.  Agent uses the logs to identify the **true root cause**: the frontend is calling the wrong backend URL. **Status**: COMPLETED.
+2.  User confirms the new backend URL is working and asks the agent to fix the issue before forking. **Status**: IN PROGRESS.
+1.  **Pending User Message**: fix first before I fork - The user has clearly instructed the agent to fix the production issue now.
+
+**Project Health Check:**
+-   **Broken**: Yes. The main production application is non-functional due to a client-side configuration error causing CORS failures.
+
+**3rd Party Integrations**
+-   **Clerk**: User authentication and session management.
+-   **Stripe**: Subscription payments and billing portal.
+-   **MongoDB Atlas**: Primary database.
+-   **OpenAI**: Powers the AI Coach feature (model: ).
+-   **Capacitor**: Used for the native iOS application shell.
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES (Deployer Agent was called).
+-   **Troubleshoot agent used after agent stuck in loop**: NO.
+-   **Test files created**:
+    -   
+    -   
+    -   
+    -   
+    -   
+-   **Known regressions**: The entire production frontend is down.
+
+**Credentials to test flow:**
+None provided.
+
+**What agent forgot to execute**
+The agent correctly diagnosed the root cause of the production outage (incorrect ) but was interrupted before implementing the fix. The next step is to edit  and rebuild the application.</analysis>

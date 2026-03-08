@@ -6,7 +6,7 @@ import json
 def test_plan_gating():
     """Test plan-based feature gating for closing date calculator"""
     
-    base_url = "https://coach-metrics-5.preview.emergentagent.com"
+    base_url = "https://staging-app-35.preview.emergentagent.com"
     
     # Test data
     closing_date_data = {
