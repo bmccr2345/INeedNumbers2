@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   CreditCard, 
@@ -8,7 +7,6 @@ import {
   Zap, 
   AlertTriangle,
   Activity,
-  Database,
   TrendingUp,
   Clock,
   RefreshCw,
@@ -121,7 +119,7 @@ const TopUsersTable = ({ users }) => (
 // =============================================================================
 // System Health Bar
 // =============================================================================
-const HealthBar = ({ label, value, max, unit, danger }) => {
+const HealthBar = ({ label, value, max, unit }) => {
   const percentage = max > 0 ? (value / max) * 100 : 0;
   const isDanger = percentage > 70;
   
@@ -144,11 +142,26 @@ const HealthBar = ({ label, value, max, unit, danger }) => {
 };
 
 // =============================================================================
+// Access Denied Component
+// =============================================================================
+const AccessDenied = ({ message }) => (
+  <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+    <div className="bg-gray-900 border border-red-500/50 rounded-lg p-8 max-w-md text-center">
+      <Shield className="w-12 h-12 text-red-400 mx-auto mb-4" />
+      <h2 className="text-xl font-light text-white mb-2">Access Denied</h2>
+      <p className="text-gray-400 text-sm">{message}</p>
+      <p className="text-gray-500 text-xs mt-4">
+        Contact your administrator if you believe this is an error.
+      </p>
+    </div>
+  </div>
+);
+
+// =============================================================================
 // Main Admin Command Center Component
 // =============================================================================
 export default function AdminCommandCenter() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const navigate = useNavigate();
   
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -230,29 +243,14 @@ export default function AdminCommandCenter() {
     }
   }, [isLoaded, isSignedIn, fetchMetrics]);
 
-  // Redirect if not authenticated
+  // Not signed in - should not reach here due to App.js routing
   if (isLoaded && !isSignedIn) {
-    navigate('/sign-in');
-    return null;
+    return <AccessDenied message="Please sign in to access the dashboard." />;
   }
 
-  // Error state
+  // Error state (including 403 from backend)
   if (error) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
-        <div className="bg-gray-900 border border-red-500/50 rounded-lg p-8 max-w-md text-center">
-          <Shield className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-light text-white mb-2">Access Denied</h2>
-          <p className="text-gray-400 text-sm">{error}</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="mt-6 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
-          >
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
+    return <AccessDenied message={error} />;
   }
 
   // Loading state

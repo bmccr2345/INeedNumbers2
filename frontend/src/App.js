@@ -69,7 +69,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MobileLayout from "./layouts/MobileLayout";
 import MobileEntry from "./pages/MobileEntry";
 import CompleteSubscriptionPage from "./pages/CompleteSubscriptionPage";
-import AdminCommandCenter from "./pages/AdminCommandCenter";
+
+// Note: AdminCommandCenter moved to separate ops-frontend app (ops.ineednumbers.com)
 
 // Import Onboarding Screens
 import {
@@ -249,8 +250,7 @@ function App() {
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/support" element={<SupportPage />} />
               
-              {/* Admin Routes */}
-              <Route path="/admin/command-center" element={<AdminCommandCenter />} />
+              {/* Admin Command Center moved to ops.ineednumbers.com */}
               
               {/* Tools Routes */}
               <Route path="/tools" element={<ToolsPage />} />
