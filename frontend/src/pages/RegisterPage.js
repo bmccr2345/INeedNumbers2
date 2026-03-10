@@ -16,12 +16,6 @@ const RegisterPage = () => {
   
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  // Apple App Store Guideline 3.1.1 compliance
-  // Block signup in iOS app - users must subscribe via website
-  if (isIOSApp()) {
-    return <IOSRestrictionMessage showSignIn={true} />;
-  }
-
   // After signup, redirect to Stripe checkout
   useEffect(() => {
     const redirectToCheckout = async () => {
@@ -70,6 +64,12 @@ const RegisterPage = () => {
 
     redirectToCheckout();
   }, [isSignedIn, user, backendUrl, isRedirecting]);
+
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block signup in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
 
   // Show loading state while redirecting to checkout
   if (isSignedIn && user && isRedirecting) {

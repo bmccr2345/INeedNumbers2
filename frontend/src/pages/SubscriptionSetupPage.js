@@ -10,11 +10,6 @@ import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
 
 const SubscriptionSetupPage = () => {
-  // Apple App Store Guideline 3.1.1 compliance
-  // Block subscription setup in iOS app - users must subscribe via website
-  if (isIOSApp()) {
-    return <IOSRestrictionMessage showSignIn={true} />;
-  }
   const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -59,6 +54,12 @@ const SubscriptionSetupPage = () => {
 
     fetchStatus();
   }, [isLoaded, user, backendUrl, navigate]);
+
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block subscription setup in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
 
   const handleCompleteSubscription = async () => {
     if (!user || !subscriptionStatus) return;
