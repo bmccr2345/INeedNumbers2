@@ -5,9 +5,16 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { CheckCircle, CreditCard, ArrowLeft, AlertTriangle, Sparkles } from 'lucide-react';
+import { isIOSApp } from '../utils/platform';
+import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
 
 const SubscriptionSetupPage = () => {
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block subscription setup in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
   const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

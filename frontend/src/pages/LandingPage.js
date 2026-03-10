@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { ChevronDown, ChevronRight, Check, Menu, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { isIOSApp } from '../utils/platform';
 
 // Screenshot URLs for accordion sections
 const SCREENSHOTS = {
@@ -85,6 +86,9 @@ const LandingPage = () => {
   const [activeSolution, setActiveSolution] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef(null);
+  
+  // Apple App Store Guideline 3.1.1 compliance
+  const iosRestricted = isIOSApp();
 
   // Rotate pain points every 4 seconds
   useEffect(() => {
@@ -127,12 +131,14 @@ const LandingPage = () => {
             
             {/* Desktop nav */}
             <div className="hidden md:flex items-center space-x-6">
-              <button 
-                onClick={() => navigate('/pricing')}
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-              >
-                Pricing
-              </button>
+              {!iosRestricted && (
+                <button 
+                  onClick={() => navigate('/pricing')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  Pricing
+                </button>
+              )}
               <button 
                 onClick={() => navigate('/support')}
                 className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
@@ -145,13 +151,15 @@ const LandingPage = () => {
               >
                 Sign In
               </button>
-              <Button 
-                onClick={handleStartCoach}
-                className="bg-[#2FA163] hover:bg-[#268a54] text-white font-medium px-6"
-                size="sm"
-              >
-                Hire My AI Coach
-              </Button>
+              {!iosRestricted && (
+                <Button 
+                  onClick={handleStartCoach}
+                  className="bg-[#2FA163] hover:bg-[#268a54] text-white font-medium px-6"
+                  size="sm"
+                >
+                  Hire My AI Coach
+                </Button>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -169,12 +177,14 @@ const LandingPage = () => {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100">
             <div className="container mx-auto px-6 py-4 space-y-4">
-              <button 
-                onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
-              >
-                Pricing
-              </button>
+              {!iosRestricted && (
+                <button 
+                  onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                >
+                  Pricing
+                </button>
+              )}
               <button 
                 onClick={() => { navigate('/support'); setMobileMenuOpen(false); }}
                 className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
@@ -187,12 +197,14 @@ const LandingPage = () => {
               >
                 Sign In
               </button>
-              <Button 
-                onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
-                className="w-full bg-[#2FA163] hover:bg-[#268a54] text-white font-medium"
-              >
-                Hire My AI Coach
-              </Button>
+              {!iosRestricted && (
+                <Button 
+                  onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
+                  className="w-full bg-[#2FA163] hover:bg-[#268a54] text-white font-medium"
+                >
+                  Hire My AI Coach
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -480,14 +492,16 @@ const LandingPage = () => {
               <p className="text-2xl font-semibold text-gray-900 mb-6" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 Everything Included. <span className="text-[#2FA163]">$49.99/month</span>
               </p>
-              <Button 
-                onClick={handleStartCoach}
-                size="lg"
-                className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                data-testid="tools-cta-btn"
-              >
-                Hire My AI Coach
-              </Button>
+              {!iosRestricted && (
+                <Button 
+                  onClick={handleStartCoach}
+                  size="lg"
+                  className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  data-testid="tools-cta-btn"
+                >
+                  Hire My AI Coach
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -522,16 +536,18 @@ const LandingPage = () => {
                 No spreadsheets. No guessing. No blind spots.<br />
                 <span className="font-semibold text-gray-900">Just clarity.</span>
               </p>
-              <div className="pt-4">
-                <Button 
-                  onClick={handleStartCoach}
-                  size="lg"
-                  className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  data-testid="built-by-agents-cta-btn"
-                >
-                  Hire My AI Coach
-                </Button>
-              </div>
+              {!iosRestricted && (
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleStartCoach}
+                    size="lg"
+                    className="bg-[#2FA163] hover:bg-[#268a54] text-white text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    data-testid="built-by-agents-cta-btn"
+                  >
+                    Hire My AI Coach
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -560,7 +576,9 @@ const LandingPage = () => {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><button onClick={() => navigate('/pricing')} className="hover:text-white transition-colors">Pricing</button></li>
+                {!iosRestricted && (
+                  <li><button onClick={() => navigate('/pricing')} className="hover:text-white transition-colors">Pricing</button></li>
+                )}
                 <li><button onClick={() => navigate('/calculator')} className="hover:text-white transition-colors">Calculator</button></li>
                 <li><button onClick={() => navigate('/glossary')} className="hover:text-white transition-colors">Glossary</button></li>
               </ul>

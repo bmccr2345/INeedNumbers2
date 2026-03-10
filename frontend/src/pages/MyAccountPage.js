@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useAuth } from '../contexts/AuthContext';
 import PlanPreviewRibbon from '../components/PlanPreviewRibbon';
 import { usePlanPreview } from '../hooks/usePlanPreview';
+import { isIOSApp } from '../utils/platform';
 import { 
   User, 
   Crown, 
@@ -37,6 +38,9 @@ const MyAccountPage = () => {
   const [error, setError] = useState('');
   
   const { effectivePlan, previewPlan, isPreviewMode, setPreview, clearPreview, isProduction } = usePlanPreview(user?.plan);
+  
+  // Apple App Store Guideline 3.1.1 compliance
+  const iosRestricted = isIOSApp();
 
   useEffect(() => {
     // Check for checkout success/cancel
@@ -373,8 +377,8 @@ const MyAccountPage = () => {
                   </ul>
                 </div>
 
-                {/* Upgrade Buttons */}
-                {effectivePlan === 'FREE' && (
+                {/* Upgrade Buttons - Hidden on iOS per App Store Guideline 3.1.1 */}
+                {!iosRestricted && effectivePlan === 'FREE' && (
                   <div className="space-y-2 pt-4">
                     <Button
                       onClick={() => handleUpgrade('starter')}
@@ -393,7 +397,7 @@ const MyAccountPage = () => {
                   </div>
                 )}
 
-                {effectivePlan === 'STARTER' && (
+                {!iosRestricted && effectivePlan === 'STARTER' && (
                   <Button
                     onClick={() => handleUpgrade('pro')}
                     disabled={loading}
@@ -403,7 +407,7 @@ const MyAccountPage = () => {
                   </Button>
                 )}
 
-                {(effectivePlan === 'STARTER' || effectivePlan === 'PRO') && (
+                {!iosRestricted && (effectivePlan === 'STARTER' || effectivePlan === 'PRO') && (
                   <Button
                     variant="outline"
                     disabled={loading}

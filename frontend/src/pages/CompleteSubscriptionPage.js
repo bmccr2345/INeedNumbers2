@@ -3,9 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { Check, CreditCard, LogOut } from 'lucide-react';
+import { isIOSApp } from '../utils/platform';
+import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
 
 const CompleteSubscriptionPage = () => {
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block subscription completion in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
   const { user } = useUser();
   const { signOut } = useClerk();
   const navigate = useNavigate();

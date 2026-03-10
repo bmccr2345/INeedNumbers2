@@ -103,5 +103,47 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
 - Hero: frustrated_agent_hero.png (AI-generated)
 - Built by Agents: built_by_agents_hero.png (AI-generated)
 
+## Apple App Store Guideline 3.1.1 Compliance (Mar 2026)
+
+### Overview
+Implemented frontend restrictions to prevent iOS Capacitor app users from signing up or purchasing subscriptions within the app. This complies with Apple's requirement that subscriptions purchased inside apps must use Apple IAP. Instead of implementing IAP, we block signup/payment in the iOS app and direct users to subscribe via the website.
+
+### iOS Detection
+Simple Capacitor runtime check:
+```javascript
+export const isIOSApp = () => {
+  return window.Capacitor?.getPlatform?.() === "ios";
+};
+```
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `/app/frontend/src/utils/platform.js` | **NEW** - `isIOSApp()` detection utility |
+| `/app/frontend/src/components/IOSRestrictionMessage.js` | **NEW** - Reusable restriction message component |
+| `/app/frontend/src/pages/LandingPage.js` | Hide CTAs and pricing links when `isIOSApp()` |
+| `/app/frontend/src/pages/RegisterPage.js` | Show restriction message instead of signup |
+| `/app/frontend/src/pages/PricingPage.js` | Show restriction message instead of pricing |
+| `/app/frontend/src/pages/CompleteSubscriptionPage.js` | Show restriction message instead of checkout |
+| `/app/frontend/src/pages/SubscriptionSetupPage.js` | Show restriction message instead of setup |
+| `/app/frontend/src/pages/MyAccountPage.js` | Hide upgrade/billing buttons |
+| `/app/frontend/src/components/ClerkPricingTable.js` | Disable paid plan subscribe buttons |
+
+### Platform Scope
+- **Capacitor iOS app**: Signup/payment blocked, shows restriction message
+- **Desktop browsers**: Full functionality (unchanged)
+- **Mobile Safari**: Full functionality (unchanged)
+- **Android browsers**: Full functionality (unchanged)
+
+### Restriction Message
+Shows: "Subscription Required - To create an account and subscribe, please visit ineednumbers.com on your computer or mobile browser." with "Sign In" button for existing users.
+
+### Routes Blocked on iOS
+- `/auth/register`
+- `/pricing`
+- `/complete-subscription`
+- `/subscription-setup`
+
 ## Test Report
 All tests passing - see `/app/test_reports/iteration_1.json`
+

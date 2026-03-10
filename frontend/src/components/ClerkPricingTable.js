@@ -5,12 +5,16 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { CheckCircle, Sparkles } from 'lucide-react';
+import { isIOSApp } from '../utils/platform';
 
 const ClerkPricingTable = () => {
   const { user, isLoaded, isSignedIn } = useUser();
   const clerk = useClerk();
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState(null);
+  
+  // Apple App Store Guideline 3.1.1 compliance
+  const iosRestricted = isIOSApp();
 
   if (!isLoaded) {
     return <div className="text-center py-8">Loading plans...</div>;
@@ -163,7 +167,7 @@ const ClerkPricingTable = () => {
               
               <Button
                 onClick={() => handleSubscribe(plan.key)}
-                disabled={isCurrent}
+                disabled={isCurrent || (iosRestricted && plan.key !== 'free_user')}
                 className={`w-full ${
                   plan.key === 'free_user'
                     ? 'bg-neutral-medium hover:bg-neutral-dark text-white'
@@ -172,9 +176,11 @@ const ClerkPricingTable = () => {
                     : plan.popular
                     ? 'bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800 text-white'
                     : 'bg-neutral-medium hover:bg-neutral-dark text-white'
-                } ${isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isCurrent ? 'opacity-50 cursor-not-allowed' : ''} ${
+                  iosRestricted && plan.key !== 'free_user' ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                {isCurrent ? 'Current Plan' : plan.cta}
+                {isCurrent ? 'Current Plan' : (iosRestricted && plan.key !== 'free_user') ? 'Subscribe at ineednumbers.com' : plan.cta}
               </Button>
             </CardContent>
           </Card>

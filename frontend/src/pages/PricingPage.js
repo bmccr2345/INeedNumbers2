@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { isIOSApp } from '../utils/platform';
+import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import Footer from '../components/Footer';
 
 // What's included - organized
@@ -24,6 +26,12 @@ const CLIENT_DEAL_TOOLS = [
 const PricingPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block pricing page in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
 
   const handleStartNow = () => {
     if (user) {

@@ -4,6 +4,8 @@ import { SignUp, useUser } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { navigateToHome } from '../utils/navigation';
+import { isIOSApp } from '../utils/platform';
+import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
 
 const RegisterPage = () => {
@@ -13,6 +15,12 @@ const RegisterPage = () => {
   const [error, setError] = useState(null);
   
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
+  // Apple App Store Guideline 3.1.1 compliance
+  // Block signup in iOS app - users must subscribe via website
+  if (isIOSApp()) {
+    return <IOSRestrictionMessage showSignIn={true} />;
+  }
 
   // After signup, redirect to Stripe checkout
   useEffect(() => {
