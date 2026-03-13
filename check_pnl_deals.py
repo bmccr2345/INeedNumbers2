@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_pnl_deals():
-    base_url = "https://staging-app-35.preview.emergentagent.com"
+    base_url = "https://backend-url-debug.preview.emergentagent.com"
     
     # Authenticate
     login_data = {

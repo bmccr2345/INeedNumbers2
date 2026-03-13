@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://staging-app-35.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://backend-url-debug.preview.emergentagent.com').rstrip('/')
 
 
 class TestHealthEndpoint:
@@ -77,7 +77,7 @@ class TestCORSHeaders:
     def test_cors_preflight_allowed(self):
         """Test CORS preflight request"""
         headers = {
-            "Origin": "https://staging-app-35.preview.emergentagent.com",
+            "Origin": "https://backend-url-debug.preview.emergentagent.com",
             "Access-Control-Request-Method": "GET",
             "Access-Control-Request-Headers": "Content-Type,Authorization"
         }

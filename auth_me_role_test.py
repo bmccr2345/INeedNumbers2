@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 
 class AuthMeRoleTester:
-    def __init__(self, base_url="https://staging-app-35.preview.emergentagent.com"):
+    def __init__(self, base_url="https://backend-url-debug.preview.emergentagent.com"):
         self.base_url = base_url
         self.demo_email = "demo@demo.com"
         self.demo_password = "demo123"  # Correct password from previous tests

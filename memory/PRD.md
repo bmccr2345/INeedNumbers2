@@ -83,6 +83,7 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
 9. **Commission Cap Percentage Display (Mar 6, 2026)**: Fixed floating point precision showing "9.58000000000002%" instead of "9.58%" via `formatPercentage()` with `.toFixed(2)`
 10. **Desktop Account Dropdown (Mar 6, 2026)**: Simplified to: Profile & Billing, Support, Business Setup, Logout
 11. **Double Email 2FA Bug (Mar 7, 2026)**: Fixed Clerk sending 2 emails during 2FA login. ROOT CAUSE - custom `navigate` prop in ClerkProvider conflicted with Clerk's internal navigation. Fixed by removing the `navigate` prop; `signInUrl`/`signUpUrl` props already prevent external redirects.
+12. **Production Outage - Wrong Backend URL (Mar 13, 2026)**: RECURRING ISSUE (2nd occurrence). Frontend `.env` had `REACT_APP_BACKEND_URL` pointing to preview URL (`backend-url-debug.preview.emergentagent.com`) instead of production (`https://ineednumbers.com`). Fixed by correcting `.env`, rebuilding frontend, and verifying the correct URL was embedded in the final JS bundle via grep.
 
 ## Routes
 - `/` - New redesigned landing page

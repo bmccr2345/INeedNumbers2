@@ -9,7 +9,7 @@ import time
 import re
 
 class PDFDebugTester:
-    def __init__(self, base_url="https://staging-app-35.preview.emergentagent.com"):
+    def __init__(self, base_url="https://backend-url-debug.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_login_with_correct_password():
-    base_url = "https://staging-app-35.preview.emergentagent.com"
+    base_url = "https://backend-url-debug.preview.emergentagent.com"
     
     print("🔐 Testing login with correct password...")
     

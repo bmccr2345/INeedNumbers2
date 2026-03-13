@@ -11,7 +11,7 @@ from datetime import datetime
 
 class PnLAPITester:
     def __init__(self):
-        self.base_url = "https://staging-app-35.preview.emergentagent.com"
+        self.base_url = "https://backend-url-debug.preview.emergentagent.com"
         self.session = requests.Session()
         self.demo_email = "demo@demo.com"
         self.demo_password = "demo123"

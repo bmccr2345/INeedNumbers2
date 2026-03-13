@@ -16,7 +16,7 @@ def debug_affordability_response():
     }
     
     response = requests.post(
-        "https://staging-app-35.preview.emergentagent.com/api/auth/login",
+        "https://backend-url-debug.preview.emergentagent.com/api/auth/login",
         json=login_data,
         timeout=15
     )
@@ -42,7 +42,7 @@ def debug_affordability_response():
     }
     
     response = requests.post(
-        "https://staging-app-35.preview.emergentagent.com/api/ai-coach-v2/generate",
+        "https://backend-url-debug.preview.emergentagent.com/api/ai-coach-v2/generate",
         json=affordability_data,
         cookies=cookies,
         timeout=30
