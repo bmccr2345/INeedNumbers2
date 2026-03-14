@@ -87,3 +87,7 @@ agenthub/agents/youtube/db
 /frontend/node_modules/.cache/
 
 # Mobile development
+-e 
+# Environment files
+*.env
+*.env.*
