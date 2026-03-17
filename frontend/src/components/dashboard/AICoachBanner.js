@@ -13,6 +13,7 @@ import { Card, CardContent } from '../ui/card';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { getBackendUrl } from '../../utils/apiConfig';
 // Removed js-cookie import - using HttpOnly cookies now
 
 const AICoachBanner = () => {
@@ -23,7 +24,7 @@ const AICoachBanner = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = getBackendUrl();
 
   // Auto-generate on mount
   useEffect(() => {

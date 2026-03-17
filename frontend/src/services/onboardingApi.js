@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { getBackendUrl } from '../utils/apiConfig';
+
+const API_URL = getBackendUrl();
 
 // Create axios instance with default config
 const api = axios.create({

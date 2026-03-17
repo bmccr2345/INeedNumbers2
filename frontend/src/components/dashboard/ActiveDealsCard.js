@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Calendar, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { getBackendUrl } from '../../utils/apiConfig';
 
 /**
  * Active Deals Card Component
@@ -10,7 +11,7 @@ import axios from 'axios';
 const ActiveDealsCard = ({ onDealClick }) => {
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = getBackendUrl();
 
   useEffect(() => {
     fetchActiveDeals();

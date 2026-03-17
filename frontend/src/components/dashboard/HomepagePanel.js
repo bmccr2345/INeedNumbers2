@@ -35,6 +35,7 @@ import ActivityModal from './ActivityModal';
 import FinancialOverviewModal from './FinancialOverviewModal';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getBackendUrl } from '../../utils/apiConfig';
 
 
 const HomepagePanel = () => {
@@ -85,8 +86,8 @@ const HomepagePanel = () => {
     closing_date: ''
   });
 
-  // Get backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  // Get backend URL - use apiConfig utility for production safety
+  const backendUrl = getBackendUrl();
   
   // Get current month in YYYY-MM format
   const getCurrentMonth = () => {
