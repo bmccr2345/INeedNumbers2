@@ -37,7 +37,9 @@ from enum import Enum
 import asyncio
 import tempfile
 from fastapi.responses import Response, JSONResponse
-# WeasyPrint removed - using Playwright for PDF generation (Emergent compatibility)
+# WeasyPrint for PDF generation (pure Python, no browser required)
+from weasyprint import HTML as WeasyHTML
+from weasyprint.text.fonts import FontConfiguration
 import io
 import os
 import re
@@ -2270,21 +2272,26 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
     """
     Generate PDF using WeasyPrint from the golden template
     """
+    logger.info(f"=== PDF GENERATION STARTED for tool: {tool} ===")
     try:
         # Get calculation data from request body  
         body = await request.json()
         calculation_data = body.get('calculation_data', {})
         property_data = body.get('property_data', {})
+        logger.info(f"Received calculation_data keys: {list(calculation_data.keys())}")
+        logger.info(f"Received property_data keys: {list(property_data.keys())}")
         
         if not calculation_data or not property_data:
             raise HTTPException(status_code=400, detail="Calculation data and property data required")
         
         # Load comprehensive template
         template_path = Path(__file__).parent / "templates" / "investor_report_comprehensive.html"
+        logger.info(f"Template path: {template_path}")
         if not template_path.exists():
             raise HTTPException(status_code=500, detail="Report template not found")
         
         template_content = template_path.read_text(encoding='utf-8')
+        logger.info(f"Template loaded, length: {len(template_content)}")
         
         # Prepare data for template
         if tool == "investor":
@@ -2520,56 +2527,41 @@ async def debug_report(tool: str, request: Request, current_user: Optional[User]
 
 async def generate_pdf_with_weasyprint_from_html(html_content: str) -> bytes:
     """
-    Generate PDF from HTML using Playwright (maintains original HTML/CSS design)
+    Generate PDF from HTML using WeasyPrint (pure Python, no browser required)
     
-    Emergent platform requires pure-Python solutions.
-    Using Playwright with explicit browser path to render beautiful PDFs from HTML/CSS.
+    WeasyPrint is a visual rendering engine for HTML and CSS that can export to PDF.
+    It supports CSS Grid, Flexbox, and print-specific rules (@page).
     """
     try:
-        from playwright.async_api import async_playwright
-        import os
+        logger.info("Generating PDF using WeasyPrint")
         
-        logger.info("Generating PDF using Playwright with HTML/CSS rendering")
+        # Configure fonts
+        font_config = FontConfiguration()
         
-        # Set browser path to the installed location
-        os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/pw-browsers'
+        # Create HTML document from string
+        html_doc = WeasyHTML(string=html_content)
         
-        async with async_playwright() as p:
-            # Launch browser with explicit executable path
-            browser = await p.chromium.launch(
-                headless=True,
-                executable_path='/pw-browsers/chromium_headless_shell-1187/chrome-linux/headless_shell'
-            )
-            page = await browser.new_page()
-            
-            # Set content and wait for everything to load
-            await page.set_content(html_content, wait_until="networkidle")
-            
-            # Generate PDF with print-friendly settings
-            pdf_bytes = await page.pdf(
-                format='Letter',
-                print_background=True,
-                margin={
-                    'top': '0.5in',
-                    'right': '0.5in',
-                    'bottom': '0.5in',
-                    'left': '0.5in'
-                }
-            )
-            
-            await browser.close()
-            
-            logger.info(f"PDF generated successfully using Playwright: {len(pdf_bytes)} bytes")
-            return pdf_bytes
+        # Generate PDF to bytes buffer
+        pdf_buffer = io.BytesIO()
+        html_doc.write_pdf(
+            pdf_buffer,
+            font_config=font_config
+        )
+        
+        # Get the bytes
+        pdf_bytes = pdf_buffer.getvalue()
+        
+        logger.info(f"PDF generated successfully using WeasyPrint: {len(pdf_bytes)} bytes")
+        return pdf_bytes
             
     except ImportError as e:
-        logger.error(f"Playwright not available: {e}")
+        logger.error(f"WeasyPrint not available: {e}")
         raise HTTPException(
             status_code=500,
-            detail="PDF generation service unavailable. Playwright is required."
+            detail="PDF generation service unavailable. WeasyPrint is required."
         )
     except Exception as e:
-        logger.error(f"Playwright PDF generation error: {e}")
+        logger.error(f"WeasyPrint PDF generation error: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to generate PDF: {str(e)}"
@@ -3164,7 +3156,7 @@ async def generate_pdf_with_weasyprint_from_data(tool: str, calculation_data: di
         html_content = generate_print_html(pdf_data, plan, agent_profile)
         
         # Generate PDF using WeasyPrint
-        html_obj = HTML(string=html_content)
+        html_obj = WeasyHTML(string=html_content)
         pdf_buffer = html_obj.write_pdf()
         
         return pdf_buffer
@@ -4757,7 +4749,7 @@ async def generate_closing_date_pdf(
         timeline_html = generate_closing_date_timeline_html(request.inputs, request.timeline, is_branded, agent_profile)
         
         # Create PDF using WeasyPrint
-        html_doc = HTML(string=timeline_html)
+        html_doc = WeasyHTML(string=timeline_html)
         pdf_bytes = html_doc.write_pdf()
         
         # Return PDF as response
@@ -5507,6 +5499,102 @@ async def save_investor_deal(
         raise
     except Exception as e:
         logger.error(f"Error saving investor deal: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# List Investor Deals Endpoint
+@api_router.get("/investor/deals")
+async def list_investor_deals(
+    current_user: User = Depends(require_auth),
+    limit: int = 50,
+    cursor: Optional[str] = None
+):
+    """List all investor deals for the current user"""
+    try:
+        query = {"user_id": current_user.id}
+        
+        # If cursor provided, get deals created before that date
+        if cursor:
+            query["created_at"] = {"$lt": cursor}
+        
+        # Fetch deals sorted by creation date (newest first)
+        deals_cursor = db.investor_deals.find(
+            query,
+            {"_id": 0}  # Exclude MongoDB _id
+        ).sort("created_at", -1).limit(limit + 1)
+        
+        deals = await deals_cursor.to_list(length=limit + 1)
+        
+        # Check if there are more results
+        next_cursor = None
+        if len(deals) > limit:
+            deals = deals[:limit]
+            if deals:
+                next_cursor = deals[-1].get("created_at")
+        
+        return {
+            "items": deals,
+            "nextCursor": next_cursor
+        }
+        
+    except Exception as e:
+        logger.error(f"Error listing investor deals: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Single Investor Deal Endpoint
+@api_router.get("/investor/deals/{deal_id}")
+async def get_investor_deal(
+    deal_id: str,
+    current_user: User = Depends(require_auth)
+):
+    """Get a single investor deal by ID"""
+    try:
+        deal = await db.investor_deals.find_one(
+            {"id": deal_id, "user_id": current_user.id},
+            {"_id": 0}
+        )
+        
+        if not deal:
+            raise HTTPException(status_code=404, detail="Deal not found")
+        
+        return deal
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting investor deal: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Delete Investor Deal Endpoint
+@api_router.delete("/investor/deals/{deal_id}")
+async def delete_investor_deal(
+    deal_id: str,
+    current_user: User = Depends(require_auth),
+    request_obj: Request = None
+):
+    """Delete an investor deal"""
+    try:
+        result = await db.investor_deals.delete_one({
+            "id": deal_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Deal not found")
+        
+        await log_audit_event(current_user, AuditAction.DELETE, {
+            "resource_type": "investor_deal",
+            "deal_id": deal_id
+        }, request_obj)
+        
+        return {"message": "Deal deleted successfully", "id": deal_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting investor deal: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

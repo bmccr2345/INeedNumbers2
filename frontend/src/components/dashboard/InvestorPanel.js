@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Search, Filter, Download, Edit, Copy, Trash2, ExternalLink } from 'lucide-react';
+import { FileText, Search, Filter, Download, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
+import API_BASE_URL from '../../config/api';
 
 const InvestorPanel = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [investors, setInvestors] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     loadInvestors();
@@ -22,16 +23,25 @@ const InvestorPanel = () => {
     try {
       setIsLoading(true);
       const response = await mockDashboardAPI.investor.list();
-      setInvestors(response.items);
+      // Transform backend data to expected format
+      const transformedItems = (response.items || []).map(deal => ({
+        id: deal.id,
+        property: deal.title || deal.inputs?.addressLine || 'Untitled Deal',
+        lastUpdated: deal.created_at,
+        status: 'Ready',
+        inputs: deal.inputs,
+        results: deal.results
+      }));
+      setInvestors(transformedItems);
     } catch (error) {
-      console.error('Failed to load investor PDFs:', error);
+      console.error('Failed to load investor deals:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this investor PDF?')) return;
+    if (!confirm('Delete this investor deal?')) return;
     
     try {
       await mockDashboardAPI.investor.delete(id);
@@ -40,7 +50,7 @@ const InvestorPanel = () => {
       // Show success toast
       const toast = document.createElement('div');
       toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
-      toast.textContent = 'Investor PDF deleted.';
+      toast.textContent = 'Investor deal deleted.';
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
       
@@ -50,30 +60,101 @@ const InvestorPanel = () => {
     }
   };
 
-  const handleBulkDownload = async () => {
-    if (selectedItems.length === 0) return;
-    
+  const handleDownloadPDF = async (investor) => {
     try {
-      const response = await mockDashboardAPI.investor.bulkDownload(selectedItems);
-      window.open(response.url, '_blank');
+      setDownloadingId(investor.id);
       
-      // Analytics event
-      if (window.gtag) {
-        window.gtag('event', 'investor_pdf_bulk_download', {
-          count: selectedItems.length
-        });
+      // Get auth token
+      const token = localStorage.getItem('auth_token');
+      
+      // Call the PDF generation endpoint with the stored deal data
+      const response = await fetch(`${API_BASE_URL}/api/reports/investor/pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          property: {
+            addressLine: investor.inputs?.addressLine || investor.property,
+            purchasePrice: investor.inputs?.purchasePrice || 0,
+            monthlyRent: investor.inputs?.monthlyRent || 0,
+            downPaymentPercent: investor.inputs?.downPaymentPercent || 20,
+            interestRate: investor.inputs?.interestRate || 7,
+            loanTermYears: investor.inputs?.loanTermYears || 30,
+            vacancyRate: investor.inputs?.vacancyRate || 5,
+            propertyType: investor.inputs?.propertyType || 'Single Family'
+          },
+          expenses: {
+            propertyTaxesMonthly: investor.inputs?.propertyTaxesMonthly || 0,
+            insuranceMonthly: investor.inputs?.insuranceMonthly || 0,
+            hoaMonthly: investor.inputs?.hoaMonthly || 0,
+            propertyManagementMonthly: investor.inputs?.propertyManagementMonthly || 0,
+            maintenanceReserveMonthly: investor.inputs?.maintenanceReserveMonthly || 0,
+            utilitiesMonthly: investor.inputs?.utilitiesMonthly || 0,
+            otherExpensesMonthly: investor.inputs?.otherExpensesMonthly || 0
+          },
+          metrics: investor.results || {}
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('PDF generation failed');
       }
       
+      // Download the PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `investor-analysis-${investor.property.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
     } catch (error) {
-      console.error('Bulk download failed:', error);
-      alert('Bulk download failed. Please try again.');
+      console.error('PDF download failed:', error);
+      alert('PDF download failed. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleEdit = (investor) => {
+    // Navigate to calculator with deal data pre-loaded
+    navigate('/calculator', { 
+      state: { 
+        editDeal: investor 
+      }
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    if (!confirm(`Delete ${selectedItems.length} selected deals?`)) return;
+    
+    try {
+      await mockDashboardAPI.investor.bulkDelete(selectedItems);
+      setInvestors(prev => prev.filter(item => !selectedItems.includes(item.id)));
+      setSelectedItems([]);
+      
+      // Show success toast
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
+      toast.textContent = `${selectedItems.length} deals deleted.`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+      
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      alert('Bulk delete failed. Please try again.');
     }
   };
 
   const filteredInvestors = investors.filter(investor => {
     const matchesSearch = investor.property.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || investor.status.toLowerCase() === statusFilter.toLowerCase();
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   return (
@@ -120,17 +201,14 @@ const InvestorPanel = () => {
                   />
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option value="">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="ready">Ready</option>
-                </select>
-              </div>
+              <Button
+                variant="outline"
+                onClick={loadInvestors}
+                disabled={isLoading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -174,25 +252,12 @@ const InvestorPanel = () => {
                     </span>
                     <Button
                       size="sm"
-                      onClick={handleBulkDownload}
-                      className="flex items-center space-x-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Bulk Download ZIP</span>
-                    </Button>
-                    <Button
-                      size="sm"
                       variant="outline"
-                      onClick={() => {
-                        if (confirm(`Delete ${selectedItems.length} selected items?`)) {
-                          // Handle bulk delete
-                          setSelectedItems([]);
-                        }
-                      }}
+                      onClick={handleBulkDelete}
                       className="text-red-600 hover:text-red-700"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Bulk Delete</span>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      <span>Delete Selected</span>
                     </Button>
                   </div>
                 )}
@@ -217,14 +282,13 @@ const InvestorPanel = () => {
                         </th>
                         <th className="pb-2">Property</th>
                         <th className="pb-2">Last Updated</th>
-                        <th className="pb-2">Status</th>
-                        <th className="pb-2">Size</th>
+                        <th className="pb-2">Created</th>
                         <th className="pb-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredInvestors.map((investor) => (
-                        <tr key={investor.id} className="border-t">
+                        <tr key={investor.id} className="border-t hover:bg-gray-50">
                           <td className="py-3">
                             <input
                               type="checkbox"
@@ -241,44 +305,25 @@ const InvestorPanel = () => {
                           <td className="py-3 text-sm font-medium">{investor.property}</td>
                           <td className="py-3 text-sm text-gray-500">{formatDate(investor.lastUpdated)}</td>
                           <td className="py-3">
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              investor.status === 'Ready' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {investor.status}
-                            </span>
-                          </td>
-                          <td className="py-3 text-sm text-gray-500">{investor.size}</td>
-                          <td className="py-3">
                             <div className="flex space-x-2">
                               <button
-                                onClick={() => window.open('#mock-pdf-download', '_blank')}
-                                className="text-primary hover:text-secondary text-sm"
+                                onClick={() => handleDownloadPDF(investor)}
+                                disabled={downloadingId === investor.id}
+                                className="text-primary hover:text-secondary text-sm disabled:opacity-50"
                                 title="Download PDF"
                               >
-                                <Download className="w-4 h-4" />
+                                {downloadingId === investor.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Download className="w-4 h-4" />
+                                )}
                               </button>
                               <button
-                                onClick={() => navigate(`/calculator?edit=${investor.id}`)}
+                                onClick={() => handleEdit(investor)}
                                 className="text-gray-600 hover:text-gray-800 text-sm"
                                 title="Edit"
                               >
                                 <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await mockDashboardAPI.investor.duplicate(investor.id);
-                                    loadInvestors(); // Reload list
-                                  } catch (error) {
-                                    console.error('Duplicate failed:', error);
-                                  }
-                                }}
-                                className="text-gray-600 hover:text-gray-800 text-sm"
-                                title="Duplicate"
-                              >
-                                <Copy className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(investor.id)}
@@ -304,39 +349,30 @@ const InvestorPanel = () => {
                           <h3 className="font-medium">{investor.property}</h3>
                           <p className="text-sm text-gray-500">{formatDate(investor.lastUpdated)}</p>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          investor.status === 'Ready' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {investor.status}
-                        </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">{investor.size}</span>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => window.open('#mock-pdf-download', '_blank')}
-                          >
-                            Download
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/calculator?edit=${investor.id}`)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDelete(investor.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                      <div className="flex justify-end items-center space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleDownloadPDF(investor)}
+                          disabled={downloadingId === investor.id}
+                        >
+                          {downloadingId === investor.id ? 'Generating...' : 'Download PDF'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(investor)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(investor.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </Card>
                   ))}

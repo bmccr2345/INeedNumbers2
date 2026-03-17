@@ -209,14 +209,34 @@ export const mockDashboardAPI = {
     }
   },
 
-  // Investor PDF endpoints (Pro only)
+  // Investor PDF endpoints (Pro only) - Connected to real backend
   investor: {
     list: async ({ status = '', from = '', to = '', limit = 50, cursor = null } = {}) => {
-      // No investor list API exists - return empty for new users
-      return { items: [], nextCursor: null };
+      try {
+        let url = `${backendUrl}/api/investor/deals?limit=${limit}`;
+        if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+        
+        const response = await axios.get(url, getAuthConfig());
+        return response.data;
+      } catch (error) {
+        console.error('Error listing investor deals:', error);
+        // Return empty list on error to prevent UI crash
+        return { items: [], nextCursor: null };
+      }
+    },
+    
+    get: async (id) => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/investor/deals/${id}`, getAuthConfig());
+        return response.data;
+      } catch (error) {
+        console.error('Error getting investor deal:', error);
+        throw error;
+      }
     },
     
     create: async (data) => {
+      // This is handled by the calculator's save function
       await new Promise(resolve => setTimeout(resolve, 500));
       return { id: `inv_${Date.now()}` };
     },
@@ -238,8 +258,13 @@ export const mockDashboardAPI = {
     },
     
     delete: async (id) => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      return { success: true };
+      try {
+        const response = await axios.delete(`${backendUrl}/api/investor/deals/${id}`, getAuthConfig());
+        return { success: true };
+      } catch (error) {
+        console.error('Error deleting investor deal:', error);
+        throw error;
+      }
     },
     
     bulkDownload: async (ids) => {
@@ -248,8 +273,16 @@ export const mockDashboardAPI = {
     },
     
     bulkDelete: async (ids) => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return { deletedIds: ids };
+      try {
+        // Delete each deal individually
+        await Promise.all(ids.map(id => 
+          axios.delete(`${backendUrl}/api/investor/deals/${id}`, getAuthConfig())
+        ));
+        return { deletedIds: ids };
+      } catch (error) {
+        console.error('Error bulk deleting investor deals:', error);
+        throw error;
+      }
     }
   },
 
