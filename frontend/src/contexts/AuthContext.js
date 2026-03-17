@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 import safeLocalStorage from '../utils/safeStorage';
-import { getBackendUrl } from '../utils/apiConfig';
 
 const AuthContext = createContext();
 
@@ -17,8 +16,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Use apiConfig utility to ensure correct URL in production
-  const backendUrl = getBackendUrl();
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   
   // Get Clerk authentication state
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();

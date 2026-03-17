@@ -26,7 +26,6 @@ import MobileAddExpenseModal from '../components/mobile/MobileAddExpenseModal';
 import ActiveDealsCard from '../components/dashboard/ActiveDealsCard';
 import AICoachBanner from '../components/dashboard/AICoachBanner';
 import { safeLocalStorage } from '../utils/safeStorage';
-import { getBackendUrl } from '../utils/apiConfig';
 
 /**
  * Mobile Dashboard Component
@@ -55,7 +54,7 @@ const MobileDashboard = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   
-  const backendUrl = getBackendUrl();
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   // Check onboarding status
   useEffect(() => {

@@ -3,9 +3,7 @@
 
 import axios from 'axios';
 
-import { getBackendUrl } from '../utils/apiConfig';
-
-const backendUrl = getBackendUrl();
+const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
 
 // Helper to get auth headers
 const getAuthConfig = () => ({
