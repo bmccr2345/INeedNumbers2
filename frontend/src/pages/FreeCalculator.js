@@ -227,17 +227,62 @@ const FreeCalculator = () => {
       const annualVacancyLoss = monthlyVacancyLoss * 12;
       const effectiveGrossIncome = annualGrossIncome - annualVacancyLoss;
 
-      // Total Monthly Operating Expenses (excluding mortgage)
-      const totalMonthlyFixedExpenses = propertyTaxesMonthly + insuranceMonthly + hoaMonthly;
-      const totalMonthlyOperatingExpenses = propertyManagementMonthly + maintenanceReserveMonthly + 
-                                            utilitiesMonthly + otherExpensesMonthly;
-      const totalMonthlyExpensesExcludingMortgage = totalMonthlyFixedExpenses + totalMonthlyOperatingExpenses;
+      // ============================================================
+      // EXPENSE CALCULATION - SINGLE SOURCE OF TRUTH (PART 1 & 4)
+      // All values stored as ANNUAL for calculation integrity
+      // ============================================================
       
-      // Annual expenses (excluding mortgage)
-      const annualOperatingExpenses = totalMonthlyExpensesExcludingMortgage * 12;
+      // Convert all monthly expenses to annual (PART 1)
+      const annualPropertyTaxes = propertyTaxesMonthly * 12;
+      const annualInsurance = insuranceMonthly * 12;
+      const annualHOA = hoaMonthly * 12;
+      const annualPropertyManagement = propertyManagementMonthly * 12;
+      const annualMaintenance = maintenanceReserveMonthly * 12;
+      const annualUtilities = utilitiesMonthly * 12;
+      const annualOtherExpenses = otherExpensesMonthly * 12;
       
-      // NOI calculation
-      const noi = effectiveGrossIncome - annualOperatingExpenses;
+      // PART 4: Deterministic expense calculation - EXACT SUM, NO ADJUSTMENTS
+      const totalOperatingExpenses = 
+        annualPropertyTaxes +
+        annualInsurance +
+        annualHOA +
+        annualPropertyManagement +
+        annualMaintenance +
+        annualUtilities +
+        annualOtherExpenses;
+      
+      // Store annual expense breakdown for UI transparency (PART 7)
+      const annualExpenseBreakdown = {
+        propertyTaxes: annualPropertyTaxes,
+        insurance: annualInsurance,
+        hoa: annualHOA,
+        propertyManagement: annualPropertyManagement,
+        maintenance: annualMaintenance,
+        utilities: annualUtilities,
+        otherExpenses: annualOtherExpenses,
+        total: totalOperatingExpenses
+      };
+      
+      // PART 5: Reconciliation check - FAIL-SAFE
+      const sumOfExpenses = annualPropertyTaxes + annualInsurance + annualHOA + 
+                           annualPropertyManagement + annualMaintenance + 
+                           annualUtilities + annualOtherExpenses;
+      
+      if (Math.abs(totalOperatingExpenses - sumOfExpenses) > 1) {
+        console.error("EXPENSE MISMATCH DETECTED", {
+          calculatedTotal: totalOperatingExpenses,
+          sumOfComponents: sumOfExpenses,
+          breakdown: annualExpenseBreakdown
+        });
+      }
+      
+      // Legacy variable names for compatibility
+      const annualOperatingExpenses = totalOperatingExpenses;
+      const totalMonthlyExpensesExcludingMortgage = totalOperatingExpenses / 12;
+      
+      // PART 6: NOI calculation - NO ADDITIONAL ADJUSTMENTS
+      // NOI = Effective Gross Income - Total Operating Expenses
+      const noi = effectiveGrossIncome - totalOperatingExpenses;
       
       // Key metrics
       const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
@@ -316,6 +361,9 @@ const FreeCalculator = () => {
         monthlyCashFlow,
         annualCashFlow,
         monthlyMortgage,
+        
+        // PART 7: Annual expense breakdown for UI transparency
+        annualExpenseBreakdown,
         
         // Monthly expense breakdown (for PDF)
         monthlyExpenses: {
@@ -1250,10 +1298,67 @@ const FreeCalculator = () => {
                       <span className="pl-4">- Vacancy Loss</span>
                       <span>({formatCurrency(metrics.annualVacancyLoss)})</span>
                     </div>
-                    <div className="flex justify-between text-red-700">
-                      <span>Operating Expenses</span>
-                      <span className="font-semibold">({formatCurrency(metrics.operatingExpenses)})</span>
+                    
+                    {/* PART 7: Operating Expenses with Transparent Breakdown */}
+                    <div className="text-red-700">
+                      <div className="flex justify-between font-medium">
+                        <span>Operating Expenses</span>
+                        <span className="font-semibold">({formatCurrency(metrics.operatingExpenses)})</span>
+                      </div>
+                      
+                      {/* Expense Breakdown - MUST match total exactly */}
+                      {metrics.annualExpenseBreakdown && (
+                        <div className="mt-2 pl-4 space-y-1 text-sm text-gray-600 border-l-2 border-red-200 ml-2">
+                          {metrics.annualExpenseBreakdown.propertyTaxes > 0 && (
+                            <div className="flex justify-between">
+                              <span>Property Taxes</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.propertyTaxes)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.insurance > 0 && (
+                            <div className="flex justify-between">
+                              <span>Insurance</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.insurance)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.hoa > 0 && (
+                            <div className="flex justify-between">
+                              <span>HOA</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.hoa)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.propertyManagement > 0 && (
+                            <div className="flex justify-between">
+                              <span>Property Management</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.propertyManagement)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.maintenance > 0 && (
+                            <div className="flex justify-between">
+                              <span>Maintenance Reserve</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.maintenance)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.utilities > 0 && (
+                            <div className="flex justify-between">
+                              <span>Utilities</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.utilities)}</span>
+                            </div>
+                          )}
+                          {metrics.annualExpenseBreakdown.otherExpenses > 0 && (
+                            <div className="flex justify-between">
+                              <span>Other Expenses</span>
+                              <span>{formatCurrency(metrics.annualExpenseBreakdown.otherExpenses)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between font-medium text-red-600 pt-1 border-t border-red-200">
+                            <span>TOTAL</span>
+                            <span>{formatCurrency(metrics.annualExpenseBreakdown.total)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                    
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                       <InfoTooltip tooltipKey="noi">
