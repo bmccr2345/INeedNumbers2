@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import API_BASE_URL from '../../config/api';
 
 /**
  * Mobile Add Expense Modal Component
@@ -29,7 +30,7 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
 
   const fetchCategories = async () => {
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const token = await getToken();
       
       const response = await fetch(`${backendUrl}/api/pnl/categories`, {
@@ -66,7 +67,7 @@ const MobileAddExpenseModal = ({ isOpen, onClose, onSuccess }) => {
 
     try {
       setIsSaving(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
       // Get auth token

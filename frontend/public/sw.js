@@ -1,13 +1,12 @@
 // Service Worker for caching and performance optimization
-const CACHE_NAME = 'ineednumbers-v1.1.0';
-const STATIC_CACHE = 'static-v1.0.0';
-const DYNAMIC_CACHE = 'dynamic-v1.0.0';
+// VERSION BUMP: Increment to force cache clear on deploy
+const CACHE_NAME = 'ineednumbers-v2.0.0';
+const STATIC_CACHE = 'static-v2.0.0';
+const DYNAMIC_CACHE = 'dynamic-v2.0.0';
 
-// Resources to cache immediately
+// Resources to cache immediately (EXCLUDING API calls and main JS bundle)
 const STATIC_ASSETS = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/calculator',
   '/tools',
   '/pricing',
@@ -15,7 +14,8 @@ const STATIC_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];
 
-// API endpoints to cache
+// API endpoints to cache (very limited - most should NOT be cached)
+// CRITICAL: Do not cache authentication or user-specific endpoints
 const API_CACHE_PATTERNS = [
   /\/api\/reports\/.*\/preview$/,
   /\/api\/storage\/health$/
@@ -97,11 +97,31 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle API requests with smart caching
+// Handle API requests - NEVER cache auth or user-specific endpoints
 async function handleApiRequest(request) {
   const url = new URL(request.url);
   
-  // Check if this API should be cached
+  // ALWAYS bypass cache for these critical endpoints
+  const neverCachePaths = [
+    '/api/auth',
+    '/api/user',
+    '/api/clerk',
+    '/api/pnl',
+    '/api/ai-coach',
+    '/api/tracker',
+    '/api/onboarding',
+    '/api/cap-tracker',
+    '/api/commission'
+  ];
+  
+  const shouldNeverCache = neverCachePaths.some(path => url.pathname.startsWith(path));
+  
+  if (shouldNeverCache) {
+    // CRITICAL: Always fetch fresh for auth/user endpoints
+    return fetch(request);
+  }
+  
+  // Check if this API should be cached (very limited list)
   const shouldCache = API_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname));
   
   if (!shouldCache) {

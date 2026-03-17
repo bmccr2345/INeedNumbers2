@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bug, Copy, X, CheckCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import API_BASE_URL from '../../config/api';
 
 const BugTracker = ({ context = 'General' }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +31,7 @@ const BugTracker = ({ context = 'General' }) => {
 
       // React Environment Variables
       envVars: {
-        REACT_APP_BACKEND_URL: process.env.REACT_APP_BACKEND_URL,
+        REACT_APP_BACKEND_URL: API_BASE_URL,
         REACT_APP_ASSETS_URL: process.env.REACT_APP_ASSETS_URL,
         NODE_ENV: process.env.NODE_ENV,
       },
@@ -100,7 +101,7 @@ const BugTracker = ({ context = 'General' }) => {
 
     // Try to fetch current auth status
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const response = await fetch(`${backendUrl}/api/auth/me`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }

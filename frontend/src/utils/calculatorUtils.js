@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 import { safeLocalStorage } from './safeStorage';
+import API_BASE_URL from '../config/api';
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+const backendUrl = API_BASE_URL;
 
 // Number formatting utilities
 export const formatNumberWithCommas = (value) => {

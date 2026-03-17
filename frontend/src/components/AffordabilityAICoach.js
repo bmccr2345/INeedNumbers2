@@ -3,6 +3,7 @@ import { X, Sparkles, Home, AlertTriangle, TrendingUp, DollarSign } from 'lucide
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
+import API_BASE_URL from '../config/api';
 // Removed js-cookie import - using HttpOnly cookies now
 
 const AffordabilityAICoach = ({ isOpen, onClose, inputs, results }) => {
@@ -82,7 +83,7 @@ const AffordabilityAICoach = ({ isOpen, onClose, inputs, results }) => {
       const qualified = results.qualified;
       
       // Call the AI Coach API with cookie-based authentication
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       if (!backendUrl) {
         throw new Error('Backend URL not configured');
       }

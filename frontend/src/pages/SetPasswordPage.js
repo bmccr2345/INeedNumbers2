@@ -7,6 +7,7 @@ import { Label } from '../components/ui/label';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { ArrowLeft, Eye, EyeOff, CheckCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import API_BASE_URL from '../config/api';
 
 const SetPasswordPage = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const SetPasswordPage = () => {
   const fetchSessionInfo = async () => {
     setSessionLoading(true);
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const response = await fetch(`${backendUrl}/api/stripe/checkout/session/${sessionId}`);
       
       if (response.ok) {
@@ -85,7 +86,7 @@ const SetPasswordPage = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       const requestBody = {
         email: formData.email,

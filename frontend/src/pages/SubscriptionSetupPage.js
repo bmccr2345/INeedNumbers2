@@ -8,6 +8,7 @@ import { CheckCircle, CreditCard, ArrowLeft, AlertTriangle, Sparkles } from 'luc
 import { isIOSApp } from '../utils/platform';
 import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const SubscriptionSetupPage = () => {
   const { user, isLoaded } = useUser();
@@ -17,7 +18,7 @@ const SubscriptionSetupPage = () => {
   const [error, setError] = useState('');
   const [creatingCheckout, setCreatingCheckout] = useState(false);
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // Fetch subscription status on mount
   useEffect(() => {

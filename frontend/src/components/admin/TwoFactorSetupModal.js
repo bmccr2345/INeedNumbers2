@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Shield, Smartphone, Key, Copy, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { safeLocalStorage } from '../../utils/safeStorage';
+import API_BASE_URL from '../../config/api';
 
 const TwoFactorSetupModal = ({ isOpen, onClose, isRequired = false }) => {
   const [step, setStep] = useState(1); // 1: Setup, 2: Verify, 3: Success
@@ -27,7 +28,7 @@ const TwoFactorSetupModal = ({ isOpen, onClose, isRequired = false }) => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/2fa/generate`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/2fa/generate`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -73,7 +74,7 @@ const TwoFactorSetupModal = ({ isOpen, onClose, isRequired = false }) => {
     setError('');
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/2fa/verify`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/2fa/verify`, {
         method: 'POST',
         credentials: 'include',
         headers: {

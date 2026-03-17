@@ -32,6 +32,7 @@ import AdminBilling from '../components/admin/AdminBilling';
 // Security Components
 import PasswordResetModal from '../components/admin/PasswordResetModal';
 import TwoFactorSetupModal from '../components/admin/TwoFactorSetupModal';
+import API_BASE_URL from '../config/api';
 
 const AdminConsolePage = () => {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ const AdminConsolePage = () => {
   useEffect(() => {
     const check2FAStatus = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/2fa/status`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/2fa/status`, {
           credentials: 'include'
         });
         

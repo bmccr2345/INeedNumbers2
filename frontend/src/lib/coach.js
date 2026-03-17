@@ -1,8 +1,9 @@
 // AI Coach API client utilities
 
 import { safeLocalStorage } from '../utils/safeStorage';
+import API_BASE_URL from '../config/api';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = API_BASE_URL;
 
 /**
  * Fetch AI coaching insights with non-streaming response

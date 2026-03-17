@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Eye, EyeOff, Key, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 
 const AdminResetUserPasswordModal = ({ isOpen, onClose, user }) => {
   const [newPassword, setNewPassword] = useState('');
@@ -16,7 +17,7 @@ const AdminResetUserPasswordModal = ({ isOpen, onClose, user }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // Password strength requirements
   const passwordRequirements = [

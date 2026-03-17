@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import API_BASE_URL from '../../config/api';
 
 const AdminAuditLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -39,7 +40,7 @@ const AdminAuditLogs = () => {
     try {
       setLoading(true);
       
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       // Build query parameters
       const params = new URLSearchParams({

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Calendar } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
+import API_BASE_URL from '../../config/api';
 
 const ReflectionModal = ({ isOpen, onClose, onReflectionSaved }) => {
   const [reflection, setReflection] = useState('');
@@ -15,7 +16,7 @@ const ReflectionModal = ({ isOpen, onClose, onReflectionSaved }) => {
 
     try {
       setIsLogging(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log`, {
+      const response = await fetch(`${API_BASE_URL}/api/reflection-log`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

@@ -2,8 +2,9 @@
 // Real API integration for saved calculations
 
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+const backendUrl = API_BASE_URL;
 
 // Helper to get auth headers
 const getAuthConfig = () => ({

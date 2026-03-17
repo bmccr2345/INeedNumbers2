@@ -6,6 +6,7 @@ import { Check, CreditCard, LogOut } from 'lucide-react';
 import { isIOSApp } from '../utils/platform';
 import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const CompleteSubscriptionPage = () => {
   const { user } = useUser();
@@ -14,7 +15,7 @@ const CompleteSubscriptionPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // Apple App Store Guideline 3.1.1 compliance
   // Block subscription completion in iOS app - users must subscribe via website

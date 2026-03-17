@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { navigateBackFromCalculator } from '../utils/navigation';
+import API_BASE_URL from '../config/api';
 
 const ClosingDateCalculator = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const ClosingDateCalculator = () => {
   const { effectivePlan } = usePlanPreview(user?.plan);
   
   // Backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
   
   // Auth helper functions
   const getAuthToken = () => {
@@ -323,7 +324,7 @@ const ClosingDateCalculator = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       // Prepare data for the backend (same format as other calculators)
       const payload = {

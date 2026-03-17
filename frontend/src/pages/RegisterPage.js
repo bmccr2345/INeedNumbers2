@@ -7,6 +7,7 @@ import { navigateToHome } from '../utils/navigation';
 import { isIOSApp } from '../utils/platform';
 import IOSRestrictionMessage from '../components/IOSRestrictionMessage';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const RegisterPage = () => {
   const { isSignedIn, user } = useUser();
@@ -14,7 +15,7 @@ const RegisterPage = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState(null);
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // After signup, redirect to Stripe checkout
   useEffect(() => {

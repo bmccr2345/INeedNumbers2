@@ -1,0 +1,54 @@
+{
+  "summary": "Frontend regression testing after API routing refactor completed successfully. All 5 critical features verified: Landing page loads correctly, API URL resolves to production (https://ineednumbers.com) via runtime detection, Pricing page renders correctly, Login page loads (with expected Clerk domain restriction in preview), and Free Calculator page fully functional. The runtime-based URL detection in /app/frontend/src/config/api.js is working as designed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Login page",
+        "issues": ["Clerk auth components show domain restriction error in preview environment - EXPECTED BEHAVIOR per requirements (production keys restricted to ineednumbers.com domain)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_6.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GOOD: /app/frontend/src/config/api.js correctly implements runtime-based URL detection using window.location.hostname",
+    "GOOD: Safety guard prevents preview backend URLs from being used in production (lines 50-67)",
+    "GOOD: Console logging confirms '[API Config] Backend URL resolved to: https://ineednumbers.com' in preview",
+    "GOOD: Named export and default export both available for flexibility",
+    "GOOD: Mobile/Capacitor support included (localhost detection on lines 27-28)",
+    "NOTE: Minor React warning 'Received true for a non-boolean attribute jsx' - low priority, cosmetic issue from styled-jsx"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - Frontend only testing requested",
+    "frontend": "100% (5/5 tests passed)"
+  },
+  "test_credentials": "None required",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "API routing refactor verified. Key findings: 1) api.js runtime detection working correctly - resolves to https://ineednumbers.com based on hostname, 2) All public pages load correctly: /, /pricing, /auth/login, /calculator, 3) Clerk auth errors in preview are EXPECTED due to production key domain restrictions, 4) The console log '[API Config] Backend URL resolved to: https://ineednumbers.com' confirms correct behavior",
+  "verified_tests": {
+    "landing_page": "PASSED - Hero section, navigation, footer all visible",
+    "api_url_resolution": "PASSED - Console confirms 'https://ineednumbers.com' resolved at runtime",
+    "pricing_page": "PASSED - Price ($49.99), CTA button, What's Included section all visible",
+    "login_page": "PASSED - Page loads, shows Clerk domain restriction (expected in preview)",
+    "free_calculator": "PASSED - All form sections visible: Property Details, Purchase & Financing, Income & Expenses"
+  },
+  "screenshots_captured": [
+    ".screenshots/01_landing_page.png",
+    ".screenshots/03_login_page.png",
+    ".screenshots/04_calculator_page.png",
+    ".screenshots/05_pricing_page.png"
+  ],
+  "console_verification": "API Config log confirmed: '[log] [API Config] Backend URL resolved to: https://ineednumbers.com'",
+  "rca_of_the_issue": "N/A - No issues found. The API routing refactor is working correctly."
+}

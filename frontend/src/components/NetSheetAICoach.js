@@ -3,6 +3,7 @@ import { X, Sparkles, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
+import API_BASE_URL from '../config/api';
 // Removed js-cookie import - using HttpOnly cookies now
 
 const NetSheetAICoach = ({ isOpen, onClose, inputs, results, dealState }) => {
@@ -77,7 +78,7 @@ const NetSheetAICoach = ({ isOpen, onClose, inputs, results, dealState }) => {
       const netPercentage = salePrice > 0 ? ((netAmount / salePrice) * 100).toFixed(1) : 0;
       
       // Call the AI Coach API with cookie-based authentication
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`, {
+      const response = await fetch(`${API_BASE_URL}/api/ai-coach-v2/generate`, {
         method: 'POST',
         headers: getHeaders(),
         credentials: 'include',  // Include HttpOnly cookies

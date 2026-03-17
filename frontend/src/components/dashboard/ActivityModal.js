@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../../config/api';
 
 const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
   const { getToken, isLoaded } = useAuth();
@@ -96,7 +97,7 @@ const ActivityModal = ({ isOpen, onClose, onActivitySaved }) => {
       console.log('[ActivityModal] Token obtained, sending request...');
 
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/activity-log`,
+        `${API_BASE_URL}/api/activity-log`,
         {
           activities: nonZeroActivities,
           hours: nonZeroHours,

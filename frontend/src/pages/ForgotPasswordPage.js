@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ const ForgotPasswordPage = () => {
     setError('');
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       const response = await fetch(`${backendUrl}/api/auth/password-reset`, {
         method: 'POST',

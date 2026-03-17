@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const ClerkDebugPage = () => {
   const { user, isLoaded } = useUser();
@@ -8,7 +9,7 @@ const ClerkDebugPage = () => {
   const [error, setError] = useState(null);
   const [assignmentStatus, setAssignmentStatus] = useState('idle');
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   const testAssignPlan = async (plan) => {
     if (!user) {

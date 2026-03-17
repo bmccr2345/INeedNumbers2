@@ -8,6 +8,7 @@ import PerformanceMonitor from "./components/PerformanceMonitor";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from 'sonner';
 import { useIsMobile } from "./hooks/useMediaQuery";
+import API_BASE_URL from "./config/api";
 import "./App.css";
 
 // Clerk Publishable Key
@@ -98,7 +99,7 @@ function DashboardRoute() {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [hasCheckedCheckout, setHasCheckedCheckout] = React.useState(false);
   
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
   
   // Check for checkout success and verify/refresh subscription
   React.useEffect(() => {

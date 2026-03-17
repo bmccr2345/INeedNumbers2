@@ -19,6 +19,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import Footer from '../components/Footer';
+import API_BASE_URL from '../config/api';
 
 const BrandingProfilePage = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const BrandingProfilePage = () => {
     try {
       if (!user) return;  // Check authentication using AuthContext
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/storage/health`, {
+      const response = await fetch(`${API_BASE_URL}/api/storage/health`, {
         credentials: 'include',  // Use HttpOnly cookies
         headers: {
           'Content-Type': 'application/json'
@@ -110,7 +111,7 @@ const BrandingProfilePage = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/brand/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/brand/profile`, {
         credentials: 'include',  // Use HttpOnly cookies instead of Bearer token
         headers: {
           'Content-Type': 'application/json'
@@ -175,7 +176,7 @@ const BrandingProfilePage = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/brand/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/brand/profile`, {
         method: 'POST',
         credentials: 'include',  // Use HttpOnly cookies
         headers: {
@@ -224,7 +225,7 @@ const BrandingProfilePage = () => {
       formData.append('asset', assetType);
       formData.append('file', file);
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/brand/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/brand/upload`, {
         method: 'POST',
         credentials: 'include',  // Use HttpOnly cookies
         // Don't set headers for FormData - browser sets Content-Type automatically with boundary
@@ -279,7 +280,7 @@ const BrandingProfilePage = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/brand/asset?type=${assetType}`, {
+      const response = await fetch(`${API_BASE_URL}/api/brand/asset?type=${assetType}`, {
         method: 'DELETE',
         credentials: 'include',  // Use HttpOnly cookies
         headers: {
@@ -313,7 +314,7 @@ const BrandingProfilePage = () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/brand/test-pdf`, {
+      const response = await fetch(`${API_BASE_URL}/api/brand/test-pdf`, {
         method: 'POST',
         credentials: 'include',
         headers: {

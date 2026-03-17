@@ -29,6 +29,7 @@ import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import API_BASE_URL from '../../config/api';
 
 const ActionTrackerPanel = () => {
   const { user } = useAuth();
@@ -44,7 +45,7 @@ const ActionTrackerPanel = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Get backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
   
   // Helper function to get auth headers
   const getHeaders = async () => {
@@ -878,7 +879,7 @@ const ActionTrackerPanel = () => {
     const loadActivityLogs = async () => {
       try {
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-logs`, {
+        const response = await fetch(`${API_BASE_URL}/api/activity-logs`, {
           headers
         });
         if (response.ok) {
@@ -893,7 +894,7 @@ const ActionTrackerPanel = () => {
     const loadReflectionLogs = async () => {
       try {
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-logs`, {
+        const response = await fetch(`${API_BASE_URL}/api/reflection-logs`, {
           headers
         });
         if (response.ok) {
@@ -938,7 +939,7 @@ const ActionTrackerPanel = () => {
       try {
         setIsLogging(true);
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log`, {
+        const response = await fetch(`${API_BASE_URL}/api/activity-log`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -974,7 +975,7 @@ const ActionTrackerPanel = () => {
       try {
         setIsLogging(true);
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log`, {
+        const response = await fetch(`${API_BASE_URL}/api/reflection-log`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -1003,7 +1004,7 @@ const ActionTrackerPanel = () => {
     const updateActivityLog = async (logId, updates) => {
       try {
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/activity-log/${logId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/activity-log/${logId}`, {
           method: 'PATCH',
           headers,
           body: JSON.stringify(updates)
@@ -1024,7 +1025,7 @@ const ActionTrackerPanel = () => {
     const updateReflectionLog = async (logId, updates) => {
       try {
         const headers = await getHeaders();
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/reflection-log/${logId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/reflection-log/${logId}`, {
           method: 'PATCH',
           headers,
           body: JSON.stringify(updates)

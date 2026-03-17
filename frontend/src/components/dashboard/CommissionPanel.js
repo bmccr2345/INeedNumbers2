@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { formatCurrency, formatDate } from '../../services/mockDashboardAPI';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import API_BASE_URL from '../../config/api';
 
 const CommissionPanel = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const CommissionPanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || API_BASE_URL;
       const response = await axios.get(`${backendUrl}/api/commission/history?limit=10`);
       setHistory(response.data.items || []);
     } catch (error) {
@@ -38,7 +39,7 @@ const CommissionPanel = () => {
     if (!confirm('Delete this commission split?')) return;
     
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || API_BASE_URL;
       await axios.delete(`${backendUrl}/api/commission/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
       

@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import API_BASE_URL from '../../config/api';
 
 const AdminBilling = () => {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -44,7 +45,7 @@ const AdminBilling = () => {
       setLoading(true);
       
       // Fetch real user data and convert to subscription format
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const response = await fetch(`${backendUrl}/api/admin/users?page=1&limit=100`, {
         credentials: 'include'
       });

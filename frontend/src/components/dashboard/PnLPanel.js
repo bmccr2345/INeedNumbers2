@@ -31,6 +31,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import PnLAICoach from '../PnLAICoach';
+import API_BASE_URL from '../../config/api';
 
 const PnLPanel = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const PnLPanel = () => {
   const [showAICoach, setShowAICoach] = useState(false);
 
   // Get backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // Deal form state - initialize dates with today's date and sensible defaults
   const today = new Date().toISOString().slice(0, 10);

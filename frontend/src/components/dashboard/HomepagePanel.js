@@ -35,6 +35,7 @@ import ActivityModal from './ActivityModal';
 import FinancialOverviewModal from './FinancialOverviewModal';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import API_BASE_URL from '../../config/api';
 
 
 const HomepagePanel = () => {
@@ -86,7 +87,7 @@ const HomepagePanel = () => {
   });
 
   // Get backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
   
   // Get current month in YYYY-MM format
   const getCurrentMonth = () => {

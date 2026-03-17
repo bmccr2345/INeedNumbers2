@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../config/api';
 
 const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) => {
   const { getToken, isLoaded } = useAuth();
@@ -104,7 +105,7 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
 
       // Call the AI Coach API using axios
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`,
+        `${API_BASE_URL}/api/ai-coach-v2/generate`,
         {
           context: 'pnl_analysis',
           pnl_data: {

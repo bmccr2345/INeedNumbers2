@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Save } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 
 const GoalSettingsPanel = () => {
   const [settings, setSettings] = useState(null);
@@ -50,7 +51,7 @@ const GoalSettingsPanel = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`,
+        `${API_BASE_URL}/api/goal-settings`,
         {
           withCredentials: true
         }
@@ -113,7 +114,7 @@ const GoalSettingsPanel = () => {
       console.log('[GoalSettings] Submitting:', goalData);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/goal-settings`,
+        `${API_BASE_URL}/api/goal-settings`,
         goalData,
         {
           withCredentials: true

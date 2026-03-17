@@ -10,6 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import API_BASE_URL from '../../config/api';
 
 const AdminOverview = () => {
   const [stats, setStats] = useState({
@@ -30,7 +31,7 @@ const AdminOverview = () => {
 
   const loadOverviewData = async () => {
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       // Fetch real user data
       const usersResponse = await fetch(`${backendUrl}/api/admin/users?page=1&limit=100`, {

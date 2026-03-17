@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const AICoachDebugPanel = () => {
   const { getToken, isLoaded, isSignedIn, userId } = useAuth();
@@ -111,7 +112,7 @@ const AICoachDebugPanel = () => {
       
       const requestConfig = {
         method: 'POST',
-        url: `${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`,
+        url: `${API_BASE_URL}/api/ai-coach-v2/generate`,
         headers: {
           'Authorization': `Bearer ${token.substring(0, 50)}...`,
           'Content-Type': 'application/json'
@@ -131,7 +132,7 @@ const AICoachDebugPanel = () => {
 
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/ai-coach-v2/generate`,
+          `${API_BASE_URL}/api/ai-coach-v2/generate`,
           { context: 'debug_test', stream: false },
           {
             headers: {
@@ -185,7 +186,7 @@ const AICoachDebugPanel = () => {
       testResults,
       debugLog,
       environment: {
-        backendUrl: process.env.REACT_APP_BACKEND_URL,
+        backendUrl: API_BASE_URL,
         nodeEnv: process.env.NODE_ENV,
         userAgent: navigator.userAgent
       }

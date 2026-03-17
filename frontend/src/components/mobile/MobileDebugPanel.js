@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AlertCircle, X, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 
 /**
  * Mobile Debug Panel - Shows authentication and API connection status
@@ -14,7 +15,7 @@ const MobileDebugPanel = () => {
   const [testResults, setTestResults] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   const runDiagnostics = async () => {
     setIsLoading(true);

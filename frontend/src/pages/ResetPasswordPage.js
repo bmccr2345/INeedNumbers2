@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -46,7 +47,7 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       const response = await fetch(`${backendUrl}/api/auth/password-reset/confirm`, {
         method: 'POST',

@@ -17,6 +17,7 @@ import { usePlanPreview } from '../hooks/usePlanPreview';
 import Footer from '../components/Footer';
 import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { safeLocalStorage } from '../utils/safeStorage';
+import API_BASE_URL from '../config/api';
 
 const FreeCalculator = () => {
   const navigate = useNavigate();
@@ -385,7 +386,7 @@ const FreeCalculator = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       // Prepare comprehensive data for PDF (PART 5)
       const payload = {
@@ -498,7 +499,7 @@ const FreeCalculator = () => {
 
     setIsSaving(true);
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
 
       const response = await fetch(`${backendUrl}/api/investor/save`, {
         method: 'POST',

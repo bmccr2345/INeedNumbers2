@@ -4,6 +4,7 @@ import { X, Save, TrendingUp } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import API_BASE_URL from '../../config/api';
 
 /**
  * Mobile Activity Modal Component
@@ -36,7 +37,7 @@ const MobileActivityModal = ({ isOpen, onClose }) => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       
       // Get auth token
       const token = await getToken();

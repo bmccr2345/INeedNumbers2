@@ -4,6 +4,7 @@ import { X, Save, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import API_BASE_URL from '../../config/api';
 
 /**
  * Mobile Reflection Modal Component
@@ -22,7 +23,7 @@ const MobileReflectionModal = ({ isOpen, onClose }) => {
 
     try {
       setIsSaving(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
 
       // Get auth token
       const token = await getToken();

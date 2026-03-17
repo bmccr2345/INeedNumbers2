@@ -4,6 +4,7 @@ import { X, Save, DollarSign } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import API_BASE_URL from '../../config/api';
 
 /**
  * Mobile Add Deal Modal Component
@@ -34,7 +35,7 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
 
   const fetchLeadSources = async () => {
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const token = await getToken();
       
       const response = await fetch(`${backendUrl}/api/pnl/lead-sources`, {
@@ -67,7 +68,7 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
 
     try {
       setIsSaving(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = API_BASE_URL;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
       // Get auth token

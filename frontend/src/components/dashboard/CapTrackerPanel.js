@@ -17,6 +17,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 
 const CapTrackerPanel = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const CapTrackerPanel = () => {
   const [error, setError] = useState(null);
 
   // Get backend URL
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   // Cap configuration form state
   const [capForm, setCapForm] = useState({

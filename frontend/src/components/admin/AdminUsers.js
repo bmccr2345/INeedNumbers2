@@ -21,6 +21,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import axios from 'axios';
 import AdminResetUserPasswordModal from './AdminResetUserPasswordModal';
+import API_BASE_URL from '../../config/api';
 
 const AdminUsers = ({ globalSearch = '' }) => {
   const [users, setUsers] = useState([]);
@@ -43,7 +44,7 @@ const AdminUsers = ({ globalSearch = '' }) => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const backendUrl = API_BASE_URL;
 
   useEffect(() => {
     loadUsers();
