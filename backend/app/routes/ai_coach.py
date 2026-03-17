@@ -541,6 +541,33 @@ async def generate_coach(
                 "user_plan": user.plan,
                 "context": "Seller net sheet analysis focusing on net proceeds, cost optimization, and deal structure"
             }
+        elif context == "investor_deal_analysis" or context == "custom_investor_analysis":
+            # INVESTOR DEAL ANALYSIS - Custom prompt for real estate investment analysis
+            custom_prompt = body.get("custom_prompt", "")
+            deal_data = body.get("deal_data", {})
+            
+            if custom_prompt:
+                # Use the custom prompt directly from frontend
+                payload = {
+                    "analysis_type": "investor_deal_analysis",
+                    "custom_prompt": custom_prompt,
+                    "user_plan": user.plan,
+                    "context": "Custom investor deal analysis with industry benchmarks"
+                }
+            else:
+                # Build default investor analysis payload
+                payload = {
+                    "analysis_type": "investor_deal_analysis",
+                    "purchase_price": deal_data.get("purchase_price", 0),
+                    "monthly_rent": deal_data.get("monthly_rent", 0),
+                    "cap_rate": deal_data.get("cap_rate", 0),
+                    "cash_on_cash": deal_data.get("cash_on_cash_return", 0),
+                    "noi": deal_data.get("noi", 0),
+                    "cash_flow": deal_data.get("annual_cash_flow", 0),
+                    "expenses": deal_data.get("operating_expenses", 0),
+                    "user_plan": user.plan,
+                    "context": "Investment property analysis with industry benchmarks and recommendations"
+                }
         else:
             # Standard dashboard AI Coach payload
             payload = {
@@ -632,13 +659,32 @@ async def generate_coach(
         elif context == "net_sheet_analysis":
             from app.prompts import net_sheet_analysis_system_prompt
             system_prompt = net_sheet_analysis_system_prompt()
+        elif context in ("investor_deal_analysis", "custom_investor_analysis"):
+            # For investor analysis, use the custom prompt if provided
+            custom_prompt = body.get("custom_prompt", "")
+            if custom_prompt:
+                # Custom prompt IS the user message - no system prompt needed
+                system_prompt = "You are an expert real estate investment analyst. Provide clear, professional analysis."
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": custom_prompt}
+                ]
+            else:
+                from app.prompts import investor_analysis_system_prompt
+                try:
+                    system_prompt = investor_analysis_system_prompt()
+                except ImportError:
+                    # Fallback if prompt not defined
+                    system_prompt = "You are an expert real estate investment analyst. Analyze the investment property data and provide insights comparing metrics to industry standards."
         else:
             system_prompt = coach_system_prompt()
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": json.dumps(payload, indent=2)}
-        ]
+        # Only build messages here if not already built for investor analysis
+        if context not in ("investor_deal_analysis", "custom_investor_analysis") or not body.get("custom_prompt"):
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": json.dumps(payload, indent=2)}
+            ]
         
         # Log metadata (no raw content)
         logger.info(f"AI coach request - user: {user.id[:8]}..., model: {settings.OPENAI_MODEL}, "

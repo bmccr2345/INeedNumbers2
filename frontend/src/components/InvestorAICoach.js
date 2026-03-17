@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, AlertTriangle, DollarSign, Building } from 'lucide-react';
+import { X, Sparkles, TrendingUp, AlertTriangle, DollarSign, Building, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -9,107 +9,92 @@ const InvestorAICoach = ({ isOpen, onClose, propertyData, metrics }) => {
   const [analysis, setAnalysis] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Helper function to format JSON analysis into readable text
-  const formatJsonAnalysis = (data) => {
-    let formatted = '';
-    
-    // Extract summary if it exists
-    if (data.summary) {
-      formatted += data.summary + '\n\n';
-    }
-    
-    // Format stats section
-    if (data.stats) {
-      formatted += '📊 Investment Summary:\n';
-      Object.entries(data.stats).forEach(([key, value]) => {
-        const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        formatted += `• ${label}: ${value}\n`;
-      });
-      formatted += '\n';
-    }
-    
-    // Format insights
-    if (data.insights && Array.isArray(data.insights)) {
-      formatted += '💡 Key Insights:\n';
-      data.insights.forEach((insight, idx) => {
-        formatted += `${idx + 1}. ${insight}\n`;
-      });
-      formatted += '\n';
-    }
-    
-    // Format recommendations
-    if (data.recommendations && Array.isArray(data.recommendations)) {
-      formatted += '🎯 Recommendations:\n';
-      data.recommendations.forEach((rec, idx) => {
-        formatted += `${idx + 1}. ${rec}\n`;
-      });
-      formatted += '\n';
-    }
-    
-    // Format risks
-    if (data.risks && Array.isArray(data.risks)) {
-      formatted += '⚠️ Risks to Consider:\n';
-      data.risks.forEach((risk, idx) => {
-        formatted += `${idx + 1}. ${risk}\n`;
-      });
-    }
-    
-    return formatted.trim();
-  };
-
-  // Helper function for API headers (using HttpOnly cookie authentication)
-  const getHeaders = () => {
-    return {
-      'Content-Type': 'application/json'
-    };
-  };
-
   const generateAnalysis = async () => {
     if (isAnalyzing) return;
     
     setIsAnalyzing(true);
+    setAnalysis('');
     
     try {
-      // Prepare investment context for AI Coach
+      // Prepare investment data
       const purchasePrice = parseFloat(String(propertyData?.purchasePrice || '0').replace(/,/g, ''));
       const monthlyRent = parseFloat(String(propertyData?.monthlyRent || '0').replace(/,/g, ''));
+      const annualRent = monthlyRent * 12;
       
-      // Call the AI Coach API with cookie-based authentication
+      // Build the custom prompt for real estate investor analysis
+      const investorPrompt = `You are an expert real estate investment analyst. Analyze this investment property deal and provide a comprehensive analysis in plain English that any investor can understand.
+
+PROPERTY DETAILS:
+- Purchase Price: $${purchasePrice.toLocaleString()}
+- Monthly Rent: $${monthlyRent.toLocaleString()} (Annual: $${annualRent.toLocaleString()})
+- Property Type: ${propertyData?.propertyType || 'Residential'}
+- Down Payment: $${(metrics?.downPayment || 0).toLocaleString()} (${((metrics?.downPayment || 0) / purchasePrice * 100).toFixed(1)}%)
+- Loan Amount: $${(metrics?.loanAmount || 0).toLocaleString()}
+- Interest Rate: ${propertyData?.interestRate || 7}%
+- Vacancy Rate: ${propertyData?.vacancyRate || 5}%
+
+KEY METRICS:
+- Cap Rate: ${(metrics?.capRate || 0).toFixed(2)}%
+- Cash on Cash Return: ${(metrics?.cashOnCashReturn || 0).toFixed(2)}%
+- NOI (Net Operating Income): $${(metrics?.noi || 0).toLocaleString()}
+- Monthly Cash Flow: $${(metrics?.monthlyCashFlow || 0).toLocaleString()}
+- Annual Cash Flow: $${(metrics?.annualCashFlow || 0).toLocaleString()}
+- Operating Expenses: $${(metrics?.operatingExpenses || 0).toLocaleString()}/year
+- Monthly Mortgage Payment: $${(metrics?.monthlyMortgage || 0).toLocaleString()}
+
+INSTRUCTIONS FOR YOUR ANALYSIS:
+1. Write in plain English - avoid jargon where possible
+2. For EVERY acronym or technical term you use (like CAP rate, NOI, LTV, CoC, etc.), explain what it means in parentheses
+3. Compare each key metric to INDUSTRY STANDARDS. Use these benchmarks:
+   - Cap Rate: Industry standard is 5-10%, with 8% being a common target for residential
+   - Cash on Cash Return: 8-12% is considered good, 12%+ is excellent
+   - Debt Service Coverage Ratio: 1.25+ is considered safe
+   - Expense Ratio: 35-50% of gross income is typical
+   - Vacancy Rate: 5-8% is standard assumption
+4. Provide specific, actionable recommendations
+5. Be honest about both strengths AND weaknesses of this deal
+6. End with a clear verdict: Is this a good investment? Why or why not?
+
+FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
+
+DEAL OVERVIEW
+[2-3 sentences summarizing the investment opportunity]
+
+KEY METRICS ANALYSIS
+
+Cap Rate: [X]%
+The Cap Rate (Capitalization Rate) measures the property's return based on its income, calculated as NOI divided by purchase price. Industry standard: 5-10%. Your rate of [X]% is [above/below/within] this range, indicating [interpretation].
+
+Cash on Cash Return: [X]%
+Cash on Cash Return measures your actual cash return on the cash you invested. Industry standard: 8-12% is good, 12%+ is excellent. Your rate of [X]% is [interpretation].
+
+[Continue for other relevant metrics...]
+
+STRENGTHS
+- [Bullet points of what's good about this deal]
+
+CONCERNS
+- [Bullet points of potential issues or risks]
+
+RECOMMENDATIONS
+1. [Specific actionable recommendation]
+2. [Another recommendation]
+3. [Another recommendation]
+
+VERDICT
+[Clear statement on whether this is a good investment and why]
+
+---
+IMPORTANT DISCLAIMER: This analysis is generated by AI for educational purposes only. It is not financial, investment, legal, or tax advice. All insights, projections, and recommendations should be independently verified with qualified professionals before making any investment decisions. Real estate investments carry risk, and past performance does not guarantee future results.`;
+
+      // Call the AI Coach API
       const response = await fetch(`${API_BASE_URL}/api/ai-coach-v2/generate`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          context: 'investor_deal_analysis',
-          deal_data: {
-            // Property info
-            purchase_price: purchasePrice,
-            monthly_rent: monthlyRent,
-            property_type: propertyData?.propertyType || 'Unknown',
-            address: propertyData?.address || '',
-            
-            // Financial metrics
-            cap_rate: metrics?.capRate || 0,
-            cash_on_cash_return: metrics?.cashOnCashReturn || 0,
-            noi: metrics?.noi || 0,
-            annual_cash_flow: metrics?.annualCashFlow || 0,
-            monthly_cash_flow: metrics?.monthlyCashFlow || 0,
-            operating_expenses: metrics?.operatingExpenses || 0,
-            
-            // Financing
-            down_payment: metrics?.downPayment || 0,
-            loan_amount: metrics?.loanAmount || 0,
-            ltv: metrics?.ltv || 0,
-            monthly_mortgage: metrics?.monthlyMortgage || 0,
-            
-            // Expense breakdown
-            expense_breakdown: metrics?.annualExpenseBreakdown || {},
-            
-            // Other details
-            vacancy_rate: propertyData?.vacancyRate || 5,
-            interest_rate: propertyData?.interestRate || 7
-          },
-          year: new Date().getFullYear(),
+          context: 'custom_investor_analysis',
+          custom_prompt: investorPrompt,
           stream: false
         })
       });
@@ -123,23 +108,16 @@ const InvestorAICoach = ({ isOpen, onClose, propertyData, metrics }) => {
       
       // Handle the response
       if (data.response) {
-        // Try to parse as JSON first
-        try {
-          const jsonData = JSON.parse(data.response);
-          setAnalysis(formatJsonAnalysis(jsonData));
-        } catch {
-          // If not JSON, use as-is
-          setAnalysis(data.response);
-        }
+        setAnalysis(data.response);
       } else if (data.analysis) {
         setAnalysis(data.analysis);
       } else {
-        setAnalysis('Analysis complete. Please review the metrics above.');
+        setAnalysis('Unable to generate analysis. Please try again.');
       }
       
     } catch (error) {
       console.error('AI Coach error:', error);
-      setAnalysis(`Unable to generate analysis: ${error.message}`);
+      setAnalysis(`Unable to generate analysis: ${error.message}. Please ensure you are logged in and try again.`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -147,21 +125,22 @@ const InvestorAICoach = ({ isOpen, onClose, propertyData, metrics }) => {
 
   if (!isOpen) return null;
 
-  // Calculate some display values
+  // Calculate display values
   const purchasePrice = parseFloat(String(propertyData?.purchasePrice || '0').replace(/,/g, ''));
   const monthlyRent = parseFloat(String(propertyData?.monthlyRent || '0').replace(/,/g, ''));
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-3xl max-h-[90vh] overflow-hidden bg-white shadow-2xl">
+        {/* Header */}
+        <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5" />
+              <CardTitle className="flex items-center space-x-2 text-xl">
+                <Sparkles className="w-6 h-6" />
                 <span>Fairy AI Coach</span>
               </CardTitle>
-              <CardDescription className="text-purple-100">
+              <CardDescription className="text-purple-100 mt-1">
                 Investment Deal Analysis
               </CardDescription>
             </div>
@@ -169,84 +148,128 @@ const InvestorAICoach = ({ isOpen, onClose, propertyData, metrics }) => {
               variant="ghost" 
               size="icon"
               onClick={onClose}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 -mr-2 -mt-2"
             >
               <X className="w-5 h-5" />
             </Button>
           </div>
         </CardHeader>
         
-        <CardContent className="p-6 space-y-4">
-          {/* Deal Summary */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
+        <CardContent className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] bg-white">
+          {/* Deal Summary Cards */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <div className="flex items-center space-x-2 text-blue-700 mb-1">
                 <Building className="w-4 h-4" />
-                <span className="font-medium">Purchase Price</span>
+                <span className="font-medium text-sm">Purchase Price</span>
               </div>
-              <div className="text-xl font-bold text-blue-800">
+              <div className="text-2xl font-bold text-blue-800">
                 ${purchasePrice.toLocaleString()}
               </div>
             </div>
-            <div className="bg-green-50 p-3 rounded-lg">
+            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
               <div className="flex items-center space-x-2 text-green-700 mb-1">
                 <DollarSign className="w-4 h-4" />
-                <span className="font-medium">Monthly Rent</span>
+                <span className="font-medium text-sm">Monthly Rent</span>
               </div>
-              <div className="text-xl font-bold text-green-800">
+              <div className="text-2xl font-bold text-green-800">
                 ${monthlyRent.toLocaleString()}
               </div>
             </div>
           </div>
 
-          {/* Key Metrics */}
+          {/* Key Metrics Summary */}
           {metrics && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-2 bg-gray-50 rounded">
-                <div className="text-lg font-bold text-primary">
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="text-center p-3 bg-gray-50 rounded-lg border">
+                <div className="text-xl font-bold text-purple-600">
                   {metrics.capRate?.toFixed(2)}%
                 </div>
-                <div className="text-xs text-gray-600">Cap Rate</div>
+                <div className="text-xs text-gray-600 mt-1">Cap Rate</div>
               </div>
-              <div className="text-center p-2 bg-gray-50 rounded">
-                <div className="text-lg font-bold text-primary">
+              <div className="text-center p-3 bg-gray-50 rounded-lg border">
+                <div className="text-xl font-bold text-purple-600">
                   {metrics.cashOnCashReturn?.toFixed(2)}%
                 </div>
-                <div className="text-xs text-gray-600">Cash on Cash</div>
+                <div className="text-xs text-gray-600 mt-1">Cash on Cash</div>
               </div>
-              <div className="text-center p-2 bg-gray-50 rounded">
-                <div className="text-lg font-bold text-primary">
+              <div className="text-center p-3 bg-gray-50 rounded-lg border">
+                <div className="text-xl font-bold text-purple-600">
                   ${metrics.monthlyCashFlow?.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Monthly Cash Flow</div>
+                <div className="text-xs text-gray-600 mt-1">Monthly Cash Flow</div>
               </div>
             </div>
           )}
 
+          {/* Quick Assessment Badges */}
+          {metrics && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {metrics.capRate >= 8 ? (
+                <Badge className="bg-green-100 text-green-700 border border-green-200">Strong Cap Rate</Badge>
+              ) : metrics.capRate >= 5 ? (
+                <Badge className="bg-yellow-100 text-yellow-700 border border-yellow-200">Moderate Cap Rate</Badge>
+              ) : (
+                <Badge className="bg-red-100 text-red-700 border border-red-200">Low Cap Rate</Badge>
+              )}
+              
+              {metrics.cashOnCashReturn >= 12 ? (
+                <Badge className="bg-green-100 text-green-700 border border-green-200">Excellent Cash on Cash</Badge>
+              ) : metrics.cashOnCashReturn >= 8 ? (
+                <Badge className="bg-yellow-100 text-yellow-700 border border-yellow-200">Good Cash on Cash</Badge>
+              ) : (
+                <Badge className="bg-red-100 text-red-700 border border-red-200">Low Cash on Cash</Badge>
+              )}
+              
+              {metrics.monthlyCashFlow > 0 ? (
+                <Badge className="bg-green-100 text-green-700 border border-green-200">Positive Cash Flow</Badge>
+              ) : (
+                <Badge className="bg-red-100 text-red-700 border border-red-200">Negative Cash Flow</Badge>
+              )}
+            </div>
+          )}
+
           {/* Analysis Section */}
-          <div className="border-t pt-4">
+          <div className="border-t pt-6">
             {!analysis ? (
-              <div className="text-center">
-                <p className="text-gray-600 mb-4">
-                  Get AI-powered insights on this investment opportunity. 
-                  Our Fairy AI Coach will analyze the deal metrics and provide personalized recommendations.
-                </p>
+              <div className="text-center py-6">
+                <div className="mb-4">
+                  <Sparkles className="w-12 h-12 mx-auto text-purple-400 mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Get Expert Investment Analysis
+                  </h3>
+                  <p className="text-gray-600 max-w-md mx-auto">
+                    Our AI will analyze this deal as a real estate investment expert, 
+                    comparing your metrics to industry standards and providing 
+                    actionable recommendations in plain English.
+                  </p>
+                </div>
                 <Button
                   onClick={generateAnalysis}
                   disabled={isAnalyzing || !metrics}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8"
                   data-testid="generate-ai-analysis-btn"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isAnalyzing ? 'Analyzing Deal...' : 'Analyze This Investment'}
+                  {isAnalyzing ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                      Analyzing Deal...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Analyze This Investment
+                    </>
+                  )}
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold flex items-center space-x-2">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    <span>AI Analysis</span>
+                  <h3 className="font-semibold text-lg flex items-center space-x-2">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                    <span>Investment Analysis</span>
                   </h3>
                   <Button
                     variant="outline"
@@ -254,51 +277,36 @@ const InvestorAICoach = ({ isOpen, onClose, propertyData, metrics }) => {
                     onClick={generateAnalysis}
                     disabled={isAnalyzing}
                   >
-                    {isAnalyzing ? 'Analyzing...' : 'Refresh Analysis'}
+                    {isAnalyzing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      'Refresh Analysis'
+                    )}
                   </Button>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-                    {analysis}
-                  </pre>
+                <div className="bg-gray-50 p-5 rounded-lg border">
+                  <div className="prose prose-sm max-w-none">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed">
+                      {analysis}
+                    </pre>
+                  </div>
+                </div>
+
+                {/* Disclaimer reminder at bottom */}
+                <div className="flex items-start space-x-2 text-xs text-gray-500 bg-amber-50 p-3 rounded-lg border border-amber-100">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <span>
+                    This AI-generated analysis is for educational purposes only and should not be 
+                    considered financial advice. Always verify with qualified professionals.
+                  </span>
                 </div>
               </div>
             )}
           </div>
-
-          {/* Risk Indicator */}
-          {metrics && (
-            <div className="border-t pt-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                <span className="font-medium text-sm">Quick Assessment</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {metrics.capRate >= 8 ? (
-                  <Badge className="bg-green-100 text-green-700">Strong Cap Rate</Badge>
-                ) : metrics.capRate >= 5 ? (
-                  <Badge className="bg-yellow-100 text-yellow-700">Moderate Cap Rate</Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-700">Low Cap Rate</Badge>
-                )}
-                
-                {metrics.cashOnCashReturn >= 10 ? (
-                  <Badge className="bg-green-100 text-green-700">Excellent Cash on Cash</Badge>
-                ) : metrics.cashOnCashReturn >= 6 ? (
-                  <Badge className="bg-yellow-100 text-yellow-700">Good Cash on Cash</Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-700">Low Cash on Cash</Badge>
-                )}
-                
-                {metrics.monthlyCashFlow > 0 ? (
-                  <Badge className="bg-green-100 text-green-700">Positive Cash Flow</Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-700">Negative Cash Flow</Badge>
-                )}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
