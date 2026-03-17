@@ -9,7 +9,7 @@ import { Separator } from '../components/ui/separator';
 import { Badge } from '../components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { Switch } from '../components/ui/switch';
-import { Calculator, ArrowLeft, Download, TrendingUp, DollarSign, Home, FileText, HelpCircle, Upload, Save, AlertTriangle } from 'lucide-react';
+import { Calculator, ArrowLeft, Download, TrendingUp, DollarSign, Home, FileText, HelpCircle, Upload, Save, AlertTriangle, Sparkles, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { tooltips } from '../config/tooltips';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,11 +18,15 @@ import Footer from '../components/Footer';
 import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { safeLocalStorage } from '../utils/safeStorage';
 import API_BASE_URL from '../config/api';
+import InvestorAICoach from '../components/InvestorAICoach';
 
 const FreeCalculator = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
+  
+  // AI Coach modal state
+  const [showAICoach, setShowAICoach] = useState(false);
   
   // Form state - ALL expenses are now MONTHLY
   const [propertyData, setPropertyData] = useState({
@@ -1182,7 +1186,7 @@ const FreeCalculator = () => {
               >
                 {isCalculating ? 'Calculating...' : 'Calculate Metrics'}
               </Button>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <Button 
                   onClick={handleDownloadPDF}
                   disabled={!metrics}
@@ -1191,6 +1195,28 @@ const FreeCalculator = () => {
                   <FileText className="w-4 h-4" />
                   <span>Download PDF</span>
                 </Button>
+                
+                {/* Fairy AI Coach Button */}
+                {effectivePlan === 'PRO' ? (
+                  <Button 
+                    onClick={() => setShowAICoach(true)}
+                    disabled={!metrics}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                    data-testid="fairy-ai-coach-btn"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Fairy AI Coach</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/pricing')}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white opacity-75"
+                    data-testid="fairy-ai-coach-locked-btn"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Fairy AI Coach (Pro)</span>
+                  </Button>
+                )}
                 
                 {user && ['STARTER', 'PRO'].includes(user.plan) && metrics && (
                   <Button
@@ -1485,6 +1511,16 @@ const FreeCalculator = () => {
       </div>
 
       <Footer />
+      
+      {/* AI Coach Modal - Pro Users Only */}
+      {effectivePlan === 'PRO' && (
+        <InvestorAICoach
+          isOpen={showAICoach}
+          onClose={() => setShowAICoach(false)}
+          propertyData={propertyData}
+          metrics={metrics}
+        />
+      )}
     </div>
   );
 };
