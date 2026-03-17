@@ -1413,20 +1413,38 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
     down_payment = safe_float(property_data.get('downPayment', 0))
     loan_amount = safe_float(property_data.get('loanAmount', 0))
     interest_rate = safe_float(property_data.get('interestRate', 6.75))
-    loan_term = safe_float(property_data.get('loanTerm', 30))
+    loan_term = safe_float(property_data.get('loanTermYears', property_data.get('loanTerm', 30)))
     
-    # Income inputs
+    # Income inputs (monthly)
     monthly_rent = safe_float(property_data.get('monthlyRent', 0))
     other_monthly_income = safe_float(property_data.get('otherMonthlyIncome', 0))
     total_monthly_income = monthly_rent + other_monthly_income
     annual_rent = total_monthly_income * 12
     
-    # Expense inputs
-    property_taxes = safe_float(property_data.get('propertyTaxes', 0))
-    insurance = safe_float(property_data.get('insurance', 0))
-    maintenance = safe_float(property_data.get('repairReserves', 0))
-    vacancy_allowance = safe_float(property_data.get('vacancyAllowance', 0))
-    property_management = safe_float(property_data.get('propertyManagement', 0))
+    # NEW: Monthly expense structure (PART 1)
+    # Fixed Expenses (Monthly)
+    property_taxes_monthly = safe_float(property_data.get('propertyTaxesMonthly', property_data.get('propertyTaxes', 0) / 12 if property_data.get('propertyTaxes') else 0))
+    insurance_monthly = safe_float(property_data.get('insuranceMonthly', property_data.get('insurance', 0) / 12 if property_data.get('insurance') else 0))
+    hoa_monthly = safe_float(property_data.get('hoaMonthly', 0))
+    
+    # Operating Expenses (Monthly)
+    property_management_monthly = safe_float(property_data.get('propertyManagementMonthly', 0))
+    maintenance_reserve_monthly = safe_float(property_data.get('maintenanceReserveMonthly', 0))
+    utilities_monthly = safe_float(property_data.get('utilitiesMonthly', 0))
+    other_expenses_monthly = safe_float(property_data.get('otherExpensesMonthly', 0))
+    
+    # Vacancy calculation
+    vacancy_rate_percent = safe_float(property_data.get('vacancyRatePercent', 5))
+    monthly_vacancy_loss = (total_monthly_income * vacancy_rate_percent) / 100
+    
+    # Total monthly operating expenses
+    total_fixed_monthly = property_taxes_monthly + insurance_monthly + hoa_monthly
+    total_operating_monthly = property_management_monthly + maintenance_reserve_monthly + utilities_monthly + other_expenses_monthly
+    total_monthly_expenses_no_mortgage = total_fixed_monthly + total_operating_monthly
+    
+    # Annual expense calculations
+    annual_expenses = total_monthly_expenses_no_mortgage * 12
+    annual_vacancy_loss = monthly_vacancy_loss * 12
     
     # Additional property details
     square_footage = safe_float(property_data.get('squareFootage', 0))
@@ -1435,12 +1453,32 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
     bedrooms = property_data.get('bedrooms', '')
     bathrooms = property_data.get('bathrooms', '')
     
-    # Calculate key metrics
-    total_monthly_expenses = (property_taxes + insurance + maintenance + vacancy_allowance + property_management) / 12
+    # NEW: Multi-family unit breakdown (PART 3)
+    total_units = safe_float(property_data.get('totalUnits', 0))
+    units_1bed = safe_float(property_data.get('units1Bed', 0))
+    units_2bed = safe_float(property_data.get('units2Bed', 0))
+    units_3bed = safe_float(property_data.get('units3Bed', 0))
+    units_4bed = safe_float(property_data.get('units4Bed', 0))
+    is_multi_family = property_type.lower() == 'multi-family' or property_type.lower() == 'multi family'
+    
+    # Calculate mortgage payment
     monthly_mortgage_payment = safe_float(calculation_data.get('monthlyPayment') or calculation_data.get('monthlyMortgage', 0))
-    monthly_noi = total_monthly_income - total_monthly_expenses
+    
+    # If mortgage not pre-calculated, calculate it
+    if monthly_mortgage_payment == 0 and loan_amount > 0 and interest_rate > 0:
+        monthly_rate = interest_rate / 100 / 12
+        num_payments = loan_term * 12
+        monthly_mortgage_payment = loan_amount * (monthly_rate * (1 + monthly_rate)**num_payments) / ((1 + monthly_rate)**num_payments - 1)
+    
+    # Effective gross income (after vacancy)
+    effective_gross_income = annual_rent - annual_vacancy_loss
+    
+    # NOI calculation
+    annual_noi = effective_gross_income - annual_expenses
+    monthly_noi = annual_noi / 12
+    
+    # Cash flow calculations
     monthly_cash_flow = monthly_noi - monthly_mortgage_payment
-    annual_noi = monthly_noi * 12
     annual_cash_flow = monthly_cash_flow * 12
     
     # Cash invested calculation
@@ -1450,12 +1488,19 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
     cap_rate = (annual_noi / purchase_price * 100) if purchase_price > 0 else 0
     cash_on_cash = (annual_cash_flow / cash_invested * 100) if cash_invested > 0 else 0
     
-    # DSCR calculation (simplified)
+    # NEW: LTV calculation (PART 2)
+    ltv = (loan_amount / purchase_price * 100) if purchase_price > 0 else 0
+    ltv_status = "conservative" if ltv <= 75 else "moderate" if ltv <= 80 else "high"
+    
+    # DSCR calculation
     annual_debt_service = monthly_mortgage_payment * 12
     dscr = (annual_noi / annual_debt_service) if annual_debt_service > 0 else 0
     
-    # 1% rule and 2% rule
+    # 1% rule and rent-to-price
     one_percent_rule = (monthly_rent / purchase_price * 100) if purchase_price > 0 else 0
+    
+    # Break-even occupancy
+    break_even_occupancy = ((annual_expenses + annual_debt_service) / annual_rent * 100) if annual_rent > 0 else 0
     
     return {
         "generatedAt": datetime.now().strftime("%B %d, %Y at %I:%M %p"),
@@ -1467,9 +1512,21 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
             "addressLine": full_address,
             "propertyType": property_type,
             "yearBuilt": year_built,
-            "bedrooms": bedrooms,
-            "bathrooms": bathrooms,
-            "squareFootage": f"{square_footage:,.0f}" if square_footage > 0 else "Not specified"
+            "bedrooms": bedrooms if not is_multi_family else "Multi-Family",
+            "bathrooms": bathrooms if not is_multi_family else "Multi-Family",
+            "squareFootage": f"{square_footage:,.0f}" if square_footage > 0 else "Not specified",
+            "isMultiFamily": is_multi_family,
+            "totalUnits": int(total_units) if total_units > 0 else None
+        },
+        
+        # NEW: Unit Breakdown for Multi-Family (PART 3)
+        "unitBreakdown": {
+            "oneBed": int(units_1bed) if units_1bed > 0 else None,
+            "twoBed": int(units_2bed) if units_2bed > 0 else None,
+            "threeBed": int(units_3bed) if units_3bed > 0 else None,
+            "fourBed": int(units_4bed) if units_4bed > 0 else None,
+            "total": int(total_units) if total_units > 0 else None,
+            "show": is_multi_family and total_units > 0
         },
         
         # Purchase Information Section
@@ -1481,7 +1538,11 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
             "interestRate": f"{interest_rate:.2f}%",
             "loanTerm": f"{loan_term:.0f} years",
             "monthlyPayment": format_currency(monthly_mortgage_payment),
-            "cashInvested": format_currency(cash_invested)
+            "cashInvested": format_currency(cash_invested),
+            # NEW: LTV (PART 2)
+            "ltv": format_percentage(ltv),
+            "ltvValue": ltv,
+            "ltvStatus": ltv_status
         },
         
         # Income Analysis Section
@@ -1489,18 +1550,39 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
             "monthlyRent": format_currency(monthly_rent),
             "otherIncome": format_currency(other_monthly_income),
             "totalMonthlyIncome": format_currency(total_monthly_income),
-            "annualIncome": format_currency(annual_rent)
+            "annualIncome": format_currency(annual_rent),
+            "vacancyRate": f"{vacancy_rate_percent:.1f}%",
+            "vacancyLossMonthly": format_currency(monthly_vacancy_loss),
+            "vacancyLossAnnual": format_currency(annual_vacancy_loss),
+            "effectiveGrossIncome": format_currency(effective_gross_income)
         },
         
-        # Expense Analysis Section  
+        # NEW: Expense Analysis Section with Monthly Breakdown (PART 1)
         "expenses": {
-            "propertyTaxes": format_currency(property_taxes),
-            "insurance": format_currency(insurance),
-            "maintenance": format_currency(maintenance),
-            "vacancyAllowance": format_currency(vacancy_allowance),
-            "propertyManagement": format_currency(property_management),
-            "totalAnnualExpenses": format_currency(property_taxes + insurance + maintenance + vacancy_allowance + property_management),
-            "totalMonthlyExpenses": format_currency(total_monthly_expenses)
+            # Fixed Expenses (Monthly)
+            "fixedMonthly": {
+                "propertyTaxes": format_currency(property_taxes_monthly),
+                "insurance": format_currency(insurance_monthly),
+                "hoa": format_currency(hoa_monthly),
+                "total": format_currency(total_fixed_monthly)
+            },
+            # Operating Expenses (Monthly)
+            "operatingMonthly": {
+                "propertyManagement": format_currency(property_management_monthly),
+                "maintenanceReserve": format_currency(maintenance_reserve_monthly),
+                "utilities": format_currency(utilities_monthly),
+                "otherExpenses": format_currency(other_expenses_monthly),
+                "total": format_currency(total_operating_monthly)
+            },
+            # Totals
+            "totalMonthlyExpenses": format_currency(total_monthly_expenses_no_mortgage),
+            "totalAnnualExpenses": format_currency(annual_expenses),
+            # Legacy fields for backward compatibility
+            "propertyTaxes": format_currency(property_taxes_monthly * 12),
+            "insurance": format_currency(insurance_monthly * 12),
+            "maintenance": format_currency(maintenance_reserve_monthly * 12),
+            "vacancyAllowance": format_currency(annual_vacancy_loss),
+            "propertyManagement": format_currency(property_management_monthly * 12)
         },
         
         # Cash Flow Analysis Section
@@ -1512,12 +1594,20 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
             "isPositive": monthly_cash_flow > 0
         },
         
-        # Key Performance Metrics (simplified for template)
+        # Key Performance Metrics
         "metrics": {
             "capRate": format_percentage(cap_rate),
+            "capRateValue": cap_rate,
             "cashOnCash": format_percentage(cash_on_cash),
+            "cashOnCashValue": cash_on_cash,
             "dscr": f"{dscr:.2f}",
-            "onePercentRule": format_percentage(one_percent_rule)
+            "dscrValue": dscr,
+            "onePercentRule": format_percentage(one_percent_rule),
+            "breakEvenOccupancy": format_percentage(break_even_occupancy),
+            # NEW: LTV (PART 2)
+            "ltv": format_percentage(ltv),
+            "ltvValue": ltv,
+            "ltvStatus": ltv_status
         },
         
         # Investment Summary & Analysis
@@ -1526,7 +1616,8 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
             "cashFlowStatus": "positive" if monthly_cash_flow > 0 else "negative",
             "capRateGrade": "excellent" if cap_rate > 8 else "good" if cap_rate > 6 else "fair" if cap_rate > 4 else "poor",
             "dscrStatus": "strong" if dscr > 1.25 else "adequate" if dscr > 1.0 else "weak",
-            "onePercentStatus": one_percent_rule >= 1.0
+            "onePercentStatus": one_percent_rule >= 1.0,
+            "ltvGrade": "conservative" if ltv <= 75 else "moderate" if ltv <= 80 else "aggressive"
         },
         
         # Plain-Speak Definitions
@@ -1552,8 +1643,8 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
                 "definition": "The money left over each month after all expenses including mortgage payments. Positive cash flow means the property pays for itself plus extra."
             },
             {
-                "term": "1% Rule",
-                "definition": "A quick screening tool: monthly rent should be at least 1% of the purchase price. Properties that meet this often have better cash flow potential."
+                "term": "LTV (Loan-to-Value)",
+                "definition": "The ratio of the loan amount to the purchase price. Lower LTV means more equity and less risk. Under 75% is conservative, 75-80% is moderate, over 80% is aggressive."
             }
         ],
         

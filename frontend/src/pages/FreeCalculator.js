@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,11 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Separator } from '../components/ui/separator';
 import { Badge } from '../components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
-import { Calculator, ArrowLeft, Download, TrendingUp, DollarSign, Home, FileText, HelpCircle, ChevronDown, ChevronUp, User, Upload, Save, Lock, Share2 } from 'lucide-react';
+import { Switch } from '../components/ui/switch';
+import { Calculator, ArrowLeft, Download, TrendingUp, DollarSign, Home, FileText, HelpCircle, Upload, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { tooltips } from '../config/tooltips';
-import PDFReport from '../components/PDFReport';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlanPreview } from '../hooks/usePlanPreview';
 import Footer from '../components/Footer';
@@ -24,7 +23,7 @@ const FreeCalculator = () => {
   const { user } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
   
-  // Form state
+  // Form state - ALL expenses are now MONTHLY
   const [propertyData, setPropertyData] = useState({
     // Property Details
     address: '',
@@ -38,43 +37,55 @@ const FreeCalculator = () => {
     yearBuilt: '',
     propertyImageUrl: '',
     
+    // Multi-family unit breakdown (NEW)
+    units1Bed: '',
+    units2Bed: '',
+    units3Bed: '',
+    units4Bed: '',
+    
     // Financial Data
     purchasePrice: '',
     downPayment: '',
     loanAmount: '',
     interestRate: '',
-    loanTermYears: '',
+    loanTermYears: '30',
     
-    // Income
+    // Income (Monthly)
     monthlyRent: '',
     otherMonthlyIncome: '',
     
-    // Expenses  
-    propertyTaxes: '',
-    insurance: '',
-    hoaFees: '',
-    maintenanceReserves: '',
-    vacancyAllowance: '',
-    propertyManagement: '',
+    // Fixed Expenses (Monthly)
+    propertyTaxesMonthly: '',
+    insuranceMonthly: '',
+    hoaMonthly: '',
+    
+    // Operating Expenses (Monthly)
+    propertyManagementMonthly: '',
+    propertyManagementIsPercent: false,
+    propertyManagementPercent: '10',
+    maintenanceReserveMonthly: '',
+    utilitiesMonthly: '',
+    otherExpensesMonthly: '',
+    
+    // Vacancy
+    vacancyRatePercent: '5',
     
     // Other assumptions
     appreciationRate: '3',
     exitCapRate: '6'
   });
 
-  // Agent personalization state removed
-
   // UI state
-  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false);
   const [hasAgentChanges, setHasAgentChanges] = useState(false);
   const [isSavingAgent, setIsSavingAgent] = useState(false);
-  // Removed showPDFPreview state (no longer needed)
 
   // Calculated metrics state
   const [metrics, setMetrics] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
-
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Validation warnings (NEW)
+  const [warnings, setWarnings] = useState([]);
 
   // Load agent profile on component mount
   useEffect(() => {
@@ -83,175 +94,118 @@ const FreeCalculator = () => {
 
   const loadAgentProfile = () => {
     try {
-      // Load from localStorage (in real app, this would be from API based on auth)
       const savedProfile = safeLocalStorage.getItem('dealpack_agent_profile');
       if (savedProfile) {
-        setAgentData(JSON.parse(savedProfile));
+        // Agent profile loaded (not used in this simplified version)
       }
     } catch (error) {
       console.error('Error loading agent profile:', error);
     }
   };
 
-  // Handle input changes
+  // Calculate total units for multi-family (NEW)
+  const calculateTotalUnits = useCallback(() => {
+    const units1 = parseInt(propertyData.units1Bed) || 0;
+    const units2 = parseInt(propertyData.units2Bed) || 0;
+    const units3 = parseInt(propertyData.units3Bed) || 0;
+    const units4 = parseInt(propertyData.units4Bed) || 0;
+    return units1 + units2 + units3 + units4;
+  }, [propertyData.units1Bed, propertyData.units2Bed, propertyData.units3Bed, propertyData.units4Bed]);
+
+  // Handle input changes with bidirectional loan/down payment sync (PART 4)
   const handleInputChange = (field, value) => {
-    // List of numeric fields that should be formatted with commas
     const numericFields = [
       'purchasePrice', 'downPayment', 'loanAmount', 'monthlyRent', 'otherMonthlyIncome',
-      'propertyTaxes', 'insurance', 'hoaFees', 'otherExpenses', 'repairReserves',
-      'vacancyAllowance', 'propertyManagement', 'squareFootage'
+      'propertyTaxesMonthly', 'insuranceMonthly', 'hoaMonthly', 'otherExpensesMonthly',
+      'maintenanceReserveMonthly', 'utilitiesMonthly', 'propertyManagementMonthly', 'squareFootage'
     ];
     
+    let formattedValue = value;
     if (numericFields.includes(field) && value) {
-      // Format numeric fields with commas
-      const formattedValue = formatNumberWithCommas(value);
-      setPropertyData(prev => ({
-        ...prev,
-        [field]: formattedValue
-      }));
-    } else {
-      setPropertyData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      formattedValue = formatNumberWithCommas(value);
     }
-  };
 
-  // Handle agent data changes
-  const handleAgentChange = (field, value) => {
-    setAgentData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    setHasAgentChanges(true);
-  };
-
-  // Validate email format
-  const isValidEmail = (email) => {
-    if (!email) return true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  // Validate phone format
-  const isValidPhone = (phone) => {
-    if (!phone) return true;
-    const phoneRegex = /^[\d\s\-\(\)\+\.]+$/;
-    return phoneRegex.test(phone);
-  };
-
-  // Format website URL
-  const formatWebsite = (website) => {
-    if (!website) return '';
-    if (!website.startsWith('http://') && !website.startsWith('https://')) {
-      return `https://${website}`;
-    }
-    return website;
-  };
-
-  // Validate hex color
-  const isValidHexColor = (color) => {
-    if (!color) return true;
-    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    return hexRegex.test(color);
-  };
-
-  // Save agent profile
-  const saveAgentProfile = async () => {
-    setIsSavingAgent(true);
-    
-    try {
-      // Validation
-      if (agentData.agent_email && !isValidEmail(agentData.agent_email)) {
-        toast.error('Please enter a valid email address');
-        setIsSavingAgent(false);
-        return;
-      }
-
-      if (agentData.agent_phone && !isValidPhone(agentData.agent_phone)) {
-        toast.error('Please enter a valid phone number');
-        setIsSavingAgent(false);
-        return;
-      }
-
-      if (agentData.agent_brand_color && !isValidHexColor(agentData.agent_brand_color)) {
-        toast.error('Please enter a valid hex color (e.g., #5B56F1)');
-        setIsSavingAgent(false);
-        return;
-      }
-
-      // Format website URL
-      const formattedProfile = {
-        ...agentData,
-        agent_website: formatWebsite(agentData.agent_website)
-      };
-
-      // Save to localStorage (in real app, this would be API call)
-      safeLocalStorage.setItem('dealpack_agent_profile', JSON.stringify(formattedProfile));
+    setPropertyData(prev => {
+      const newData = { ...prev, [field]: formattedValue };
       
-      setAgentData(formattedProfile);
-      setHasAgentChanges(false);
-      toast.success('Agent information saved successfully!');
+      // PART 4: Bidirectional loan/down payment calculation
+      const purchasePrice = parseNumberFromFormatted(field === 'purchasePrice' ? value : prev.purchasePrice) || 0;
       
-    } catch (error) {
-      console.error('Error saving agent profile:', error);
-      toast.error('Error saving agent information');
-    } finally {
-      setIsSavingAgent(false);
-    }
-  };
-
-  // Handle file upload (placeholder)
-  const handleFileUpload = (field, file) => {
-    toast.info('File upload will be available in the full version');
+      if (field === 'downPayment' && purchasePrice > 0) {
+        const downPayment = parseNumberFromFormatted(value) || 0;
+        const calculatedLoan = Math.max(0, purchasePrice - downPayment);
+        newData.loanAmount = formatNumberWithCommas(calculatedLoan.toString());
+      } else if (field === 'loanAmount' && purchasePrice > 0) {
+        const loanAmount = parseNumberFromFormatted(value) || 0;
+        const calculatedDown = Math.max(0, purchasePrice - loanAmount);
+        newData.downPayment = formatNumberWithCommas(calculatedDown.toString());
+      } else if (field === 'purchasePrice') {
+        // When purchase price changes, recalculate loan based on current down payment
+        const downPayment = parseNumberFromFormatted(prev.downPayment) || 0;
+        if (downPayment > 0) {
+          const calculatedLoan = Math.max(0, purchasePrice - downPayment);
+          newData.loanAmount = formatNumberWithCommas(calculatedLoan.toString());
+        }
+      }
+      
+      return newData;
+    });
   };
 
   // Handle property image upload
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Check if file is an image
       if (!file.type.startsWith('image/')) {
         toast.error('Please select an image file');
         return;
       }
-      
-      // Check file size (limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image size should be less than 5MB');
         return;
       }
-      
-      // Create a URL for the uploaded image
       const imageUrl = URL.createObjectURL(file);
       handleInputChange('propertyImageUrl', imageUrl);
       toast.success('Property image uploaded successfully');
     }
   };
 
-  // Calculate financial metrics
-  const calculateMetrics = () => {
+  // Calculate financial metrics with NEW expense structure (PART 1)
+  const calculateMetrics = useCallback(() => {
     setIsCalculating(true);
+    const newWarnings = [];
     
     try {
       const data = propertyData;
       
-      // Convert strings to numbers (parse formatted numbers with commas)
+      // Parse all values
       const purchasePrice = parseNumberFromFormatted(data.purchasePrice) || 0;
       const monthlyRent = parseNumberFromFormatted(data.monthlyRent) || 0;
       const otherMonthlyIncome = parseNumberFromFormatted(data.otherMonthlyIncome) || 0;
-      const propertyTaxes = parseNumberFromFormatted(data.propertyTaxes) || 0;
-      const insurance = parseNumberFromFormatted(data.insurance) || 0;
-      const hoaFees = parseNumberFromFormatted(data.hoaFees) || 0;
-      const maintenanceReserves = parseNumberFromFormatted(data.maintenanceReserves) || 0;
-      const vacancyAllowance = parseNumberFromFormatted(data.vacancyAllowance) || 0;
-      const propertyManagement = parseNumberFromFormatted(data.propertyManagement) || 0;
       const downPayment = parseNumberFromFormatted(data.downPayment) || 0;
       const loanAmount = parseNumberFromFormatted(data.loanAmount) || (purchasePrice - downPayment);
       const interestRate = parseFloat(data.interestRate) || 0;
       const loanTermYears = parseFloat(data.loanTermYears) || 30;
       const appreciationRate = parseFloat(data.appreciationRate) || 3;
       const exitCapRate = parseFloat(data.exitCapRate) || 6;
+      const vacancyRatePercent = parseFloat(data.vacancyRatePercent) || 5;
+
+      // Fixed Expenses (Monthly) - PART 1
+      const propertyTaxesMonthly = parseNumberFromFormatted(data.propertyTaxesMonthly) || 0;
+      const insuranceMonthly = parseNumberFromFormatted(data.insuranceMonthly) || 0;
+      const hoaMonthly = parseNumberFromFormatted(data.hoaMonthly) || 0;
+      
+      // Operating Expenses (Monthly) - PART 1
+      let propertyManagementMonthly = 0;
+      if (data.propertyManagementIsPercent) {
+        const pmPercent = parseFloat(data.propertyManagementPercent) || 10;
+        propertyManagementMonthly = (monthlyRent * pmPercent) / 100;
+      } else {
+        propertyManagementMonthly = parseNumberFromFormatted(data.propertyManagementMonthly) || 0;
+      }
+      const maintenanceReserveMonthly = parseNumberFromFormatted(data.maintenanceReserveMonthly) || 0;
+      const utilitiesMonthly = parseNumberFromFormatted(data.utilitiesMonthly) || 0;
+      const otherExpensesMonthly = parseNumberFromFormatted(data.otherExpensesMonthly) || 0;
 
       // Calculate monthly mortgage payment
       const monthlyInterestRate = interestRate / 100 / 12;
@@ -266,24 +220,36 @@ const FreeCalculator = () => {
       // Income calculations
       const totalMonthlyIncome = monthlyRent + otherMonthlyIncome;
       const annualGrossIncome = totalMonthlyIncome * 12;
-      const effectiveGrossIncome = annualGrossIncome - vacancyAllowance * 12;
-
-      // Expense calculations
-      const monthlyExpenses = (propertyTaxes / 12) + (insurance / 12) + hoaFees + 
-                             maintenanceReserves + propertyManagement + monthlyMortgage;
-      const annualExpenses = monthlyExpenses * 12;
       
-      // Operating expenses (excluding mortgage)
-      const operatingExpenses = annualExpenses - (monthlyMortgage * 12);
+      // Vacancy loss calculation (PART 1)
+      const monthlyVacancyLoss = (totalMonthlyIncome * vacancyRatePercent) / 100;
+      const annualVacancyLoss = monthlyVacancyLoss * 12;
+      const effectiveGrossIncome = annualGrossIncome - annualVacancyLoss;
+
+      // Total Monthly Operating Expenses (excluding mortgage)
+      const totalMonthlyFixedExpenses = propertyTaxesMonthly + insuranceMonthly + hoaMonthly;
+      const totalMonthlyOperatingExpenses = propertyManagementMonthly + maintenanceReserveMonthly + 
+                                            utilitiesMonthly + otherExpensesMonthly;
+      const totalMonthlyExpensesExcludingMortgage = totalMonthlyFixedExpenses + totalMonthlyOperatingExpenses;
+      
+      // Annual expenses (excluding mortgage)
+      const annualOperatingExpenses = totalMonthlyExpensesExcludingMortgage * 12;
       
       // NOI calculation
-      const noi = effectiveGrossIncome - operatingExpenses;
+      const noi = effectiveGrossIncome - annualOperatingExpenses;
       
       // Key metrics
       const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
-      const monthlyCashFlow = totalMonthlyIncome - monthlyExpenses;
+      
+      // LTV calculation (PART 2)
+      const ltv = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
+      
+      // Monthly cash flow (includes mortgage)
+      const totalMonthlyExpenses = totalMonthlyExpensesExcludingMortgage + monthlyMortgage;
+      const monthlyCashFlow = totalMonthlyIncome - monthlyVacancyLoss - totalMonthlyExpenses;
       const annualCashFlow = monthlyCashFlow * 12;
-      const cashInvested = downPayment > 0 ? downPayment : purchasePrice * 0.25; // Assume 25% if not specified
+      
+      const cashInvested = downPayment > 0 ? downPayment : purchasePrice * 0.25;
       const cashOnCash = cashInvested > 0 ? (annualCashFlow / cashInvested) * 100 : 0;
       
       // DSCR calculation
@@ -291,19 +257,16 @@ const FreeCalculator = () => {
       const dscr = annualDebtService > 0 ? noi / annualDebtService : 0;
       
       // Break-even occupancy
-      const potentialGrossIncome = annualGrossIncome;
-      const breakEvenOccupancy = potentialGrossIncome > 0 ? 
-        ((operatingExpenses + annualDebtService) / potentialGrossIncome) * 100 : 0;
+      const breakEvenOccupancy = annualGrossIncome > 0 ? 
+        ((annualOperatingExpenses + annualDebtService) / annualGrossIncome) * 100 : 0;
       
-      // 5-year IRR calculation (simplified)
-      const futureValue = purchasePrice * Math.pow(1 + appreciationRate / 100, 5);
+      // 5-year projections
       const exitNOI = noi * Math.pow(1 + appreciationRate / 100, 5);
       const exitValue = exitNOI / (exitCapRate / 100);
       const totalCashFlows = annualCashFlow * 5;
-      const totalReturn = (exitValue + totalCashFlows - purchasePrice) / purchasePrice * 100;
       
-      // Simplified IRR calculation (this is a rough approximation)
-      const irr = Math.pow((exitValue + totalCashFlows) / cashInvested, 1/5) - 1;
+      // IRR calculation
+      const irr = cashInvested > 0 ? Math.pow((exitValue + totalCashFlows) / cashInvested, 1/5) - 1 : 0;
       const irrPercent = irr * 100;
       
       // MOIC calculation
@@ -312,34 +275,84 @@ const FreeCalculator = () => {
       // Rent-to-price ratio
       const rentToPriceRatio = purchasePrice > 0 ? (monthlyRent / purchasePrice) * 100 : 0;
 
+      // Expense ratio for validation
+      const expenseRatio = annualGrossIncome > 0 ? (annualOperatingExpenses / annualGrossIncome) * 100 : 0;
+
+      // PART 6: Validation warnings
+      if (capRate > 0 && (capRate < 2 || capRate > 12)) {
+        newWarnings.push({
+          type: 'cap_rate',
+          message: `Cap Rate of ${capRate.toFixed(2)}% is unusual. Check income/expense inputs.`,
+          severity: 'warning'
+        });
+      }
+      
+      if (expenseRatio > 0 && expenseRatio < 20) {
+        newWarnings.push({
+          type: 'expense_ratio',
+          message: `Expenses are only ${expenseRatio.toFixed(1)}% of income. This may be underestimated.`,
+          severity: 'warning'
+        });
+      }
+
+      setWarnings(newWarnings);
+
       const calculatedMetrics = {
         // Property Info
-        purchasePrice: purchasePrice,
-        monthlyRent: monthlyRent,
+        purchasePrice,
+        monthlyRent,
+        
+        // Financing
+        loanAmount,
+        downPayment,
+        ltv, // NEW (PART 2)
         
         // Income & Expenses
-        effectiveGrossIncome: effectiveGrossIncome,
-        operatingExpenses: operatingExpenses,
-        noi: noi,
-        monthlyCashFlow: monthlyCashFlow,
-        annualCashFlow: annualCashFlow,
+        effectiveGrossIncome,
+        annualVacancyLoss,
+        operatingExpenses: annualOperatingExpenses,
+        noi,
+        monthlyCashFlow,
+        annualCashFlow,
+        monthlyMortgage,
+        
+        // Monthly expense breakdown (for PDF)
+        monthlyExpenses: {
+          propertyTaxes: propertyTaxesMonthly,
+          insurance: insuranceMonthly,
+          hoa: hoaMonthly,
+          propertyManagement: propertyManagementMonthly,
+          maintenanceReserve: maintenanceReserveMonthly,
+          utilities: utilitiesMonthly,
+          otherExpenses: otherExpensesMonthly,
+          vacancyLoss: monthlyVacancyLoss,
+          mortgage: monthlyMortgage
+        },
         
         // Key Ratios
-        capRate: capRate,
-        cashOnCash: cashOnCash,
-        dscr: dscr,
-        rentToPriceRatio: rentToPriceRatio,
-        breakEvenOccupancy: breakEvenOccupancy,
+        capRate,
+        cashOnCash,
+        dscr,
+        rentToPriceRatio,
+        breakEvenOccupancy,
+        expenseRatio,
         
         // Investment Analysis
-        irrPercent: irrPercent,
-        moic: moic,
-        totalReturn: totalReturn,
+        irrPercent,
+        moic,
         
         // Additional Info
-        cashInvested: cashInvested,
-        monthlyMortgage: monthlyMortgage,
-        exitValue: exitValue
+        cashInvested,
+        exitValue,
+        
+        // Multi-family unit breakdown (PART 3)
+        unitBreakdown: data.propertyType === 'multi-family' ? {
+          oneBed: parseInt(data.units1Bed) || 0,
+          twoBed: parseInt(data.units2Bed) || 0,
+          threeBed: parseInt(data.units3Bed) || 0,
+          fourBed: parseInt(data.units4Bed) || 0,
+          total: calculateTotalUnits()
+        } : null
       };
 
       setMetrics(calculatedMetrics);
@@ -351,7 +364,7 @@ const FreeCalculator = () => {
     } finally {
       setIsCalculating(false);
     }
-  };
+  }, [propertyData, calculateTotalUnits]);
 
   // Auto-calculate when key fields change
   useEffect(() => {
@@ -362,10 +375,9 @@ const FreeCalculator = () => {
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [propertyData.purchasePrice, propertyData.monthlyRent, propertyData.propertyTaxes, 
-      propertyData.insurance, propertyData.downPayment, propertyData.interestRate]);
+  }, [propertyData, calculateMetrics]);
 
-  // Handle PDF preview and download using new golden template
+  // Handle PDF download (PART 5)
   const handleDownloadPDF = async () => {
     if (!metrics) {
       toast.error('Please calculate metrics first');
@@ -375,13 +387,15 @@ const FreeCalculator = () => {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
       
-      // Prepare data for the backend
+      // Prepare comprehensive data for PDF (PART 5)
       const payload = {
         calculation_data: metrics,
-        property_data: propertyData
+        property_data: {
+          ...propertyData,
+          totalUnits: propertyData.propertyType === 'multi-family' ? calculateTotalUnits() : null
+        }
       };
 
-      // Make API call to generate PDF using the golden template
       const response = await fetch(`${backendUrl}/api/reports/investor/pdf`, {
         method: 'POST',
         headers: {
@@ -394,27 +408,22 @@ const FreeCalculator = () => {
         throw new Error(`PDF generation failed: ${response.statusText}`);
       }
 
-      // Get the PDF blob
       const pdfBlob = await response.blob();
       
-      // Get filename from response headers or generate one
       const disposition = response.headers.get('Content-Disposition');
       let filename = 'investor_analysis.pdf';
       if (disposition && disposition.includes('filename=')) {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      // Create download link
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       
-      // Trigger download
       document.body.appendChild(link);
       link.click();
       
-      // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
@@ -425,8 +434,6 @@ const FreeCalculator = () => {
       toast.error('Error downloading PDF. Please try again.');
     }
   };
-
-  // Removed handlePreviewPDF function
 
   // Format currency
   const formatCurrency = (value) => {
@@ -445,7 +452,14 @@ const FreeCalculator = () => {
     return `${value.toFixed(2)}%`;
   };
 
-  // Tooltip component for explanations - mobile-friendly with click support
+  // Get LTV color (PART 2)
+  const getLTVColor = (ltv) => {
+    if (ltv <= 75) return 'text-green-600 bg-green-50';
+    if (ltv <= 80) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  // Tooltip component
   const InfoTooltip = ({ children, tooltipKey, content }) => {
     const [open, setOpen] = React.useState(false);
     
@@ -514,6 +528,8 @@ const FreeCalculator = () => {
     }
   };
 
+  const isMultiFamily = propertyData.propertyType === 'multi-family';
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -525,7 +541,6 @@ const FreeCalculator = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  // Navigate to Dashboard Overview if user is logged in as STARTER or PRO
                   if (user && (user.plan === 'STARTER' || user.plan === 'PRO')) {
                     navigate('/dashboard?tab=overview');
                   } else {
@@ -565,6 +580,18 @@ const FreeCalculator = () => {
       </header>
 
       <div className="container mx-auto px-4 sm:px-6 py-8">
+        {/* Validation Warnings (PART 6) */}
+        {warnings.length > 0 && (
+          <div className="mb-6 space-y-2">
+            {warnings.map((warning, index) => (
+              <div key={index} className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                <span className="text-sm text-yellow-800">{warning.message}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Input Form */}
           <div className="lg:col-span-2 space-y-6">
@@ -640,6 +667,68 @@ const FreeCalculator = () => {
                   </div>
                 </div>
 
+                {/* PART 3: Multi-Family Unit Breakdown */}
+                {isMultiFamily && (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-4">
+                    <h4 className="font-medium text-blue-900">Unit Breakdown</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div>
+                        <Label htmlFor="units1Bed" className="text-sm">1 Bedroom</Label>
+                        <Input
+                          id="units1Bed"
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={propertyData.units1Bed}
+                          onChange={(e) => handleInputChange('units1Bed', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="units2Bed" className="text-sm">2 Bedroom</Label>
+                        <Input
+                          id="units2Bed"
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={propertyData.units2Bed}
+                          onChange={(e) => handleInputChange('units2Bed', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="units3Bed" className="text-sm">3 Bedroom</Label>
+                        <Input
+                          id="units3Bed"
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={propertyData.units3Bed}
+                          onChange={(e) => handleInputChange('units3Bed', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="units4Bed" className="text-sm">4 Bedroom</Label>
+                        <Input
+                          id="units4Bed"
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={propertyData.units4Bed}
+                          onChange={(e) => handleInputChange('units4Bed', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Total Units</Label>
+                        <Input
+                          type="text"
+                          value={calculateTotalUnits()}
+                          disabled
+                          className="bg-white font-semibold text-blue-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid md:grid-cols-4 gap-4">
                   <div>
                     <InfoTooltip tooltipKey="square_footage">
@@ -662,6 +751,8 @@ const FreeCalculator = () => {
                       placeholder="3"
                       value={propertyData.bedrooms}
                       onChange={(e) => handleInputChange('bedrooms', e.target.value)}
+                      disabled={isMultiFamily}
+                      className={isMultiFamily ? 'bg-gray-100 cursor-not-allowed' : ''}
                     />
                   </div>
                   <div>
@@ -673,6 +764,8 @@ const FreeCalculator = () => {
                       placeholder="2.5"
                       value={propertyData.bathrooms}
                       onChange={(e) => handleInputChange('bathrooms', e.target.value)}
+                      disabled={isMultiFamily}
+                      className={isMultiFamily ? 'bg-gray-100 cursor-not-allowed' : ''}
                     />
                   </div>
                   <div>
@@ -727,9 +820,6 @@ const FreeCalculator = () => {
                       />
                     </div>
                   )}
-                  <p className="text-xs text-gray-500">
-                    Add a URL to a property photo or upload an image file. This will appear in your PDF report.
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -819,7 +909,7 @@ const FreeCalculator = () => {
               </CardContent>
             </Card>
 
-            {/* Income & Expenses */}
+            {/* Income & Expenses - PART 1: New Structure */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -827,7 +917,7 @@ const FreeCalculator = () => {
                   <span>Income & Expenses</span>
                 </CardTitle>
                 <CardDescription>
-                  Monthly income and operating expenses for the property
+                  All expense inputs are monthly for accurate calculations
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -867,88 +957,168 @@ const FreeCalculator = () => {
 
                 <Separator />
 
-                {/* Expenses Section */}
+                {/* Fixed Expenses Section (PART 1) */}
                 <div>
-                  <h4 className="font-medium text-red-700 mb-3">Annual Expenses</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <h4 className="font-medium text-red-700 mb-3">Fixed Expenses (Monthly)</h4>
+                  <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <InfoTooltip tooltipKey="property_taxes">
-                        <Label htmlFor="propertyTaxes">Property Taxes</Label>
+                        <Label htmlFor="propertyTaxesMonthly">Property Taxes (Monthly)</Label>
                       </InfoTooltip>
                       <Input
-                        id="propertyTaxes"
+                        id="propertyTaxesMonthly"
                         type="text"
                         inputMode="numeric"
-                        placeholder="6,500"
-                        value={propertyData.propertyTaxes}
-                        onChange={(e) => handleInputChange('propertyTaxes', e.target.value)}
+                        placeholder="542"
+                        value={propertyData.propertyTaxesMonthly}
+                        onChange={(e) => handleInputChange('propertyTaxesMonthly', e.target.value)}
                       />
                     </div>
                     <div>
                       <InfoTooltip tooltipKey="insurance">
-                        <Label htmlFor="insurance">Insurance</Label>
+                        <Label htmlFor="insuranceMonthly">Insurance (Monthly)</Label>
                       </InfoTooltip>
                       <Input
-                        id="insurance"
+                        id="insuranceMonthly"
                         type="text"
                         inputMode="numeric"
-                        placeholder="1,200"
-                        value={propertyData.insurance}
-                        onChange={(e) => handleInputChange('insurance', e.target.value)}
+                        placeholder="100"
+                        value={propertyData.insuranceMonthly}
+                        onChange={(e) => handleInputChange('insuranceMonthly', e.target.value)}
                       />
                     </div>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-3 gap-4 mt-4">
                     <div>
                       <InfoTooltip tooltipKey="hoa_fees">
-                        <Label htmlFor="hoaFees">HOA Fees (Monthly)</Label>
+                        <Label htmlFor="hoaMonthly">HOA (Monthly)</Label>
                       </InfoTooltip>
                       <Input
-                        id="hoaFees"
-                        type="number"
+                        id="hoaMonthly"
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
-                        value={propertyData.hoaFees}
-                        onChange={(e) => handleInputChange('hoaFees', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InfoTooltip tooltipKey="maintenance_reserve">
-                        <Label htmlFor="maintenanceReserves">Maintenance Reserve (Monthly)</Label>
-                      </InfoTooltip>
-                      <Input
-                        id="maintenanceReserves"
-                        type="number"
-                        placeholder="200"
-                        value={propertyData.maintenanceReserves}
-                        onChange={(e) => handleInputChange('maintenanceReserves', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InfoTooltip tooltipKey="vacancy_allowance">
-                        <Label htmlFor="vacancyAllowance">Vacancy Allowance (Monthly)</Label>
-                      </InfoTooltip>
-                      <Input
-                        id="vacancyAllowance"
-                        type="number"
-                        placeholder="140"
-                        value={propertyData.vacancyAllowance}
-                        onChange={(e) => handleInputChange('vacancyAllowance', e.target.value)}
+                        value={propertyData.hoaMonthly}
+                        onChange={(e) => handleInputChange('hoaMonthly', e.target.value)}
                       />
                     </div>
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* Operating Expenses Section (PART 1) */}
+                <div>
+                  <h4 className="font-medium text-orange-700 mb-3">Operating Expenses (Monthly)</h4>
                   
-                  <div className="mt-4">
-                    <InfoTooltip tooltipKey="property_management">
-                      <Label htmlFor="propertyManagement">Property Management (Monthly)</Label>
-                    </InfoTooltip>
-                    <Input
-                      id="propertyManagement"
-                      type="number"
-                      placeholder="280"
-                      value={propertyData.propertyManagement}
-                      onChange={(e) => handleInputChange('propertyManagement', e.target.value)}
-                    />
+                  {/* Property Management with toggle */}
+                  <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="font-medium">Property Management</Label>
+                      <div className="flex items-center space-x-2">
+                        <span className={`text-sm ${!propertyData.propertyManagementIsPercent ? 'font-medium' : 'text-gray-500'}`}>$</span>
+                        <Switch
+                          checked={propertyData.propertyManagementIsPercent}
+                          onCheckedChange={(checked) => handleInputChange('propertyManagementIsPercent', checked)}
+                        />
+                        <span className={`text-sm ${propertyData.propertyManagementIsPercent ? 'font-medium' : 'text-gray-500'}`}>%</span>
+                      </div>
+                    </div>
+                    {propertyData.propertyManagementIsPercent ? (
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="10"
+                          value={propertyData.propertyManagementPercent}
+                          onChange={(e) => handleInputChange('propertyManagementPercent', e.target.value)}
+                          className="w-24"
+                        />
+                        <span className="text-sm text-gray-600">% of rent</span>
+                        {propertyData.monthlyRent && (
+                          <span className="text-sm text-gray-500">
+                            ≈ {formatCurrency((parseNumberFromFormatted(propertyData.monthlyRent) * (parseFloat(propertyData.propertyManagementPercent) || 10)) / 100)}/mo
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="280"
+                        value={propertyData.propertyManagementMonthly}
+                        onChange={(e) => handleInputChange('propertyManagementMonthly', e.target.value)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <InfoTooltip tooltipKey="maintenance_reserve">
+                        <Label htmlFor="maintenanceReserveMonthly">Maintenance Reserve (Monthly)</Label>
+                      </InfoTooltip>
+                      <Input
+                        id="maintenanceReserveMonthly"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="200"
+                        value={propertyData.maintenanceReserveMonthly}
+                        onChange={(e) => handleInputChange('maintenanceReserveMonthly', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="utilitiesMonthly">Utilities (Monthly)</Label>
+                      <Input
+                        id="utilitiesMonthly"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={propertyData.utilitiesMonthly}
+                        onChange={(e) => handleInputChange('utilitiesMonthly', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="otherExpensesMonthly">Other Expenses (Monthly)</Label>
+                      <Input
+                        id="otherExpensesMonthly"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={propertyData.otherExpensesMonthly}
+                        onChange={(e) => handleInputChange('otherExpensesMonthly', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Vacancy Section (PART 1) */}
+                <div>
+                  <h4 className="font-medium text-purple-700 mb-3">Vacancy</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <InfoTooltip tooltipKey="vacancy_rate" content="Percentage of time the property is expected to be vacant">
+                        <Label htmlFor="vacancyRatePercent">Vacancy Rate (%)</Label>
+                      </InfoTooltip>
+                      <Input
+                        id="vacancyRatePercent"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        placeholder="5"
+                        value={propertyData.vacancyRatePercent}
+                        onChange={(e) => handleInputChange('vacancyRatePercent', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Vacancy Loss (Auto-calculated)</Label>
+                      <div className="mt-2 p-2 bg-purple-50 rounded text-purple-700 font-medium">
+                        {propertyData.monthlyRent ? 
+                          formatCurrency((parseNumberFromFormatted(propertyData.monthlyRent) * (parseFloat(propertyData.vacancyRatePercent) || 5)) / 100) + '/mo'
+                          : '$0/mo'}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -964,7 +1134,6 @@ const FreeCalculator = () => {
                 {isCalculating ? 'Calculating...' : 'Calculate Metrics'}
               </Button>
               <div className="flex space-x-2">
-                {/* Preview PDF button removed */}
                 <Button 
                   onClick={handleDownloadPDF}
                   disabled={!metrics}
@@ -987,8 +1156,6 @@ const FreeCalculator = () => {
                 )}
               </div>
             </div>
-
-            {/* Agent Personalization Section Removed */}
           </div>
 
           {/* Results Panel */}
@@ -1019,6 +1186,18 @@ const FreeCalculator = () => {
                         </div>
                         <div className="text-sm text-blue-600">Cash-on-Cash</div>
                         <div className="text-xs text-gray-500">Annual cash flow vs cash invested</div>
+                      </div>
+                    </div>
+                    
+                    {/* LTV (PART 2) */}
+                    <div className={`text-center p-3 rounded-lg ${getLTVColor(metrics.ltv)}`}>
+                      <div className="text-2xl font-bold">
+                        {formatPercentage(metrics.ltv)}
+                      </div>
+                      <div className="text-sm font-medium">LTV (Loan-to-Value)</div>
+                      <div className="text-xs opacity-80">
+                        {metrics.ltv <= 75 ? 'Conservative leverage' : 
+                         metrics.ltv <= 80 ? 'Moderate leverage' : 'High leverage'}
                       </div>
                     </div>
                     
@@ -1066,6 +1245,10 @@ const FreeCalculator = () => {
                       </InfoTooltip>
                       <span className="font-semibold">{formatCurrency(metrics.effectiveGrossIncome)}</span>
                     </div>
+                    <div className="flex justify-between text-gray-500 text-sm">
+                      <span className="pl-4">- Vacancy Loss</span>
+                      <span>({formatCurrency(metrics.annualVacancyLoss)})</span>
+                    </div>
                     <div className="flex justify-between text-red-700">
                       <span>Operating Expenses</span>
                       <span className="font-semibold">({formatCurrency(metrics.operatingExpenses)})</span>
@@ -1079,6 +1262,47 @@ const FreeCalculator = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Unit Breakdown for Multi-Family (PART 3) */}
+                {metrics.unitBreakdown && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Unit Breakdown</CardTitle>
+                      <CardDescription>Multi-family property units</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {metrics.unitBreakdown.oneBed > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">1 Bedroom</span>
+                          <span className="font-semibold">{metrics.unitBreakdown.oneBed}</span>
+                        </div>
+                      )}
+                      {metrics.unitBreakdown.twoBed > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">2 Bedroom</span>
+                          <span className="font-semibold">{metrics.unitBreakdown.twoBed}</span>
+                        </div>
+                      )}
+                      {metrics.unitBreakdown.threeBed > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">3 Bedroom</span>
+                          <span className="font-semibold">{metrics.unitBreakdown.threeBed}</span>
+                        </div>
+                      )}
+                      {metrics.unitBreakdown.fourBed > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">4 Bedroom</span>
+                          <span className="font-semibold">{metrics.unitBreakdown.fourBed}</span>
+                        </div>
+                      )}
+                      <Separator />
+                      <div className="flex justify-between font-bold">
+                        <span>Total Units</span>
+                        <span>{metrics.unitBreakdown.total}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Additional Metrics */}
                 <Card>
@@ -1104,10 +1328,14 @@ const FreeCalculator = () => {
                       <span className="text-gray-600">5-Year Exit Value</span>
                       <span className="font-semibold">{formatCurrency(metrics.exitValue)}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Monthly Mortgage</span>
+                      <span className="font-semibold">{formatCurrency(metrics.monthlyMortgage)}</span>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Upgrade Prompt - Only show for FREE users */}
+                {/* Upgrade Prompt */}
                 {effectivePlan === 'FREE' && (
                   <Card className="border-blue-200 bg-blue-50">
                     <CardContent className="pt-6">
