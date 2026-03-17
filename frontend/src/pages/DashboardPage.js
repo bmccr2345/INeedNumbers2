@@ -198,7 +198,7 @@ const DashboardPage = () => {
         },
         {
           id: 'investor',
-          name: 'Investor PDFs',
+          name: 'Investor Analysis',
           icon: <FileText className="w-4 h-4" />,
           available: ['FREE', 'STARTER', 'PRO']
         },

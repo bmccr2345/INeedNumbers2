@@ -165,13 +165,13 @@ const InvestorPanel = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Investor Deal PDFs
+              Investor Analysis
             </h1>
             <p className="text-gray-600 mt-1">
-              Create polished investor packets instantly.
+              Create polished investor analysis instantly.
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              Your saved investor packets appear here. Download, edit, or duplicate.
+              Your saved investor deals appear here. Download, edit, or delete.
             </p>
           </div>
           
@@ -232,7 +232,7 @@ const InvestorPanel = () => {
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-lg text-gray-500 mb-4">
-                  No investor packets yet — impress your first investor in minutes.
+                  No investor analysis saved yet — create your first analysis in minutes.
                 </p>
                 <Button 
                   onClick={() => navigate('/calculator')}
