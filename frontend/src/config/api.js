@@ -2,13 +2,13 @@
  * Central API Configuration
  * 
  * This file is the SINGLE SOURCE OF TRUTH for the backend API URL.
- * It uses RUNTIME detection to determine the correct backend URL,
- * eliminating build-time dependency on environment variables.
+ * It uses RUNTIME detection to determine the correct backend URL.
  * 
- * PROBLEM SOLVED:
- * - Preview URLs being baked into production builds
- * - Production calling preview backend
- * - CORS failures and full app outages
+ * DEPLOYMENT MODES:
+ * 1. Production (ineednumbers.com) -> https://ineednumbers.com
+ * 2. Emergent Production (*.emergent.host) -> Uses REACT_APP_BACKEND_URL from env
+ * 3. Preview (*.preview.emergentagent.com) -> Uses REACT_APP_BACKEND_URL from env
+ * 4. Mobile (localhost) -> https://ineednumbers.com (Capacitor apps)
  * 
  * DO NOT import process.env.REACT_APP_BACKEND_URL anywhere else.
  * Always import API_BASE_URL from this file.
@@ -18,58 +18,57 @@ const getBackendUrl = () => {
   // Get current hostname at RUNTIME (not build time)
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
 
-  // Production domains
-  const isProduction =
+  // Custom production domain
+  const isCustomProduction =
     host === 'ineednumbers.com' ||
     host === 'www.ineednumbers.com';
+
+  // Emergent production deployment (*.emergent.host)
+  const isEmergentProduction = host.endsWith('.emergent.host');
+
+  // Preview environment (*.preview.emergentagent.com)
+  const isPreview = host.includes('preview.emergentagent.com');
 
   // Capacitor iOS/Android runs on localhost
   const isMobile = host === 'localhost' || host === '127.0.0.1';
 
-  // FORCE production backend for web production + mobile
-  if (isProduction || isMobile) {
+  // Custom production domain -> hardcoded production URL
+  if (isCustomProduction) {
     return 'https://ineednumbers.com';
   }
 
-  // Preview / development fallback
-  // This allows preview environments to work during development
+  // Mobile app -> hardcoded production URL
+  if (isMobile) {
+    return 'https://ineednumbers.com';
+  }
+
+  // Emergent production or Preview -> use environment variable
+  // Emergent auto-updates REACT_APP_BACKEND_URL at deployment time
+  if (isEmergentProduction || isPreview) {
+    const envUrl = process.env.REACT_APP_BACKEND_URL;
+    if (envUrl) {
+      return envUrl;
+    }
+    // Fallback to same-origin if env not set
+    return typeof window !== 'undefined' ? window.location.origin : '';
+  }
+
+  // Development or unknown -> try env, then same-origin
   const envUrl = process.env.REACT_APP_BACKEND_URL || '';
-  
-  // If no env URL, default to production (safest option)
-  if (!envUrl) {
-    console.warn('[API Config] No REACT_APP_BACKEND_URL set, defaulting to production');
-    return 'https://ineednumbers.com';
+  if (envUrl) {
+    return envUrl;
   }
 
-  return envUrl;
+  // Ultimate fallback: same-origin
+  return typeof window !== 'undefined' ? window.location.origin : '';
 };
 
 // Resolve the URL once at module load
 const API_BASE_URL = getBackendUrl();
 
-// SAFETY GUARD — prevent preview backend in production
-// This is a fail-fast mechanism that will crash the app rather than
-// allow it to make requests to the wrong backend
-const isProductionHost = typeof window !== 'undefined' && (
-  window.location.hostname === 'ineednumbers.com' ||
-  window.location.hostname === 'www.ineednumbers.com'
-);
-
-const isPreviewBackend = API_BASE_URL.includes('preview') || 
-                          API_BASE_URL.includes('emergent.host') ||
-                          API_BASE_URL.includes('backend-url-debug');
-
-if (isProductionHost && isPreviewBackend) {
-  console.error('[API Config] CRITICAL: Preview backend detected in production!');
-  console.error('[API Config] Resolved URL:', API_BASE_URL);
-  console.error('[API Config] Host:', window.location.hostname);
-  throw new Error('FATAL: Invalid API configuration - preview backend cannot be used in production');
-}
-
-// Log the resolved URL for debugging (only in development)
-if (process.env.NODE_ENV !== 'production') {
-  console.log('[API Config] Backend URL resolved to:', API_BASE_URL);
-}
+// Log the resolved URL for debugging
+console.log('[API Config] Backend URL resolved to:', API_BASE_URL);
+console.log('[API Config] Host:', typeof window !== 'undefined' ? window.location.hostname : 'SSR');
 
 export default API_BASE_URL;
 
