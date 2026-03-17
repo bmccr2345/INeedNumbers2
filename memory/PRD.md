@@ -57,6 +57,10 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
 - `/app/frontend/public/index.html` - Added Playfair Display font
 - `/app/frontend/src/index.css` - Added custom animations
 
+## Critical Architecture Files
+- `/app/frontend/src/config/api.js` - **SINGLE SOURCE OF TRUTH** for backend API URL. Uses runtime hostname detection. DO NOT use `process.env.REACT_APP_BACKEND_URL` directly anywhere else in the codebase.
+- `/app/frontend/public/sw.js` - Service worker with cache-busting (update version on deployments)
+
 ## Previous Issues Fixed
 1. **Clerk Production Auth**: Changed hardcoded dev URL (apparent-dragon-65.accounts.dev) to production URL (clerk.ineednumbers.com)
 2. **Blank Production Page**: Removed `.env.production` that was overriding deployment panel values
@@ -84,6 +88,16 @@ I Need Numbers is an AI-powered business system for real estate agents. The plat
 10. **Desktop Account Dropdown (Mar 6, 2026)**: Simplified to: Profile & Billing, Support, Business Setup, Logout
 11. **Double Email 2FA Bug (Mar 7, 2026)**: Fixed Clerk sending 2 emails during 2FA login. ROOT CAUSE - custom `navigate` prop in ClerkProvider conflicted with Clerk's internal navigation. Fixed by removing the `navigate` prop; `signInUrl`/`signUpUrl` props already prevent external redirects.
 12. **Production Outage - Wrong Backend URL (Mar 13, 2026)**: RECURRING ISSUE (2nd occurrence). Frontend `.env` had `REACT_APP_BACKEND_URL` pointing to preview URL (`backend-url-debug.preview.emergentagent.com`) instead of production (`https://ineednumbers.com`). Fixed by correcting `.env`, rebuilding frontend, and verifying the correct URL was embedded in the final JS bundle via grep.
+13. **PERMANENT FIX: API Routing Refactor (Mar 17, 2026)**: ROOT CAUSE - The recurring production outages were caused by build-time environment variable injection (`process.env.REACT_APP_BACKEND_URL`). The platform frequently reset the `.env` file to preview URLs before builds, baking the wrong URL into production JS bundles. **SOLUTION**: Created a runtime-based API configuration system:
+    - **NEW FILE**: `/app/frontend/src/config/api.js` - Single source of truth for backend URL
+    - Uses `window.location.hostname` at **runtime** (not build time) to determine correct backend
+    - Production domains (`ineednumbers.com`, `www.ineednumbers.com`) → `https://ineednumbers.com`
+    - Mobile/Capacitor (`localhost`) → `https://ineednumbers.com`
+    - Preview environments → Falls back to `.env` or production
+    - **Safety guard**: Throws fatal error if preview backend detected in production
+    - Refactored **45+ frontend files** to use the new centralized config
+    - Updated service worker (`sw.js`) with cache-busting version numbers
+    - Testing agent verified 100% success rate on all public pages
 
 ## Routes
 - `/` - New redesigned landing page
