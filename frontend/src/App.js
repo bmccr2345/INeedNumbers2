@@ -71,6 +71,18 @@ import MobileLayout from "./layouts/MobileLayout";
 import MobileEntry from "./pages/MobileEntry";
 import CompleteSubscriptionPage from "./pages/CompleteSubscriptionPage";
 
+// Feature Pages
+import FeaturesPage from "./pages/FeaturesPage";
+import AICoachFeature from "./pages/features/AICoachFeature";
+import MortgageCalculatorFeature from "./pages/features/MortgageCalculatorFeature";
+import NetSheetFeature from "./pages/features/NetSheetFeature";
+import CommissionCalculatorFeature from "./pages/features/CommissionCalculatorFeature";
+import ClosingDateFeature from "./pages/features/ClosingDateFeature";
+import DealAnalyzerFeature from "./pages/features/DealAnalyzerFeature";
+import PnLTrackerFeature from "./pages/features/PnLTrackerFeature";
+import CapReportFeature from "./pages/features/CapReportFeature";
+import ActionTrackerFeature from "./pages/features/ActionTrackerFeature";
+
 // Note: AdminCommandCenter moved to separate ops-frontend app (ops.ineednumbers.com)
 
 // Import Onboarding Screens
@@ -250,6 +262,18 @@ function App() {
               <Route path="/clerk-debug" element={<ClerkDebugPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/support" element={<SupportPage />} />
+              
+              {/* Feature Pages */}
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/features/ai-coach" element={<AICoachFeature />} />
+              <Route path="/features/mortgage-calculator" element={<MortgageCalculatorFeature />} />
+              <Route path="/features/net-sheet" element={<NetSheetFeature />} />
+              <Route path="/features/commission-calculator" element={<CommissionCalculatorFeature />} />
+              <Route path="/features/closing-date" element={<ClosingDateFeature />} />
+              <Route path="/features/deal-analyzer" element={<DealAnalyzerFeature />} />
+              <Route path="/features/pnl-tracker" element={<PnLTrackerFeature />} />
+              <Route path="/features/cap-report" element={<CapReportFeature />} />
+              <Route path="/features/action-tracker" element={<ActionTrackerFeature />} />
               
               {/* Admin Command Center moved to ops.ineednumbers.com */}
               
