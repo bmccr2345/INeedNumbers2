@@ -69,7 +69,7 @@ const DEAL_CLIENT_TOOLS = [
   { name: "Seller Net Sheet Estimator", description: "Show sellers their true proceeds" },
   { name: "Commission Split Calculator", description: "Calculate splits and payouts instantly" },
   { name: "Closing Date Calculator", description: "Plan transaction timelines accurately" },
-  { name: "Investor Deal PDF Generator", description: "Professional branded investment packets" },
+  { name: "Investor Analyzer", description: "Professional branded investment packets" },
 ];
 
 const BUSINESS_INTELLIGENCE_TOOLS = [
@@ -425,16 +425,24 @@ const LandingPage = () => {
           <div className="max-w-5xl mx-auto">
             {/* Group 1: Deal & Client Tools */}
             <div className="mb-16">
-              <div className="mb-8">
-                <h3 
-                  className="text-2xl font-bold text-gray-900 mb-2"
-                  style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+              <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 
+                    className="text-2xl font-bold text-gray-900 mb-2"
+                    style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                  >
+                    Deal & Client Tools
+                  </h3>
+                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    Everything you need to guide clients confidently.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/features')}
+                  className="mt-4 sm:mt-0 text-[#2FA163] hover:text-[#268a54] font-medium text-sm transition-colors"
                 >
-                  Deal & Client Tools
-                </h3>
-                <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  Everything you need to guide clients confidently.
-                </p>
+                  Learn More →
+                </button>
               </div>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -463,16 +471,24 @@ const LandingPage = () => {
 
             {/* Group 2: Business Intelligence */}
             <div className="mb-16">
-              <div className="mb-8">
-                <h3 
-                  className="text-2xl font-bold text-gray-900 mb-2"
-                  style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+              <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 
+                    className="text-2xl font-bold text-gray-900 mb-2"
+                    style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                  >
+                    Business Intelligence
+                  </h3>
+                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    Run your business like a business.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/features')}
+                  className="mt-4 sm:mt-0 text-[#2FA163] hover:text-[#268a54] font-medium text-sm transition-colors"
                 >
-                  Business Intelligence
-                </h3>
-                <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  Run your business like a business.
-                </p>
+                  Learn More →
+                </button>
               </div>
               
               <div className="grid md:grid-cols-2 gap-4">
