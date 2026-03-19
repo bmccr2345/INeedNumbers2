@@ -96,7 +96,7 @@ const FeaturePageTemplate = ({
                     Sign In
                   </button>
                   <Button
-                    onClick={() => navigate('/auth/register')}
+                    onClick={() => navigate('/pricing')}
                     className="bg-[#2FA163] hover:bg-[#268a54] text-white"
                   >
                     Get Started
