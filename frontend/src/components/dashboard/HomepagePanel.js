@@ -590,8 +590,8 @@ const HomepagePanel = () => {
             isPro={true}
           />
 
-          {/* Quick Action Card */}
-          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+          {/* Quick Action Card - Hidden on desktop (lg screens) */}
+          <Card className="lg:hidden bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
                 Quick Actions
@@ -644,9 +644,10 @@ const HomepagePanel = () => {
               <Button variant="outline" onClick={() => navigate('/support')}>
                 Support Center
               </Button>
+              {/* All Tools button - Hidden on desktop (lg screens) */}
               <Button 
                 onClick={() => navigate('/tools')}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800"
+                className="lg:hidden bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800"
               >
                 All Tools
               </Button>
