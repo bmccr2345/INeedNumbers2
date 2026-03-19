@@ -2,9 +2,34 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Sparkles, 
+  Calculator, 
+  FileText, 
+  DollarSign, 
+  Calendar, 
+  TrendingUp, 
+  PieChart, 
+  Target, 
+  CheckSquare 
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Footer from '../components/Footer';
+
+// Icon mapping for features
+const featureIcons = {
+  'ai-coach': Sparkles,
+  'mortgage-calculator': Calculator,
+  'net-sheet': FileText,
+  'commission-calculator': DollarSign,
+  'closing-date': Calendar,
+  'deal-analyzer': TrendingUp,
+  'pnl-tracker': PieChart,
+  'cap-report': Target,
+  'action-tracker': CheckSquare,
+};
 
 // Feature cards data - 1-2 pain points per feature
 const featureCards = [
@@ -117,13 +142,6 @@ const featureCards = [
   },
 ];
 
-// Screenshot placeholder component
-const ScreenshotPlaceholder = ({ feature }) => (
-  <div className="bg-gray-100 border border-gray-200 rounded-lg p-6 flex items-center justify-center min-h-[120px]">
-    <p className="text-gray-500 text-sm text-center">Feature Screenshot Coming Soon</p>
-  </div>
-);
-
 const FeaturesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -208,48 +226,52 @@ const FeaturesPage = () => {
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featureCards.map((card) => (
-              <Card 
-                key={card.id}
-                className="border border-gray-200 hover:border-[#2FA163] hover:shadow-md transition-all cursor-pointer group"
-                onClick={() => navigate(`/features/${card.slug}`)}
-              >
-                <CardContent className="p-6">
-                  {/* Screenshot Placeholder */}
-                  <div className="mb-4">
-                    <ScreenshotPlaceholder feature={card.feature} />
-                  </div>
-                  
-                  {/* Pain Headline */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#2FA163] transition-colors">
-                    {card.pain}
-                  </h3>
-                  
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm mb-4">
-                    {card.description}
-                  </p>
-                  
-                  {/* Feature Label */}
-                  <p className="text-xs text-gray-500 mb-4">
-                    Powered by: <span className="font-medium text-[#2FA163]">{card.feature}</span>
-                  </p>
-                  
-                  {/* CTA Button */}
-                  <Button 
-                    variant="outline"
-                    className="w-full border-[#2FA163] text-[#2FA163] hover:bg-[#2FA163] hover:text-white group-hover:bg-[#2FA163] group-hover:text-white transition-all"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/features/${card.slug}`);
-                    }}
-                  >
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {featureCards.map((card) => {
+              const IconComponent = featureIcons[card.slug];
+              return (
+                <Card 
+                  key={card.id}
+                  className="border border-gray-200 hover:border-[#2FA163] hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => navigate(`/features/${card.slug}`)}
+                >
+                  <CardContent className="p-5">
+                    {/* Icon */}
+                    <div className="w-10 h-10 bg-[#2FA163]/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#2FA163]/20 transition-colors">
+                      <IconComponent className="w-5 h-5 text-[#2FA163]" />
+                    </div>
+                    
+                    {/* Pain Headline */}
+                    <h3 className="text-base font-semibold text-gray-900 mb-2 group-hover:text-[#2FA163] transition-colors leading-snug">
+                      {card.pain}
+                    </h3>
+                    
+                    {/* Description */}
+                    <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                      {card.description}
+                    </p>
+                    
+                    {/* Feature Label */}
+                    <p className="text-xs text-gray-500 mb-4">
+                      Powered by: <span className="font-medium text-[#2FA163]">{card.feature}</span>
+                    </p>
+                    
+                    {/* CTA Button */}
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-[#2FA163] text-[#2FA163] hover:bg-[#2FA163] hover:text-white group-hover:bg-[#2FA163] group-hover:text-white transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/features/${card.slug}`);
+                      }}
+                    >
+                      Learn More
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
