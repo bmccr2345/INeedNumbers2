@@ -235,7 +235,16 @@ function App() {
     <div className="App">
       <HelmetProvider>
         <PerformanceMonitor />
-        <Toaster position="top-right" richColors />
+        <Toaster 
+          position="top-right" 
+          richColors 
+          offset="60px"
+          toastOptions={{
+            style: {
+              marginTop: 'env(safe-area-inset-top, 0px)'
+            }
+          }}
+        />
         <BrowserRouter future={{
           v7_relativeSplatPath: true,
           v7_startTransition: true,
