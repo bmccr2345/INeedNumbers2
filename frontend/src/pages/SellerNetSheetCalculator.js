@@ -26,6 +26,7 @@ import PDFReport from '../components/PDFReport';
 import NetSheetAICoach from '../components/NetSheetAICoach';
 import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { navigateBackFromCalculator } from '../utils/navigation';
+import { isNativeApp, downloadFile } from '../utils/platform';
 import API_BASE_URL from '../config/api';
 
 const SellerNetSheetCalculator = () => {
@@ -322,21 +323,15 @@ const SellerNetSheetCalculator = () => {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      // Create download link
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
+      // Use platform-aware download (handles mobile Share sheet)
+      await downloadFile(pdfBlob, filename);
       
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF downloaded successfully!');
+      // Show appropriate success message
+      if (isNativeApp()) {
+        toast.success('PDF ready! Choose where to save it.');
+      } else {
+        toast.success('PDF downloaded successfully!');
+      }
       
     } catch (error) {
       console.error('PDF download error:', error);

@@ -5,7 +5,9 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { toast } from 'sonner';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
+import { isNativeApp, downloadFile } from '../../utils/platform';
 
 const ClosingDatePanel = () => {
   const navigate = useNavigate();
@@ -197,10 +199,7 @@ const ClosingDatePanel = () => {
   const handleDownload = async (item) => {
     try {
       // Show loading toast
-      const loadingToast = document.createElement('div');
-      loadingToast.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50';
-      loadingToast.textContent = 'Generating PDF...';
-      document.body.appendChild(loadingToast);
+      toast.loading('Generating PDF...');
 
       // Mock PDF generation - in real implementation this would call the backend API
       // For now, we'll simulate the download
@@ -247,27 +246,24 @@ const ClosingDatePanel = () => {
       // For now, we'll simulate by creating a blob and downloading it
       const pdfContent = `Closing Timeline PDF - ${item.title}\n\nContract Date: ${formatDate(item.underContractDate)}\nClosing Date: ${formatDate(item.closingDate)}\nMilestones: ${item.milestone_count}`;
       const blob = new Blob([pdfContent], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      const filename = `${item.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
 
-      // Remove loading toast and show success
-      document.body.removeChild(loadingToast);
+      // Use platform-aware download
+      await downloadFile(blob, filename);
       
-      const successToast = document.createElement('div');
-      successToast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
-      successToast.textContent = 'PDF downloaded successfully!';
-      document.body.appendChild(successToast);
-      setTimeout(() => document.body.removeChild(successToast), 3000);
+      // Dismiss loading and show success
+      toast.dismiss();
+      
+      if (isNativeApp()) {
+        toast.success('PDF ready! Choose where to save it.');
+      } else {
+        toast.success('PDF downloaded successfully!');
+      }
       
     } catch (error) {
       console.error('Download failed:', error);
-      alert('Download failed. Please try again.');
+      toast.dismiss();
+      toast.error('Download failed. Please try again.');
     }
   };
 

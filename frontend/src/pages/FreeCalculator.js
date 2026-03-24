@@ -17,6 +17,7 @@ import { usePlanPreview } from '../hooks/usePlanPreview';
 import Footer from '../components/Footer';
 import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { safeLocalStorage } from '../utils/safeStorage';
+import { isNativeApp, downloadFile } from '../utils/platform';
 import API_BASE_URL from '../config/api';
 import InvestorAICoach from '../components/InvestorAICoach';
 
@@ -469,18 +470,15 @@ const FreeCalculator = () => {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
+      // Use platform-aware download (handles mobile Share sheet)
+      await downloadFile(pdfBlob, filename);
       
-      document.body.appendChild(link);
-      link.click();
-      
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF downloaded successfully!');
+      // Show appropriate success message
+      if (isNativeApp()) {
+        toast.success('PDF ready! Choose where to save it.');
+      } else {
+        toast.success('PDF downloaded successfully!');
+      }
       
     } catch (error) {
       console.error('PDF download error:', error);

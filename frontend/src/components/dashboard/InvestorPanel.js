@@ -4,7 +4,9 @@ import { FileText, Search, Filter, Download, Edit, Trash2, ExternalLink, Refresh
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
+import { toast } from 'sonner';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
+import { isNativeApp, downloadFile } from '../../utils/platform';
 import API_BASE_URL from '../../config/api';
 
 const InvestorPanel = () => {
@@ -102,20 +104,22 @@ const InvestorPanel = () => {
         throw new Error('PDF generation failed');
       }
       
-      // Download the PDF
+      // Download the PDF using platform-aware method
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `investor-analysis-${investor.property.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const filename = `investor-analysis-${investor.property.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      
+      await downloadFile(blob, filename);
+      
+      // Show appropriate success message
+      if (isNativeApp()) {
+        toast.success('PDF ready! Choose where to save it.');
+      } else {
+        toast.success('PDF downloaded successfully!');
+      }
       
     } catch (error) {
       console.error('PDF download failed:', error);
-      alert('PDF download failed. Please try again.');
+      toast.error('PDF download failed. Please try again.');
     } finally {
       setDownloadingId(null);
     }
