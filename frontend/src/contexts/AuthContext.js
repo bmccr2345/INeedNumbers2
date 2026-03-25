@@ -66,8 +66,13 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Check authentication status on app load
+  // Check authentication status on app load - only after Clerk is loaded
   const checkAuth = useCallback(async () => {
+    // Guard: Don't run auth checks until Clerk is fully loaded
+    if (!isLoaded) {
+      return;
+    }
+    
     try {
       // If Clerk is signed in, sync with backend
       if (isSignedIn && clerkUser) {
@@ -114,7 +119,8 @@ export const AuthProvider = ({ children }) => {
       }
       
       // Fallback to legacy cookie-based authentication (will be removed eventually)
-      if (!isSignedIn) {
+      // Only attempt if Clerk is loaded and user is not signed in
+      if (isLoaded && !isSignedIn) {
         console.log('[AuthContext] Checking legacy authentication...');
         try {
           const response = await axios.get(`${backendUrl}/api/auth/me`);
@@ -132,7 +138,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [isSignedIn, clerkUser, backendUrl]);
+  }, [isLoaded, isSignedIn, clerkUser, backendUrl]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -271,6 +277,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
+    // Guard: Don't refresh until Clerk is loaded
+    if (!isLoaded) return;
+    
     try {
       if (isSignedIn && clerkUser) {
         // Refresh from backend

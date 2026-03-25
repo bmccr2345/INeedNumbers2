@@ -10,15 +10,17 @@ import axios from 'axios';
 import API_BASE_URL from '../config/api';
 
 const RegisterPage = () => {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState(null);
   
   const backendUrl = API_BASE_URL;
 
-  // After signup, redirect to Stripe checkout
+  // After signup, redirect to Stripe checkout - only after Clerk is loaded
   useEffect(() => {
+    if (!isLoaded) return;
+    
     const redirectToCheckout = async () => {
       if (isSignedIn && user && !isRedirecting) {
         setIsRedirecting(true);
@@ -64,7 +66,16 @@ const RegisterPage = () => {
     };
 
     redirectToCheckout();
-  }, [isSignedIn, user, backendUrl, isRedirecting]);
+  }, [isLoaded, isSignedIn, user, backendUrl, isRedirecting]);
+
+  // Show loading while Clerk initializes
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2FA163]"></div>
+      </div>
+    );
+  }
 
   // Apple App Store Guideline 3.1.1 compliance
   // Block signup in iOS app - users must subscribe via website

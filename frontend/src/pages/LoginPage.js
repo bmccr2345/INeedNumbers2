@@ -6,18 +6,29 @@ import { ArrowLeft } from 'lucide-react';
 import { navigateToHome } from '../utils/navigation';
 
 const LoginPage = () => {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user, isLoaded } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - only after Clerk is loaded
   useEffect(() => {
+    if (!isLoaded) return;
+    
     if (isSignedIn && user) {
       navigate(from, { replace: true });
     }
-  }, [isSignedIn, user, navigate, from]);
+  }, [isLoaded, isSignedIn, user, navigate, from]);
+
+  // Show nothing while Clerk is loading to prevent flash
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   // Render Clerk SignIn component inline for ALL platforms (web + iOS WKWebView)
   // No Browser.open() - Clerk renders directly inside the WebView
