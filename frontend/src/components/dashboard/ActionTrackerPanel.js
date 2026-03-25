@@ -830,8 +830,8 @@ const ActionTrackerPanel = () => {
         </Card>
       )}
 
-      {/* Reflection */}
-      <Card>
+      {/* Reflection - Hidden on desktop */}
+      <Card className="lg:hidden">
         <CardHeader>
           <CardTitle>End-of-Day Reflection</CardTitle>
         </CardHeader>
