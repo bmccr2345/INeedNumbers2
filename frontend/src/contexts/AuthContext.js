@@ -118,19 +118,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       
-      // Fallback to legacy cookie-based authentication (will be removed eventually)
-      // Only attempt if Clerk is loaded and user is not signed in
-      if (isLoaded && !isSignedIn) {
-        console.log('[AuthContext] Checking legacy authentication...');
-        try {
-          const response = await axios.get(`${backendUrl}/api/auth/me`);
-          const userData = response.data;
-          console.log('[AuthContext] Legacy user authenticated:', userData.email);
-          setUser(userData);
-        } catch (error) {
-          console.log('[AuthContext] No active session');
-          setUser(null);
-        }
+      // Legacy auth removed - app is now Clerk-only
+      // No /api/auth/me calls when user is not signed in via Clerk
+      if (!isSignedIn) {
+        setUser(null);
       }
     } catch (error) {
       console.error('[AuthContext] Auth check failed:', error);
@@ -277,16 +268,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
-    // Guard: Don't refresh until Clerk is loaded
-    if (!isLoaded) return;
+    // Guard: Don't refresh until Clerk is loaded and user is signed in
+    if (!isLoaded || !isSignedIn) return;
     
     try {
-      if (isSignedIn && clerkUser) {
+      if (clerkUser) {
         // Refresh from backend
         const response = await axios.get(`${backendUrl}/api/clerk/me/${clerkUser.id}`);
-        setUser(response.data);
-      } else {
-        const response = await axios.get(`${backendUrl}/api/auth/me`);
         setUser(response.data);
       }
     } catch (error) {
