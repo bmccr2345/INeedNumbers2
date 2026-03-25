@@ -248,13 +248,16 @@ const HomepagePanel = () => {
       if (user?.plan === 'PRO') {
         try {
           const pnlResponse = await axios.get(
-            `${backendUrl}/api/pnl/summary?month=${currentMonth}&ytd=true`,
+            `${backendUrl}/api/pnl/summary?month=${currentMonth}`,
             { 
               withCredentials: true,
               headers: { 'Content-Type': 'application/json' }
             }
           );
-          pnlData = pnlResponse.data;
+          pnlData = {
+            ...pnlResponse.data,
+            deals_count: pnlResponse.data.deals?.length || 0
+          };
         } catch (error) {
           console.error('P&L data not available:', error);
         }
@@ -451,9 +454,10 @@ const HomepagePanel = () => {
                 Log a Reflection
               </Button>
               
+              {/* Financial & Activity Overview button - Hidden on desktop */}
               <Button
                 onClick={() => setIsFinancialOverviewModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
+                className="lg:hidden bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Financial & Activity Overview
@@ -474,7 +478,7 @@ const HomepagePanel = () => {
             )}
 
             {/* Financial Metrics Section - Desktop only, PRO users */}
-            {user?.plan === 'PRO' && !trackerData.loading && trackerData.summary && (
+            {user?.plan === 'PRO' && !trackerData.loading && (
               <div className="hidden lg:block mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Progress</h3>
                 <div className="grid grid-cols-4 gap-4">
@@ -500,15 +504,32 @@ const HomepagePanel = () => {
                         <p className="text-xs text-gray-500">Daily actions → closings</p>
                       </div>
                       <div className="relative">
-                        <div className="w-full bg-gray-200 rounded-full h-4">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min((trackerData.summary.activityProgress || 0) * 100, 100)}%` }}
-                          />
-                        </div>
-                        <div className="text-center mt-2 text-xs font-medium">
-                          {((trackerData.summary.activityProgress || 0) * 100).toFixed(0)}% to goal
-                        </div>
+                        {(() => {
+                          // Calculate activity progress from P&L deals (actual closings) vs goal
+                          const closingsThisMonth = trackerData.pnlData?.deals_count || 0;
+                          const closingsGoal = trackerData.settings?.monthlyClosingsTarget || 
+                            (trackerData.settings?.monthlyGciTarget && trackerData.settings?.avgGciPerClosing 
+                              ? Math.ceil(trackerData.settings.monthlyGciTarget / trackerData.settings.avgGciPerClosing) 
+                              : 4);
+                          const activityProgress = closingsGoal > 0 ? Math.min(closingsThisMonth / closingsGoal, 1) : 0;
+                          
+                          return (
+                            <>
+                              <div className="w-full bg-gray-200 rounded-full h-4">
+                                <div 
+                                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500"
+                                  style={{ width: `${activityProgress * 100}%` }}
+                                />
+                              </div>
+                              <div className="text-center mt-2 text-xs font-medium">
+                                {(activityProgress * 100).toFixed(0)}% to goal
+                              </div>
+                              <div className="text-center text-xs text-gray-500">
+                                {closingsThisMonth} of {closingsGoal} closings
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </CardContent>
                   </Card>
@@ -521,15 +542,29 @@ const HomepagePanel = () => {
                         <p className="text-xs text-gray-500">Monthly income goal</p>
                       </div>
                       <div className="relative">
-                        <div className="w-full bg-gray-200 rounded-full h-4">
-                          <div 
-                            className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min((trackerData.summary.progress || 0) * 100, 100)}%` }}
-                          />
-                        </div>
-                        <div className="text-center mt-2 text-xs font-medium">
-                          {((trackerData.summary.progress || 0) * 100).toFixed(0)}% to goal
-                        </div>
+                        {(() => {
+                          // Calculate money progress from P&L income vs monthly goal
+                          const totalIncome = trackerData.pnlData?.total_income || 0;
+                          const monthlyGoal = trackerData.settings?.monthlyGciTarget || 10000;
+                          const moneyProgress = monthlyGoal > 0 ? Math.min(totalIncome / monthlyGoal, 1) : 0;
+                          
+                          return (
+                            <>
+                              <div className="w-full bg-gray-200 rounded-full h-4">
+                                <div 
+                                  className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full transition-all duration-500"
+                                  style={{ width: `${moneyProgress * 100}%` }}
+                                />
+                              </div>
+                              <div className="text-center mt-2 text-xs font-medium">
+                                {(moneyProgress * 100).toFixed(0)}% to goal
+                              </div>
+                              <div className="text-center text-xs text-gray-500">
+                                ${totalIncome.toLocaleString()} of ${monthlyGoal.toLocaleString()}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </CardContent>
                   </Card>
