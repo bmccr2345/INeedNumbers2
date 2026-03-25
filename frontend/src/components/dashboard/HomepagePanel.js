@@ -503,92 +503,102 @@ const HomepagePanel = () => {
         {/* Tool Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
-          {/* Mortgage Calculator Card */}
-          <MetricCard
-            icon={Home}
-            title="Mortgage Calculator"
-            metric={metrics.mortgage.count}
-            subtext={metrics.mortgage.count === 0 ? "No calculations yet" : "Recent Calculations"}
-            loading={metrics.mortgage.loading}
-            ctaText="Go to Mortgage Tool"
-            onClick={() => navigate('/dashboard?tab=mortgage')}
-          />
+          {/* Mortgage Calculator Card - Hidden on desktop */}
+          <div className="lg:hidden">
+            <MetricCard
+              icon={Home}
+              title="Mortgage Calculator"
+              metric={metrics.mortgage.count}
+              subtext={metrics.mortgage.count === 0 ? "No calculations yet" : "Recent Calculations"}
+              loading={metrics.mortgage.loading}
+              ctaText="Go to Mortgage Tool"
+              onClick={() => navigate('/dashboard?tab=mortgage')}
+            />
+          </div>
 
-          {/* Commission Split Card */}
-          <MetricCard
-            icon={DollarSign}
-            title="Commission Split"
-            metric={metrics.commission.count}
-            subtext={metrics.commission.count === 0 ? "No splits yet" : "Recent Splits"}
-            loading={metrics.commission.loading}
-            ctaText="Go to Commission Tool"
-            onClick={() => navigate('/dashboard?tab=commission')}
-          />
+          {/* Commission Split Card - Hidden on desktop */}
+          <div className="lg:hidden">
+            <MetricCard
+              icon={DollarSign}
+              title="Commission Split"
+              metric={metrics.commission.count}
+              subtext={metrics.commission.count === 0 ? "No splits yet" : "Recent Splits"}
+              loading={metrics.commission.loading}
+              ctaText="Go to Commission Tool"
+              onClick={() => navigate('/dashboard?tab=commission')}
+            />
+          </div>
 
-          {/* Seller Net Sheet Card */}
-          <MetricCard
-            icon={Calculator}
-            title="Seller Net Sheet"
-            metric={metrics.sellerNet.count}
-            subtext={metrics.sellerNet.count === 0 ? "No estimates yet" : "Recent Estimates"}
-            loading={metrics.sellerNet.loading}
-            ctaText="Go to Net Sheet Tool"
-            onClick={() => navigate('/dashboard?tab=sellernet')}
-          />
+          {/* Seller Net Sheet Card - Hidden on desktop */}
+          <div className="lg:hidden">
+            <MetricCard
+              icon={Calculator}
+              title="Seller Net Sheet"
+              metric={metrics.sellerNet.count}
+              subtext={metrics.sellerNet.count === 0 ? "No estimates yet" : "Recent Estimates"}
+              loading={metrics.sellerNet.loading}
+              ctaText="Go to Net Sheet Tool"
+              onClick={() => navigate('/dashboard?tab=sellernet')}
+            />
+          </div>
 
-          {/* Investor PDFs Card (Pro only) */}
-          <MetricCard
-            icon={FileText}
-            title="Investor Deal PDFs"
-            metric={metrics.investorPDFs.count}
-            subtext={
-              user?.plan !== 'PRO' 
-                ? "Upgrade to Pro" 
-                : metrics.investorPDFs.count === 0 
-                  ? "No PDFs created yet" 
-                  : "Investor Packets"
-            }
-            loading={metrics.investorPDFs.loading}
-            ctaText={user?.plan !== 'PRO' ? "Upgrade to Pro" : "Go to Investor Tool"}
-            onClick={() => {
-              if (user?.plan !== 'PRO') {
-                navigate('/pricing');
-              } else {
-                navigate('/dashboard?tab=investor');
+          {/* Investor PDFs Card (Pro only) - Hidden on desktop */}
+          <div className="lg:hidden">
+            <MetricCard
+              icon={FileText}
+              title="Investor Deal PDFs"
+              metric={metrics.investorPDFs.count}
+              subtext={
+                user?.plan !== 'PRO' 
+                  ? "Upgrade to Pro" 
+                  : metrics.investorPDFs.count === 0 
+                    ? "No PDFs created yet" 
+                    : "Investor Packets"
               }
-            }}
-            isPro={true}
-          />
+              loading={metrics.investorPDFs.loading}
+              ctaText={user?.plan !== 'PRO' ? "Upgrade to Pro" : "Go to Investor Tool"}
+              onClick={() => {
+                if (user?.plan !== 'PRO') {
+                  navigate('/pricing');
+                } else {
+                  navigate('/dashboard?tab=investor');
+                }
+              }}
+              isPro={true}
+            />
+          </div>
 
-          {/* P&L Tracker Card (Pro only) */}
-          <MetricCard
-            icon={BarChart3}
-            title="Agent P&L Tracker"
-            metric={
-              user?.plan !== 'PRO' 
-                ? "Pro Only" 
-                : metrics.pnlNet.amount === 0 
-                  ? "$0" 
-                  : formatCurrency(metrics.pnlNet.amount)
-            }
-            subtext={
-              user?.plan !== 'PRO' 
-                ? "Upgrade to Pro" 
-                : metrics.pnlNet.amount === 0 
-                  ? "No transactions yet" 
-                  : "Monthly Net Profit"
-            }
-            loading={metrics.pnlNet.loading && user?.plan === 'PRO'}
-            ctaText={user?.plan !== 'PRO' ? "Upgrade to Pro" : "Go to P&L Tool"}
-            onClick={() => {
-              if (user?.plan !== 'PRO') {
-                navigate('/pricing');
-              } else {
-                navigate('/dashboard?tab=pnl');
+          {/* P&L Tracker Card (Pro only) - Hidden on desktop */}
+          <div className="lg:hidden">
+            <MetricCard
+              icon={BarChart3}
+              title="Agent P&L Tracker"
+              metric={
+                user?.plan !== 'PRO' 
+                  ? "Pro Only" 
+                  : metrics.pnlNet.amount === 0 
+                    ? "$0" 
+                    : formatCurrency(metrics.pnlNet.amount)
               }
-            }}
-            isPro={true}
-          />
+              subtext={
+                user?.plan !== 'PRO' 
+                  ? "Upgrade to Pro" 
+                  : metrics.pnlNet.amount === 0 
+                    ? "No transactions yet" 
+                    : "Monthly Net Profit"
+              }
+              loading={metrics.pnlNet.loading && user?.plan === 'PRO'}
+              ctaText={user?.plan !== 'PRO' ? "Upgrade to Pro" : "Go to P&L Tool"}
+              onClick={() => {
+                if (user?.plan !== 'PRO') {
+                  navigate('/pricing');
+                } else {
+                  navigate('/dashboard?tab=pnl');
+                }
+              }}
+              isPro={true}
+            />
+          </div>
 
           {/* Quick Action Card - Hidden on desktop (lg screens) */}
           <Card className="lg:hidden bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
