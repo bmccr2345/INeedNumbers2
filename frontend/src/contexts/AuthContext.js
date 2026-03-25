@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import safeLocalStorage from '../utils/safeStorage';
 import API_BASE_URL from '../config/api';
@@ -18,6 +19,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const backendUrl = API_BASE_URL;
+  
+  // Get current route to detect auth pages
+  const location = useLocation();
+  const isAuthRoute = location.pathname.startsWith('/auth/');
   
   // Get Clerk authentication state
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
@@ -66,76 +71,67 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Check authentication status on app load - only after Clerk is loaded
+  // Check authentication status - only runs when NOT on auth routes
+  // This prevents cascading re-renders during Clerk's multi-step login flow
   const checkAuth = useCallback(async () => {
-    // Guard: Don't run auth checks until Clerk is fully loaded
+    // Guard: Don't run during Clerk login/register flow
+    // Clerk handles all auth state during /auth/* routes
+    if (isAuthRoute) {
+      return;
+    }
+    
+    // Guard: Don't run until Clerk is fully loaded
     if (!isLoaded) {
       return;
     }
     
-    try {
-      // If Clerk is signed in, sync with backend
-      if (isSignedIn && clerkUser) {
-        console.log('[AuthContext] Clerk user authenticated:', clerkUser.primaryEmailAddress?.emailAddress);
-        
-        // Get plan from Clerk public metadata - NO backend sync needed!
-        const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
-        const clerkPlanStatus = clerkUser.publicMetadata?.subscription_status || 'active';
-        
-        // Map Clerk plan keys to our internal plan names
-        const planMapping = {
-          'free_user': 'FREE',
-          'starter': 'STARTER',
-          'pro': 'PRO'
-        };
-        
-        const mappedPlan = planMapping[clerkPlanKey] || 'FREE';
-        
-        console.log('[AuthContext] Clerk plan:', clerkPlanKey, '→', mappedPlan, '| Status:', clerkPlanStatus);
-        
-        // If plan is not active, downgrade to FREE
-        const finalPlan = (mappedPlan !== 'FREE' && clerkPlanStatus !== 'active') ? 'FREE' : mappedPlan;
-        
-        if (finalPlan !== mappedPlan) {
-          console.log('[AuthContext] Plan downgraded due to inactive status:', mappedPlan, '→', finalPlan);
-        }
-        
-        // Build user object directly from Clerk data - NO MongoDB needed!
-        const userData = {
-          id: clerkUser.id,
-          email: clerkUser.primaryEmailAddress?.emailAddress,
-          full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-          plan: finalPlan,
-          role: 'user',
-          status: 'active',
-          clerk_user_id: clerkUser.id
-        };
-        
-        console.log('[AuthContext] User authenticated with plan:', userData.email, '| Plan:', userData.plan);
-        
-        setUser(userData);
-        setLoading(false);
-        return;
-      }
+    // Only populate user state when signed in
+    if (isSignedIn && clerkUser) {
+      console.log('[AuthContext] Clerk user authenticated:', clerkUser.primaryEmailAddress?.emailAddress);
       
-      // Legacy auth removed - app is now Clerk-only
-      // No /api/auth/me calls when user is not signed in via Clerk
-      if (!isSignedIn) {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('[AuthContext] Auth check failed:', error);
-      setUser(null);
-    } finally {
+      const clerkPlanKey = clerkUser.publicMetadata?.plan || 'free_user';
+      const clerkPlanStatus = clerkUser.publicMetadata?.subscription_status || 'active';
+      
+      const planMapping = {
+        'free_user': 'FREE',
+        'starter': 'STARTER',
+        'pro': 'PRO'
+      };
+      
+      const mappedPlan = planMapping[clerkPlanKey] || 'FREE';
+      const finalPlan = (mappedPlan !== 'FREE' && clerkPlanStatus !== 'active') ? 'FREE' : mappedPlan;
+      
+      const userData = {
+        id: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress,
+        full_name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+        plan: finalPlan,
+        role: 'user',
+        status: 'active',
+        clerk_user_id: clerkUser.id
+      };
+      
+      setUser(userData);
       setLoading(false);
+      return;
     }
-  }, [isLoaded, isSignedIn, clerkUser, backendUrl]);
+    
+    // Not signed in and not on auth route - set loading false
+    // Do NOT set user to null here to avoid unnecessary re-renders
+    setLoading(false);
+  }, [isAuthRoute, isLoaded, isSignedIn, clerkUser]);
 
+  // Only run checkAuth when conditions are stable and not on auth routes
   useEffect(() => {
+    // Skip entirely during auth flow - let Clerk handle everything
+    if (isAuthRoute) {
+      return;
+    }
+    
     if (isLoaded) {
       checkAuth();
     }
-  }, [isLoaded, checkAuth]);
+  }, [isLoaded, isAuthRoute, checkAuth]);
 
   // Legacy login function (for backward compatibility)
   const login = async (email, password, rememberMe = false) => {
