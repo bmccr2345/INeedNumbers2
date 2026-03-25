@@ -162,3 +162,16 @@ Shows: "Subscription Required - To create an account and subscribe, please visit
 ## Test Report
 All tests passing - see `/app/test_reports/iteration_1.json`
 
+
+
+
+## Development Rules (IMPORTANT)
+
+### Debug-First Policy
+**NEVER apply code fixes without explicit user permission.** When a bug is reported:
+1. Ask what information is needed to debug
+2. Investigate and explain the root cause
+3. Propose the fix and explain what it will change
+4. Wait for user approval before implementing
+
+This rule applies to ALL bug fixes and changes - no exceptions.
