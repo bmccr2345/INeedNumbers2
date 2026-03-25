@@ -22,9 +22,21 @@ const CommissionPanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || API_BASE_URL;
+      const backendUrl = API_BASE_URL;
       const response = await axios.get(`${backendUrl}/api/commission/history?limit=10`);
-      setHistory(response.data.items || []);
+      
+      // Map API response to expected format
+      const items = (response.data.items || []).map(item => ({
+        id: item.id,
+        date: item.created_at,
+        gross: item.results?.totalCommission || item.inputs?.salePrice || 0,
+        takeHome: item.results?.agentTakeHome || 0,
+        title: item.title,
+        inputs: item.inputs,
+        results: item.results
+      }));
+      
+      setHistory(items);
     } catch (error) {
       console.error('Failed to load commission history:', error);
       setHistory([]);
@@ -39,7 +51,7 @@ const CommissionPanel = () => {
     if (!confirm('Delete this commission split?')) return;
     
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || API_BASE_URL;
+      const backendUrl = API_BASE_URL;
       await axios.delete(`${backendUrl}/api/commission/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
       
