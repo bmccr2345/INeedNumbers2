@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Calculator, ExternalLink, Trash2, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { mockDashboardAPI, formatCurrency, formatDate } from '../../services/mockDashboardAPI';
+import { formatCurrency, formatDate } from '../../services/mockDashboardAPI';
+import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 
 const SellerNetPanel = () => {
   const navigate = useNavigate();
@@ -18,22 +20,31 @@ const SellerNetPanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const response = await mockDashboardAPI.net.history({ limit: 3 });
-      setHistory(response.items);
+      const backendUrl = API_BASE_URL;
+      const token = localStorage.getItem('auth_token');
+      const response = await axios.get(`${backendUrl}/api/seller-net/history?limit=10`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
+      setHistory(response.data.items || []);
     } catch (error) {
       console.error('Failed to load net sheet history:', error);
+      setHistory([]);
     } finally {
       setIsLoadingHistory(false);
     }
   };
 
-  // Removed calculation functions since we now only direct to full estimator
-
   const handleDelete = async (id) => {
     if (!confirm('Delete this net sheet estimate?')) return;
     
     try {
-      await mockDashboardAPI.net.delete(id);
+      const backendUrl = API_BASE_URL;
+      const token = localStorage.getItem('auth_token');
+      await axios.delete(`${backendUrl}/api/seller-net/${id}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
       setHistory(prev => prev.filter(item => item.id !== id));
       
       // Show success toast

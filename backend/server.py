@@ -5660,6 +5660,93 @@ async def save_seller_net_calculation(
         logger.error(f"Error saving seller net sheet: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/seller-net/history")
+async def get_seller_net_history(
+    limit: int = 10,
+    current_user: User = Depends(require_auth)
+):
+    """Get seller net sheet calculation history for the current user"""
+    try:
+        calculations = await db.seller_net_calculations.find(
+            {"user_id": current_user.id}
+        ).sort("created_at", -1).limit(limit).to_list(length=limit)
+        
+        formatted_calcs = []
+        for calc in calculations:
+            formatted_calcs.append({
+                "id": calc.get("id"),
+                "title": calc.get("title", "Untitled"),
+                "date": calc.get("created_at"),
+                "price": calc.get("inputs", {}).get("salePrice", 0),
+                "net": calc.get("results", {}).get("estimatedSellerNet", 0),
+                "inputs": calc.get("inputs", {}),
+                "results": calc.get("results", {})
+            })
+        
+        return {"items": formatted_calcs}
+        
+    except Exception as e:
+        logger.error(f"Error fetching seller net history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/seller-net/{calculation_id}")
+async def get_seller_net_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth)
+):
+    """Get a single seller net sheet calculation by ID"""
+    try:
+        calculation = await db.seller_net_calculations.find_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if not calculation:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        return {
+            "id": calculation.get("id"),
+            "title": calculation.get("title", "Untitled"),
+            "created_at": calculation.get("created_at"),
+            "inputs": calculation.get("inputs", {}),
+            "results": calculation.get("results", {})
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching seller net calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/seller-net/{calculation_id}")
+async def delete_seller_net_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth),
+    request_obj: Request = None
+):
+    """Delete a seller net sheet calculation"""
+    try:
+        result = await db.seller_net_calculations.delete_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        await log_audit_event(current_user, AuditAction.DELETE, {
+            "resource_type": "seller_net_calculation",
+            "calculation_id": calculation_id
+        }, request_obj)
+        
+        return {"message": "Seller net sheet deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting seller net calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Affordability Save Endpoint
 @api_router.post("/affordability/save")
 async def save_affordability_calculation(

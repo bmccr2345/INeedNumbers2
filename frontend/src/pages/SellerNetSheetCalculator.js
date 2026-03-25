@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -30,6 +30,7 @@ import API_BASE_URL from '../config/api';
 
 const SellerNetSheetCalculator = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
   
@@ -83,22 +84,73 @@ const SellerNetSheetCalculator = () => {
   const [isCalculating, setIsCalculating] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Clear all fields when component mounts - safely implemented
+  // Load saved calculation if calc ID is in URL
   useEffect(() => {
-    // Use setTimeout to ensure component is fully mounted before clearing
-    const timer = setTimeout(() => {
-      try {
-        clearAllFields();
-      } catch (error) {
-        console.error('Error clearing fields:', error);
-        // Fallback to just clearing results if clearAllFields fails
-        setResults({});
+    const calcId = searchParams.get('calc');
+    if (calcId) {
+      loadSavedCalculation(calcId);
+    } else {
+      // Use setTimeout to ensure component is fully mounted before clearing
+      const timer = setTimeout(() => {
+        try {
+          clearAllFields();
+        } catch (error) {
+          console.error('Error clearing fields:', error);
+          setResults({});
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
+  const loadSavedCalculation = async (calcId) => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await axios.get(`${backendUrl}/api/seller-net/${calcId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
+      
+      const { inputs: savedInputs, results: savedResults } = response.data;
+      
+      if (savedInputs) {
+        setInputs({
+          address: savedInputs.address || '',
+          expectedSalePrice: savedInputs.expectedSalePrice ? formatNumberWithCommas(parseFloat(savedInputs.expectedSalePrice) || savedInputs.expectedSalePrice) : '',
+          firstPayoff: savedInputs.firstPayoff ? formatNumberWithCommas(parseFloat(savedInputs.firstPayoff) || savedInputs.firstPayoff) : '',
+          secondPayoff: savedInputs.secondPayoff ? formatNumberWithCommas(parseFloat(savedInputs.secondPayoff) || savedInputs.secondPayoff) : '',
+          totalCommission: savedInputs.totalCommission || '',
+          sellerConcessions: savedInputs.sellerConcessions ? formatNumberWithCommas(parseFloat(savedInputs.sellerConcessions) || savedInputs.sellerConcessions) : '',
+          concessionsType: savedInputs.concessionsType || 'dollar',
+          titleEscrowFee: savedInputs.titleEscrowFee ? formatNumberWithCommas(parseFloat(savedInputs.titleEscrowFee) || savedInputs.titleEscrowFee) : '',
+          recordingFee: savedInputs.recordingFee ? formatNumberWithCommas(parseFloat(savedInputs.recordingFee) || savedInputs.recordingFee) : '',
+          transferTax: savedInputs.transferTax ? formatNumberWithCommas(parseFloat(savedInputs.transferTax) || savedInputs.transferTax) : '',
+          docStamps: savedInputs.docStamps ? formatNumberWithCommas(parseFloat(savedInputs.docStamps) || savedInputs.docStamps) : '',
+          hoaFees: savedInputs.hoaFees ? formatNumberWithCommas(parseFloat(savedInputs.hoaFees) || savedInputs.hoaFees) : '',
+          stagingPhotography: savedInputs.stagingPhotography ? formatNumberWithCommas(parseFloat(savedInputs.stagingPhotography) || savedInputs.stagingPhotography) : '',
+          otherCosts: savedInputs.otherCosts ? formatNumberWithCommas(parseFloat(savedInputs.otherCosts) || savedInputs.otherCosts) : '',
+          proratedTaxes: savedInputs.proratedTaxes ? formatNumberWithCommas(parseFloat(savedInputs.proratedTaxes) || savedInputs.proratedTaxes) : '',
+          dealState: savedInputs.dealState || '',
+          salePrice: savedInputs.salePrice ? formatNumberWithCommas(parseFloat(savedInputs.salePrice) || savedInputs.salePrice) : ''
+        });
       }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
+      
+      if (savedResults) {
+        setResults(savedResults);
+      }
+      
+      toast.success('Calculation loaded');
+    } catch (error) {
+      console.error('Failed to load calculation:', error);
+      toast.error('Failed to load saved calculation');
+      clearAllFields();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const clearAllFields = () => {
     setInputs({
