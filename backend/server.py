@@ -5930,20 +5930,27 @@ def calculate_tracker_summary(settings: TrackerSettings, daily_entry: TrackerDai
     goal_pace_gci_to_date = round(monthly_gci_target * workdays_elapsed / settings.workdays) if settings.workdays > 0 else 0
     
     remaining_workdays = max(settings.workdays - workdays_elapsed, 1)
+    
+    # Use P&L total_income if available, otherwise fall back to settings.earnedGciToDate
     earned_gci_to_date = settings.earnedGciToDate
+    if pnl_data and pnl_data.get('total_income', 0) > 0:
+        earned_gci_to_date = pnl_data.get('total_income', 0)
+    
     required_dollars_per_day = max(math.ceil((monthly_gci_target - earned_gci_to_date) / remaining_workdays), 0)
     
     # Calculate activity progress (projected closings)
-    # Use average daily completion rate * workdays elapsed to estimate MTD
+    # Use MTD completed activities from activity_logs, not just today's values
     activity_projection_closings = float('inf')
     for activity in settings.activities:
         required = settings.requiredPerClosing.get(activity, 1)
         if required > 0:
-            # daily_entry.completed contains today's values
-            # Estimate MTD by assuming consistent daily completion
-            daily_avg = daily_entry.completed.get(activity, 0)
-            estimated_mtd = daily_avg * max(workdays_elapsed, 1)
-            projection = math.floor(estimated_mtd / required) if required > 0 else 0
+            # Use MTD completed if available, otherwise estimate from daily
+            mtd_completed = daily_entry.completed.get(activity, 0)
+            # If we have workdays elapsed, project based on current completion rate
+            if workdays_elapsed > 0 and mtd_completed > 0:
+                projection = math.floor(mtd_completed / required) if required > 0 else 0
+            else:
+                projection = 0
             activity_projection_closings = min(activity_projection_closings, projection)
     
     if activity_projection_closings == float('inf'):
@@ -5951,7 +5958,7 @@ def calculate_tracker_summary(settings: TrackerSettings, daily_entry: TrackerDai
         
     activity_progress = min(activity_projection_closings / closings_target, 1.0) if closings_target > 0 else 0
     
-    # Money progress  
+    # Money progress - use the same earned_gci_to_date (which now includes P&L data)
     progress = min(earned_gci_to_date / monthly_gci_target, 1.0) if monthly_gci_target > 0 else 0
     
     # Calculate busyness flags
@@ -6182,15 +6189,33 @@ async def get_tracker_daily(
             if activity in settings.activities:
                 daily_entry.completed[activity] = daily_entry.completed.get(activity, 0) + count
         
-        # Get P&L data if Pro user
+        # Get P&L data if Pro user - fetch actual income data
         pnl_data = None
         if current_user.plan in ['STARTER', 'PRO']:
             try:
-                # This would call the existing P&L endpoint
-                # For now, we'll skip it and use earnedGciToDate from settings
-                pass
-            except:
-                pass
+                # Get current month's P&L summary
+                pnl_summary = await db.pnl_deals.aggregate([
+                    {
+                        "$match": {
+                            "user_id": current_user.id,
+                            "closing_date": {"$regex": f"^{month}"}
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": None,
+                            "total_income": {"$sum": "$gci"}
+                        }
+                    }
+                ]).to_list(length=1)
+                
+                if pnl_summary:
+                    pnl_data = {"total_income": pnl_summary[0].get("total_income", 0)}
+                else:
+                    pnl_data = {"total_income": 0}
+            except Exception as e:
+                logger.error(f"Error fetching P&L data for tracker: {e}")
+                pnl_data = None
         
         # Calculate summary
         summary = calculate_tracker_summary(settings, daily_entry, pnl_data)
