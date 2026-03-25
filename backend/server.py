@@ -2436,6 +2436,50 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
         logger.error(f"Error generating PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.get("/reports/commission/pdf")
+async def generate_commission_pdf_get(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    GET endpoint for iOS PDF viewing - accepts pre-calculated data via query params
+    """
+    import json
+    
+    try:
+        calculation_data = json.loads(request.query_params.get("calculation_data", "{}"))
+        property_data = json.loads(request.query_params.get("property_data", "{}"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in query params")
+    
+    if not calculation_data or not property_data:
+        raise HTTPException(status_code=400, detail="calculation_data and property_data required")
+    
+    # Load template
+    template_path = Path(__file__).parent / "templates" / "commission_split_report.html"
+    if not template_path.exists():
+        raise HTTPException(status_code=500, detail="Commission split template not found")
+    template_content = template_path.read_text(encoding='utf-8')
+    
+    # Use existing report data preparation (same as POST endpoint)
+    report_data = prepare_commission_split_report_data(calculation_data, property_data, current_user)
+    html_content = render_template(template_content, report_data)
+    pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+    
+    sale_price = calculation_data.get('salePrice', 'Unknown')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    filename = f"commission_split_{sale_price}_{date_str}.pdf"
+    
+    return Response(
+        content=pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache"
+        }
+    )
+
 @api_router.post("/reports/{tool}/debug")
 async def debug_report(tool: str, request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     """
