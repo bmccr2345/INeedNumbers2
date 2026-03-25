@@ -5557,6 +5557,35 @@ async def get_commission_history(
         logger.error(f"Error fetching commission history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/commission/{calculation_id}")
+async def get_commission_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth)
+):
+    """Get a single commission calculation by ID"""
+    try:
+        calculation = await db.commission_calculations.find_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if not calculation:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        return {
+            "id": calculation.get("id"),
+            "title": calculation.get("title", "Untitled"),
+            "created_at": calculation.get("created_at"),
+            "inputs": calculation.get("inputs", {}),
+            "results": calculation.get("results", {})
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching commission calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.delete("/commission/{calculation_id}")
 async def delete_commission_calculation(
     calculation_id: str,

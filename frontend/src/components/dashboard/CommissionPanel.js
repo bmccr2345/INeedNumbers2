@@ -52,7 +52,11 @@ const CommissionPanel = () => {
     
     try {
       const backendUrl = API_BASE_URL;
-      await axios.delete(`${backendUrl}/api/commission/${id}`);
+      const token = localStorage.getItem('auth_token');
+      await axios.delete(`${backendUrl}/api/commission/${id}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
       setHistory(prev => prev.filter(item => item.id !== id));
       
       // Show success toast
@@ -149,7 +153,6 @@ const CommissionPanel = () => {
                     <thead>
                       <tr className="text-left text-sm text-gray-500">
                         <th className="pb-2">Date</th>
-                        <th className="pb-2">Amount</th>
                         <th className="pb-2">Take-Home</th>
                         <th className="pb-2">Actions</th>
                       </tr>
@@ -158,7 +161,6 @@ const CommissionPanel = () => {
                       {history.map((split) => (
                         <tr key={split.id} className="border-t">
                           <td className="py-2 text-sm">{formatDate(split.date)}</td>
-                          <td className="py-2 text-sm">{formatCurrency(split.gross * 100)}</td>
                           <td className="py-2 text-sm font-medium text-primary">
                             {formatCurrency(split.takeHome * 100)}
                           </td>

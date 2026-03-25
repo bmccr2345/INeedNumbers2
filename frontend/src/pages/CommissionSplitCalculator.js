@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -27,6 +27,7 @@ import API_BASE_URL from '../config/api';
 
 const CommissionSplitCalculator = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
   
@@ -69,11 +70,56 @@ const CommissionSplitCalculator = () => {
   const [isCalculating, setIsCalculating] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Clear all fields when component mounts
+  // Load saved calculation if calc ID is in URL
   useEffect(() => {
-    clearAllFields();
-  }, []);
+    const calcId = searchParams.get('calc');
+    if (calcId) {
+      loadSavedCalculation(calcId);
+    } else {
+      clearAllFields();
+    }
+  }, [searchParams]);
+
+  const loadSavedCalculation = async (calcId) => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await axios.get(`${backendUrl}/api/commission/${calcId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
+      
+      const { inputs: savedInputs, results: savedResults } = response.data;
+      
+      if (savedInputs) {
+        setInputs({
+          address: savedInputs.address || '',
+          salePrice: savedInputs.salePrice ? formatNumberWithCommas(savedInputs.salePrice) : '',
+          totalCommission: savedInputs.totalCommission || '',
+          yourSide: savedInputs.yourSide || 'listing',
+          brokerageSplit: savedInputs.brokerageSplit || '',
+          referralPercent: savedInputs.referralPercent || '',
+          teamPercent: savedInputs.teamPercent || '',
+          transactionFee: savedInputs.transactionFee ? formatNumberWithCommas(savedInputs.transactionFee) : '',
+          royaltyFee: savedInputs.royaltyFee ? formatNumberWithCommas(savedInputs.royaltyFee) : ''
+        });
+      }
+      
+      if (savedResults) {
+        setResults(savedResults);
+      }
+      
+      toast.success('Calculation loaded');
+    } catch (error) {
+      console.error('Failed to load calculation:', error);
+      toast.error('Failed to load saved calculation');
+      clearAllFields();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const clearAllFields = () => {
     setInputs({
