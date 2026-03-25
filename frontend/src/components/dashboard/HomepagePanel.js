@@ -472,6 +472,113 @@ const HomepagePanel = () => {
                 }}
               />
             )}
+
+            {/* Financial Metrics Section - Desktop only, PRO users */}
+            {user?.plan === 'PRO' && !trackerData.loading && trackerData.summary && (
+              <div className="hidden lg:block mt-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Progress</h3>
+                <div className="grid grid-cols-4 gap-4">
+                  {/* Profit This Month Card */}
+                  <Card className="transition-all hover:shadow-md">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <DollarSign className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        ${(trackerData.pnlData?.net_income || 0).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Profit This Month</div>
+                      <div className="text-xs text-gray-500">after all expenses</div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Activity Progress Card */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-3">
+                        <h4 className="font-medium text-gray-900 text-sm">Activity Progress</h4>
+                        <p className="text-xs text-gray-500">Daily actions → closings</p>
+                      </div>
+                      <div className="relative">
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min((trackerData.summary.activityProgress || 0) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-center mt-2 text-xs font-medium">
+                          {((trackerData.summary.activityProgress || 0) * 100).toFixed(0)}% to goal
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Money Progress Card */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-3">
+                        <h4 className="font-medium text-gray-900 text-sm">Money Progress</h4>
+                        <p className="text-xs text-gray-500">Monthly income goal</p>
+                      </div>
+                      <div className="relative">
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                          <div 
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min((trackerData.summary.progress || 0) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-center mt-2 text-xs font-medium">
+                          {((trackerData.summary.progress || 0) * 100).toFixed(0)}% to goal
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Commission Cap Progress Card */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-3">
+                        <h4 className="font-medium text-gray-900 text-sm">Commission Cap</h4>
+                        <p className="text-xs text-gray-500">Annual cap progress</p>
+                      </div>
+                      <div className="relative">
+                        {capProgress.loading ? (
+                          <div className="w-full bg-gray-200 rounded-full h-4 animate-pulse"></div>
+                        ) : capProgress.data ? (
+                          <>
+                            <div className="w-full bg-gray-200 rounded-full h-4">
+                              <div 
+                                className={`h-4 rounded-full transition-all duration-500 ${
+                                  capProgress.data.is_complete 
+                                    ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                                    : 'bg-gradient-to-r from-orange-500 to-orange-600'
+                                }`}
+                                style={{ width: `${Math.min(capProgress.data.percentage || 0, 100)}%` }}
+                              />
+                            </div>
+                            <div className="text-center mt-2 text-xs font-medium">
+                              {capProgress.data.is_complete ? (
+                                <span className="text-green-600">Cap Complete!</span>
+                              ) : (
+                                `${(capProgress.data.percentage || 0).toFixed(0)}% to cap`
+                              )}
+                            </div>
+                            <div className="text-center text-xs text-gray-500">
+                              ${Math.round(capProgress.data.paid_so_far || 0).toLocaleString()} of ${Math.round(capProgress.data.total_cap || 0).toLocaleString()}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center text-xs text-gray-500">
+                            <Target className="w-6 h-6 mx-auto mb-1 text-gray-300" />
+                            <p>No cap configured</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <>
