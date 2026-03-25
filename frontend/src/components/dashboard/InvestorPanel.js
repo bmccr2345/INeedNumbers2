@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
-import { isNativeApp, downloadFile } from '../../utils/platform';
 import API_BASE_URL from '../../config/api';
 
 const InvestorPanel = () => {
@@ -66,10 +65,29 @@ const InvestorPanel = () => {
     try {
       setDownloadingId(investor.id);
       
-      // Get auth token
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      const calculation_data = investor.results || {};
+      const property_data = {
+        address: investor.inputs?.addressLine || investor.property,
+        ...investor.inputs
+      };
+
+      if (isIOS) {
+        const params = new URLSearchParams({
+          calculation_data: JSON.stringify(calculation_data),
+          property_data: JSON.stringify(property_data)
+        });
+        const url = `${API_BASE_URL}/api/reports/investor/pdf?${params.toString()}`;
+        window.open(url, '_blank');
+        toast.success('PDF opened. Use share icon to save.');
+        setDownloadingId(null);
+        return;
+      }
+
+      // EXISTING DESKTOP LOGIC (UNCHANGED)
       const token = localStorage.getItem('auth_token');
       
-      // Call the PDF generation endpoint with the stored deal data
       const response = await fetch(`${API_BASE_URL}/api/reports/investor/pdf`, {
         method: 'POST',
         headers: {
@@ -104,18 +122,19 @@ const InvestorPanel = () => {
         throw new Error('PDF generation failed');
       }
       
-      // Download the PDF using platform-aware method
       const blob = await response.blob();
       const filename = `investor-analysis-${investor.property.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
       
-      await downloadFile(blob, filename);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
-      // Show appropriate success message
-      if (isNativeApp()) {
-        toast.success('PDF ready! Choose where to save it.');
-      } else {
-        toast.success('PDF downloaded successfully!');
-      }
+      toast.success('PDF downloaded successfully!');
       
     } catch (error) {
       console.error('PDF download failed:', error);

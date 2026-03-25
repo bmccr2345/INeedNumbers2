@@ -17,7 +17,6 @@ import { usePlanPreview } from '../hooks/usePlanPreview';
 import Footer from '../components/Footer';
 import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { safeLocalStorage } from '../utils/safeStorage';
-import { isNativeApp, downloadFile } from '../utils/platform';
 import API_BASE_URL from '../config/api';
 import InvestorAICoach from '../components/InvestorAICoach';
 
@@ -438,16 +437,31 @@ const FreeCalculator = () => {
       return;
     }
 
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    const fullPropertyData = {
+      ...propertyData,
+      totalUnits: propertyData.propertyType === 'multi-family' ? calculateTotalUnits() : null
+    };
+
+    if (isIOS) {
+      const params = new URLSearchParams({
+        calculation_data: JSON.stringify(metrics),
+        property_data: JSON.stringify(fullPropertyData)
+      });
+      const url = `${API_BASE_URL}/api/reports/investor/pdf?${params.toString()}`;
+      window.open(url, '_blank');
+      toast.success('PDF opened. Use share icon to save.');
+      return;
+    }
+
+    // EXISTING DESKTOP LOGIC (UNCHANGED)
     try {
       const backendUrl = API_BASE_URL;
       
-      // Prepare comprehensive data for PDF (PART 5)
       const payload = {
         calculation_data: metrics,
-        property_data: {
-          ...propertyData,
-          totalUnits: propertyData.propertyType === 'multi-family' ? calculateTotalUnits() : null
-        }
+        property_data: fullPropertyData
       };
 
       const response = await fetch(`${backendUrl}/api/reports/investor/pdf`, {
@@ -470,15 +484,16 @@ const FreeCalculator = () => {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      // Use platform-aware download (handles mobile Share sheet)
-      await downloadFile(pdfBlob, filename);
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
-      // Show appropriate success message
-      if (isNativeApp()) {
-        toast.success('PDF ready! Choose where to save it.');
-      } else {
-        toast.success('PDF downloaded successfully!');
-      }
+      toast.success('PDF downloaded successfully!');
       
     } catch (error) {
       console.error('PDF download error:', error);

@@ -7,7 +7,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
-import { isNativeApp, downloadFile } from '../../utils/platform';
 
 const ClosingDatePanel = () => {
   const navigate = useNavigate();
@@ -198,18 +197,11 @@ const ClosingDatePanel = () => {
 
   const handleDownload = async (item) => {
     try {
-      // Show loading toast
       toast.loading('Generating PDF...');
 
-      // Mock PDF generation - in real implementation this would call the backend API
-      // For now, we'll simulate the download
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Create mock PDF data
-      const pdfData = {
-        title: item.title,
-        underContractDate: item.underContractDate,
-        closingDate: item.closingDate,
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      const calculation_data = {
         timeline: [
           {
             name: 'Under Contract',
@@ -219,46 +211,49 @@ const ClosingDatePanel = () => {
             description: 'Contract was signed and executed'
           },
           {
-            name: 'Pest Inspection',
-            date: new Date(new Date(item.underContractDate).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            type: 'inspection',
-            status: 'past-due',
-            description: 'Professional pest inspection'
-          },
-          {
-            name: 'Home Inspection',
-            date: new Date(new Date(item.underContractDate).getTime() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-            type: 'inspection',
-            status: 'past-due',
-            description: 'Comprehensive home inspection'
-          },
-          {
             name: 'Closing Date',
             date: item.closingDate,
             type: 'closing',
             status: 'upcoming',
             description: 'Final closing and transfer of ownership'
           }
-        ]
+        ],
+        totalDays: Math.ceil((new Date(item.closingDate) - new Date(item.underContractDate)) / (1000 * 60 * 60 * 24)),
+        milestoneCount: item.milestone_count || 2
+      };
+      
+      const property_data = {
+        title: item.title,
+        underContractDate: item.underContractDate,
+        closingDate: item.closingDate
       };
 
-      // In real implementation, this would make an API call to generate the PDF
-      // For now, we'll simulate by creating a blob and downloading it
+      // Note: This is still using mock data - real API integration pending
+      // For now, we'll simulate with a text file
       const pdfContent = `Closing Timeline PDF - ${item.title}\n\nContract Date: ${formatDate(item.underContractDate)}\nClosing Date: ${formatDate(item.closingDate)}\nMilestones: ${item.milestone_count}`;
       const blob = new Blob([pdfContent], { type: 'text/plain' });
       const filename = `${item.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
 
-      // Use platform-aware download
-      await downloadFile(blob, filename);
-      
-      // Dismiss loading and show success
-      toast.dismiss();
-      
-      if (isNativeApp()) {
-        toast.success('PDF ready! Choose where to save it.');
-      } else {
-        toast.success('PDF downloaded successfully!');
+      if (isIOS) {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        toast.dismiss();
+        toast.success('File opened. Use share icon to save.');
+        return;
       }
+
+      // EXISTING DESKTOP LOGIC
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.dismiss();
+      toast.success('PDF downloaded successfully!');
       
     } catch (error) {
       console.error('Download failed:', error);

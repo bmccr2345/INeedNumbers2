@@ -2480,6 +2480,180 @@ async def generate_commission_pdf_get(
         }
     )
 
+
+
+@api_router.get("/reports/investor/pdf")
+async def generate_investor_pdf_get(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    GET endpoint for iOS PDF viewing - accepts pre-calculated data via query params
+    """
+    import json
+    
+    try:
+        calculation_data = json.loads(request.query_params.get("calculation_data", "{}"))
+        property_data = json.loads(request.query_params.get("property_data", "{}"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in query params")
+    
+    if not calculation_data or not property_data:
+        raise HTTPException(status_code=400, detail="calculation_data and property_data required")
+    
+    template_path = Path(__file__).parent / "templates" / "investor_report_comprehensive.html"
+    if not template_path.exists():
+        raise HTTPException(status_code=500, detail="Investor template not found")
+    template_content = template_path.read_text(encoding='utf-8')
+    
+    report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+    html_content = render_template(template_content, report_data)
+    pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+    
+    property_address = property_data.get('address', 'Property')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    clean_address = re.sub(r'[^\w\s-]', '', property_address).replace(' ', '_')
+    filename = f"investor_{clean_address}_{date_str}.pdf"
+    
+    return Response(
+        content=pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache"
+        }
+    )
+
+@api_router.get("/reports/affordability/pdf")
+async def generate_affordability_pdf_get(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    GET endpoint for iOS PDF viewing - accepts pre-calculated data via query params
+    """
+    import json
+    
+    try:
+        calculation_data = json.loads(request.query_params.get("calculation_data", "{}"))
+        property_data = json.loads(request.query_params.get("property_data", "{}"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in query params")
+    
+    if not calculation_data or not property_data:
+        raise HTTPException(status_code=400, detail="calculation_data and property_data required")
+    
+    template_path = Path(__file__).parent / "templates" / "affordability_report.html"
+    if not template_path.exists():
+        raise HTTPException(status_code=500, detail="Affordability template not found")
+    template_content = template_path.read_text(encoding='utf-8')
+    
+    report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+    html_content = render_template(template_content, report_data)
+    pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+    
+    home_price = property_data.get('homePrice', 'Unknown')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    filename = f"affordability_analysis_{home_price}_{date_str}.pdf"
+    
+    return Response(
+        content=pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache"
+        }
+    )
+
+@api_router.get("/reports/seller-net/pdf")
+async def generate_seller_net_pdf_get(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    GET endpoint for iOS PDF viewing - accepts pre-calculated data via query params
+    """
+    import json
+    
+    try:
+        calculation_data = json.loads(request.query_params.get("calculation_data", "{}"))
+        property_data = json.loads(request.query_params.get("property_data", "{}"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in query params")
+    
+    if not calculation_data or not property_data:
+        raise HTTPException(status_code=400, detail="calculation_data and property_data required")
+    
+    template_path = Path(__file__).parent / "templates" / "seller_net_sheet_report.html"
+    if not template_path.exists():
+        raise HTTPException(status_code=500, detail="Seller net sheet template not found")
+    template_content = template_path.read_text(encoding='utf-8')
+    
+    branding_data = {}
+    report_data = prepare_seller_net_sheet_report_data(calculation_data, property_data, current_user)
+    primary_color = branding_data.get("colors", {}).get("primary", "#10b981")
+    report_data["brandPrimaryColor"] = primary_color
+    report_data["brandPrimaryDark"] = primary_color + "dd" if primary_color else "#15803ddd"
+    report_data["agentLogoUrl"] = branding_data.get("assets", {}).get("agentLogoUrl", "")
+    
+    html_content = render_template(template_content, report_data)
+    pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+    
+    sale_price = property_data.get('salePrice', 'Unknown')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    filename = f"seller_net_sheet_{sale_price}_{date_str}.pdf"
+    
+    return Response(
+        content=pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache"
+        }
+    )
+
+@api_router.get("/reports/closing-date/pdf")
+async def generate_closing_date_pdf_get(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    GET endpoint for iOS PDF viewing - accepts pre-calculated data via query params
+    """
+    import json
+    
+    try:
+        calculation_data = json.loads(request.query_params.get("calculation_data", "{}"))
+        property_data = json.loads(request.query_params.get("property_data", "{}"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in query params")
+    
+    if not calculation_data or not property_data:
+        raise HTTPException(status_code=400, detail="calculation_data and property_data required")
+    
+    template_path = Path(__file__).parent / "templates" / "closing_date_report.html"
+    if not template_path.exists():
+        raise HTTPException(status_code=500, detail="Closing date template not found")
+    template_content = template_path.read_text(encoding='utf-8')
+    
+    report_data = prepare_closing_date_report_data(calculation_data, property_data, current_user)
+    html_content = render_template(template_content, report_data)
+    pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+    
+    closing_date = property_data.get('closingDate', 'Unknown')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    clean_closing = closing_date.replace('/', '-').replace(' ', '_') if closing_date != 'Unknown' else 'Unknown'
+    filename = f"closing_timeline_{clean_closing}_{date_str}.pdf"
+    
+    return Response(
+        content=pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache"
+        }
+    )
+
 @api_router.post("/reports/{tool}/debug")
 async def debug_report(tool: str, request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     """

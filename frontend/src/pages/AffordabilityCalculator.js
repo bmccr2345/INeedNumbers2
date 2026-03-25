@@ -26,7 +26,6 @@ import axios from 'axios';
 import { handleSaveCalculation, handleShareCalculation, formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calculatorUtils';
 import { navigateBackFromCalculator } from '../utils/navigation';
 import AffordabilityAICoach from '../components/AffordabilityAICoach';
-import { isNativeApp, downloadFile } from '../utils/platform';
 import API_BASE_URL from '../config/api';
 
 const AffordabilityCalculator = () => {
@@ -354,16 +353,28 @@ const AffordabilityCalculator = () => {
       return;
     }
 
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isIOS) {
+      const params = new URLSearchParams({
+        calculation_data: JSON.stringify(results),
+        property_data: JSON.stringify(inputs)
+      });
+      const url = `${API_BASE_URL}/api/reports/affordability/pdf?${params.toString()}`;
+      window.open(url, '_blank');
+      toast.success('PDF opened. Use share icon to save.');
+      return;
+    }
+
+    // EXISTING DESKTOP LOGIC (UNCHANGED)
     try {
       const backendUrl = API_BASE_URL;
       
-      // Prepare data for the backend (same format as investor calculator)
       const payload = {
         calculation_data: results,
         property_data: inputs
       };
 
-      // Make API call to generate PDF using the same pattern as investor calculator
       const response = await fetch(`${backendUrl}/api/reports/affordability/pdf`, {
         method: 'POST',
         headers: {
@@ -376,25 +387,24 @@ const AffordabilityCalculator = () => {
         throw new Error(`PDF generation failed: ${response.statusText}`);
       }
 
-      // Get the PDF blob
       const pdfBlob = await response.blob();
       
-      // Get filename from response headers or generate one
       const disposition = response.headers.get('Content-Disposition');
       let filename = 'affordability_analysis.pdf';
       if (disposition && disposition.includes('filename=')) {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      // Use platform-aware download (handles mobile Share sheet)
-      await downloadFile(pdfBlob, filename);
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
-      // Show appropriate success message
-      if (isNativeApp()) {
-        toast.success('PDF ready! Choose where to save it.');
-      } else {
-        toast.success('PDF downloaded successfully!');
-      }
+      toast.success('PDF downloaded successfully!');
       
     } catch (error) {
       console.error('PDF download error:', error);
