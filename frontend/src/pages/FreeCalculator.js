@@ -514,7 +514,7 @@ const FreeCalculator = () => {
 
   // Format percentage
   const formatPercentage = (value) => {
-    if (value === null || value === undefined) return '0%';
+    if (value === null || value === undefined || isNaN(value)) return '0.00%';
     return `${value.toFixed(2)}%`;
   };
 
