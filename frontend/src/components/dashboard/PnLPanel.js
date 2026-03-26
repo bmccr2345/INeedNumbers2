@@ -302,7 +302,7 @@ const PnLPanel = () => {
         return;
       }
 
-      await axios.put(`${backendUrl}/api/pnl/deals/${editingDeal.id}`, editingDeal, {
+      await axios.patch(`${backendUrl}/api/pnl/deals/${editingDeal.id}`, editingDeal, {
         withCredentials: true,
         headers: {
           'Authorization': `Bearer ${token}`
