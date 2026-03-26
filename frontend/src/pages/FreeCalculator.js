@@ -637,7 +637,7 @@ const FreeCalculator = () => {
               >
                 View Glossary
               </Button>
-              <Badge className="bg-blue-100 text-blue-800 text-xs">
+              <Badge className="hidden md:inline-flex bg-blue-100 text-blue-800 text-xs">
                 Free
               </Badge>
             </div>
