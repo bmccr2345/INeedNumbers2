@@ -170,7 +170,7 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Scrollable Form Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 pb-32" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="space-y-4">
             <div>
               <Label htmlFor="house_address" className="text-sm font-medium text-gray-700">
@@ -320,6 +320,9 @@ const MobileAddDealModal = ({ isOpen, onClose, onSuccess }) => {
                 className="mt-1"
               />
             </div>
+            
+            {/* Extra spacer for iOS safe area */}
+            <div className="h-8" aria-hidden="true" />
           </div>
         </div>
       </div>
