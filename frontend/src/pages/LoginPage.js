@@ -13,13 +13,20 @@ const LoginPage = () => {
   const from = location.state?.from?.pathname || '/dashboard';
 
   // Redirect if already authenticated - only after Clerk is loaded
+  // AND only when on the base /auth/login path (not during multi-step flows like /auth/login/factor-one)
   useEffect(() => {
     if (!isLoaded) return;
     
-    if (isSignedIn && user) {
+    // Guard: Don't redirect during Clerk's multi-step auth flow
+    // Clerk uses sub-paths like /auth/login/factor-one, /auth/login/factor-two for MFA
+    // Only redirect when on the exact base login path AND fully signed in
+    const isBaseLoginPath = location.pathname === '/auth/login';
+    
+    if (isSignedIn && user && isBaseLoginPath) {
+      console.log('[LoginPage] User already signed in, redirecting to:', from);
       navigate(from, { replace: true });
     }
-  }, [isLoaded, isSignedIn, user, navigate, from]);
+  }, [isLoaded, isSignedIn, user, navigate, from, location.pathname]);
 
   // Show nothing while Clerk is loading to prevent flash
   if (!isLoaded) {
@@ -62,7 +69,7 @@ const LoginPage = () => {
           <SignIn 
             routing="path"
             path="/auth/login"
-            afterSignInUrl={from}
+            fallbackRedirectUrl={from}
             appearance={{
               elements: {
                 rootBox: "mx-auto",

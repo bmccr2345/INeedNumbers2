@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { SignUp, useUser } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -12,17 +12,24 @@ import API_BASE_URL from '../config/api';
 const RegisterPage = () => {
   const { isSignedIn, user, isLoaded } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState(null);
   
   const backendUrl = API_BASE_URL;
 
   // After signup, redirect to Stripe checkout - only after Clerk is loaded
+  // AND only when on the base /auth/register path (not during multi-step flows)
   useEffect(() => {
     if (!isLoaded) return;
     
+    // Guard: Don't redirect during Clerk's multi-step auth flow
+    // Clerk uses sub-paths like /auth/register/verify-email-address, etc.
+    // Only redirect when on the exact base register path AND fully signed in
+    const isBaseRegisterPath = location.pathname === '/auth/register';
+    
     const redirectToCheckout = async () => {
-      if (isSignedIn && user && !isRedirecting) {
+      if (isSignedIn && user && !isRedirecting && isBaseRegisterPath) {
         setIsRedirecting(true);
         setError(null);
         
@@ -66,7 +73,7 @@ const RegisterPage = () => {
     };
 
     redirectToCheckout();
-  }, [isLoaded, isSignedIn, user, backendUrl, isRedirecting]);
+  }, [isLoaded, isSignedIn, user, backendUrl, isRedirecting, location.pathname]);
 
   // Show loading while Clerk initializes
   if (!isLoaded) {

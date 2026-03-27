@@ -28,8 +28,9 @@ const ClerkProviderWithNavigation = ({ children, publishableKey }) => {
       // Force inline auth components instead of redirecting to Clerk domain
       signInUrl="/auth/login"
       signUpUrl="/auth/register"
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/complete-subscription"
+      // Use fallbackRedirectUrl (Clerk v5+) instead of deprecated afterSignInUrl/afterSignUpUrl
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/complete-subscription"
     >
       {children}
     </ClerkProvider>
