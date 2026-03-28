@@ -6,10 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
-import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
+import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../../config/api';
+
+// Helper to format dates
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 const ClosingDatePanel = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [isCalculating, setIsCalculating] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [result, setResult] = useState(null);
@@ -35,28 +44,35 @@ const ClosingDatePanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      // Mock API call - in real implementation this would fetch from backend
-      const mockHistory = [
-        {
-          id: '1',
-          title: 'Closing Timeline - Dec 15, 2024',
-          underContractDate: '2024-11-01',
-          closingDate: '2024-12-15',
-          created_at: new Date().toISOString(),
-          milestone_count: 8
+      const token = await getToken();
+      
+      const response = await fetch(`${API_BASE_URL}/api/closing-date/saved`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        {
-          id: '2', 
-          title: 'Closing Timeline - Jan 20, 2025',
-          underContractDate: '2024-12-01',
-          closingDate: '2025-01-20',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          milestone_count: 6
-        }
-      ];
-      setHistory(mockHistory);
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Transform data for display
+        const transformedHistory = (data.calculations || []).map(calc => ({
+          id: calc.id,
+          title: calc.title || 'Closing Timeline',
+          underContractDate: calc.inputs?.underContractDate || '',
+          closingDate: calc.inputs?.closingDate || '',
+          created_at: calc.created_at,
+          milestone_count: calc.timeline?.length || 0
+        }));
+        setHistory(transformedHistory);
+      } else {
+        console.error('Failed to load closing date history');
+        setHistory([]);
+      }
     } catch (error) {
       console.error('Failed to load closing date history:', error);
+      setHistory([]);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -176,22 +192,29 @@ const ClosingDatePanel = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this timeline? This cannot be undone.')) return;
+    if (!window.confirm('Delete this timeline? This cannot be undone.')) return;
     
     try {
-      // Mock delete - in real implementation this would call the backend
-      setHistory(prev => prev.filter(item => item.id !== id));
+      const token = await getToken();
       
-      // Show success toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
-      toast.textContent = 'Timeline deleted successfully';
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
+      const response = await fetch(`${API_BASE_URL}/api/closing-date/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
       
+      if (response.ok) {
+        setHistory(prev => prev.filter(item => item.id !== id));
+        toast.success('Timeline deleted successfully');
+      } else {
+        throw new Error('Delete failed');
+      }
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Delete failed. Please try again.');
+      toast.error('Delete failed. Please try again.');
     }
   };
 
@@ -603,7 +626,7 @@ const ClosingDatePanel = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate('/tools/closing-date')}
+                        onClick={() => navigate(`/tools/closing-date?id=${item.id}`)}
                         className="text-primary hover:text-primary"
                         title="View Timeline"
                       >

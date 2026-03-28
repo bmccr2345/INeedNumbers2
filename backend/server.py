@@ -4917,6 +4917,49 @@ async def get_saved_closing_date_calculations(current_user: User = Depends(requi
         logger.error(f"Error fetching closing date calculations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/closing-date/{calculation_id}")
+async def get_closing_date_calculation(calculation_id: str, current_user: User = Depends(require_auth)):
+    """Get a specific closing date calculation by ID (authenticated)"""
+    try:
+        calculation = await db.closing_date_calculations.find_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        if not calculation:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        # Remove MongoDB-specific fields
+        if '_id' in calculation:
+            calculation.pop('_id')
+        
+        return calculation
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching closing date calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/closing-date/{calculation_id}")
+async def delete_closing_date_calculation(calculation_id: str, current_user: User = Depends(require_auth)):
+    """Delete a closing date calculation by ID"""
+    try:
+        result = await db.closing_date_calculations.delete_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        return {"message": "Calculation deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting closing date calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/closing-date/shared/{calculation_id}")
 async def get_shared_closing_date_calculation(calculation_id: str):
     """Get a shared closing date calculation (public access)"""
