@@ -288,30 +288,10 @@ body {
 
 <!-- Header -->
 <div class="header">
-  <!-- Branded Header Section -->
-  <div class="agent-info">
-    <div class="agent-details">
-      {{#agentLogoUrl}}
-        <img src="{{agentLogoUrl}}" alt="Agent Logo" class="agent-logo">
-      {{/agentLogoUrl}}
-      {{^agentLogoUrl}}
-        <div class="agent-avatar"></div>
-      {{/agentLogoUrl}}
-      <div class="agent-text">
-        <div class="agent-name"></div>
-        <div class="agent-contact"></div>
-        
-      </div>
-    </div>
-    
-    </div>
-  </div>
-  
   <h1>Seller Net Sheet Analysis</h1>
   <p class="subtitle">{{#address}}{{address}} • {{/address}}Expected Sale Price: {{salePrice}} • Commission Rate: {{commissionRate}}</p>
   
   <div class="header-meta">
-    
     <div>{{generatedAt}}</div>
   </div>
 </div>
