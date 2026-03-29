@@ -570,6 +570,7 @@ class BrandAgent(BaseModel):
     lastName: str = ""
     email: str = ""
     phone: str = ""
+    team: str = ""
     licenseNumber: str = ""
     licenseState: str = ""
 
@@ -983,6 +984,136 @@ def calculate_completion_score(profile: BrandProfile) -> float:
         score += 15
     
     return min(score, 100.0)
+
+async def fetch_asset_as_base64(asset_key: str) -> str:
+    """
+    Fetch an asset from S3 or local storage and return as base64 data URL.
+    This is needed because WeasyPrint's local_only_fetcher blocks remote URLs.
+    """
+    if not asset_key:
+        return ""
+    
+    try:
+        import base64
+        import mimetypes
+        
+        # Determine MIME type from key
+        ext = asset_key.lower().split('.')[-1] if '.' in asset_key else 'jpeg'
+        mime_map = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp'
+        }
+        mime_type = mime_map.get(ext, 'image/jpeg')
+        
+        # Check if it's a local file
+        if asset_key.startswith('local/'):
+            local_path = f"/tmp/uploads/{asset_key.replace('local/', '')}"
+            if os.path.exists(local_path):
+                with open(local_path, 'rb') as f:
+                    file_bytes = f.read()
+                b64_data = base64.b64encode(file_bytes).decode('utf-8')
+                return f"data:{mime_type};base64,{b64_data}"
+            else:
+                logger.warning(f"Local asset not found: {local_path}")
+                return ""
+        
+        # Fetch from S3
+        if settings.s3_bucket and settings.aws_access_key_id:
+            try:
+                s3_client = boto3.client(
+                    's3',
+                    aws_access_key_id=settings.aws_access_key_id,
+                    aws_secret_access_key=settings.aws_secret_access_key,
+                    region_name=settings.aws_region or 'us-east-1'
+                )
+                
+                response = s3_client.get_object(Bucket=settings.s3_bucket, Key=asset_key)
+                file_bytes = response['Body'].read()
+                
+                # Detect MIME type from actual content if possible
+                if file_bytes[:8] == b'\x89PNG\r\n\x1a\n':
+                    mime_type = 'image/png'
+                elif file_bytes[:2] == b'\xff\xd8':
+                    mime_type = 'image/jpeg'
+                
+                b64_data = base64.b64encode(file_bytes).decode('utf-8')
+                return f"data:{mime_type};base64,{b64_data}"
+                
+            except Exception as s3_error:
+                logger.warning(f"Failed to fetch asset from S3: {asset_key} - {s3_error}")
+                return ""
+        else:
+            logger.warning(f"S3 not configured, cannot fetch asset: {asset_key}")
+            return ""
+            
+    except Exception as e:
+        logger.error(f"Error fetching asset as base64: {asset_key} - {e}")
+        return ""
+
+async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
+    """
+    Build branding data dictionary for PDF templates from a BrandProfile.
+    Returns safe defaults if profile is None or incomplete.
+    """
+    default_color = "#16a34a"
+    
+    if not profile:
+        return {
+            "hasAgentBranding": False,
+            "brandPrimaryColor": default_color,
+            "brandPrimaryDark": "#128a3d"
+        }
+    
+    # Calculate darker shade for gradient (multiply RGB by 0.82)
+    primary_hex = profile.brand.primaryHex or default_color
+    try:
+        # Parse hex color and calculate darker shade
+        hex_clean = primary_hex.lstrip('#')
+        r = int(hex_clean[0:2], 16)
+        g = int(hex_clean[2:4], 16)
+        b = int(hex_clean[4:6], 16)
+        
+        r_dark = int(r * 0.82)
+        g_dark = int(g * 0.82)
+        b_dark = int(b * 0.82)
+        
+        primary_dark = f"#{r_dark:02x}{g_dark:02x}{b_dark:02x}"
+    except Exception:
+        primary_dark = "#128a3d"  # Fallback darker green
+    
+    # Get agent name and initials
+    first_name = profile.agent.firstName or ""
+    last_name = profile.agent.lastName or ""
+    agent_name = f"{first_name} {last_name}".strip()
+    
+    initials = ""
+    if first_name:
+        initials += first_name[0].upper()
+    if last_name:
+        initials += last_name[0].upper()
+    
+    # Determine if we have enough branding info to show
+    has_branding = bool(agent_name or profile.brokerage.name)
+    
+    # Fetch headshot as base64
+    headshot_key = profile.assets.headshot.key if profile.assets.headshot else ""
+    agent_photo_base64 = await fetch_asset_as_base64(headshot_key)
+    
+    return {
+        "hasAgentBranding": has_branding,
+        "agentName": agent_name,
+        "agentInitials": initials,
+        "agentTeam": profile.agent.team or "",
+        "agentBrokerage": profile.brokerage.name or "",
+        "agentEmail": profile.agent.email or "",
+        "agentPhone": profile.agent.phone or "",
+        "brandPrimaryColor": primary_hex,
+        "brandPrimaryDark": primary_dark,
+        "agentPhotoBase64": agent_photo_base64
+    }
 
 def process_image_with_pillow(image_data: bytes, asset_type: str) -> bytes:
     """Process image using Pillow based on asset type"""
@@ -2244,9 +2375,11 @@ async def get_report_preview(tool: str, request: Request, current_user: Optional
         # Prepare data for template
         if tool == "investor":
             # Get branding data for PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         elif tool == "affordability":
             # Load affordability template instead of investor template
             template_path = Path(__file__).parent / "templates" / "affordability_report.html"
@@ -2255,9 +2388,11 @@ async def get_report_preview(tool: str, request: Request, current_user: Optional
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for affordability PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         elif tool == "commission":
             # Load commission split template
             template_path = Path(__file__).parent / "templates" / "commission_split_report.html"
@@ -2266,9 +2401,11 @@ async def get_report_preview(tool: str, request: Request, current_user: Optional
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for commission split PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_commission_split_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         else:
             raise HTTPException(status_code=404, detail="Tool not supported")
         
@@ -2312,9 +2449,11 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
         # Prepare data for template
         if tool == "investor":
             # Get branding data for PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)  # Merge branding into report data
         elif tool == "affordability":
             # Load affordability template instead of investor template
             template_path = Path(__file__).parent / "templates" / "affordability_report.html"
@@ -2323,9 +2462,11 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for affordability PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+            report_data.update(branding_data)  # Merge branding into report data
         elif tool == "commission":
             # Load commission split template
             template_path = Path(__file__).parent / "templates" / "commission_split_report.html"
@@ -2334,9 +2475,11 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for commission split PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_commission_split_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)  # Merge branding into report data
             
             # Debug logging for commission PDF
             logger.info(f"Commission PDF - calculation_data: {calculation_data}")
@@ -2352,15 +2495,11 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for seller net sheet PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_seller_net_sheet_report_data(calculation_data, property_data, current_user)
-            
-            # Pre-compute brand colors for template (avoids Jinja2 # character issues)
-            primary_color = branding_data.get("colors", {}).get("primary", "#10b981")
-            report_data["brandPrimaryColor"] = primary_color
-            report_data["brandPrimaryDark"] = primary_color + "dd" if primary_color else "#15803ddd"
-            report_data["agentLogoUrl"] = branding_data.get("assets", {}).get("agentLogoUrl", "")
+            report_data.update(branding_data)  # Merge branding into report data
         elif tool == "closing-date":
             # Load closing date timeline template
             template_path = Path(__file__).parent / "templates" / "closing_date_report.html"
@@ -2369,7 +2508,8 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for closing date PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             print(f"🔍 DEBUG: Closing Date PDF - Data received: calculation_data keys: {list(calculation_data.keys()) if calculation_data else 'None'}")
             print(f"🔍 DEBUG: Closing Date PDF - Timeline length: {len(calculation_data.get('timeline', [])) if calculation_data else 0}")
@@ -2380,6 +2520,7 @@ async def generate_pdf(tool: str, request: Request, current_user: Optional[User]
                 logger.info(f"Closing Date PDF - First timeline item: {calculation_data['timeline'][0] if calculation_data['timeline'] else 'Empty'}")
             
             report_data = prepare_closing_date_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)  # Merge branding into report data
             
             print(f"🔍 DEBUG: Closing Date PDF - Timeline HTML length: {len(report_data.get('timelineTableRows', ''))}")
             print(f"🔍 DEBUG: Closing Date PDF - Visual timeline HTML length: {len(report_data.get('visualTimelineSection', ''))}")
@@ -2478,8 +2619,13 @@ async def generate_commission_pdf_get(
         raise HTTPException(status_code=500, detail="Commission split template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
+    # Get branding data
+    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    branding_data = await build_branding_data(brand_profile)
+    
     # Use existing report data preparation (same as POST endpoint)
     report_data = prepare_commission_split_report_data(calculation_data, property_data, current_user)
+    report_data.update(branding_data)  # Merge branding into report data
     html_content = render_template(template_content, report_data)
     pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
     
@@ -2522,7 +2668,12 @@ async def generate_investor_pdf_get(
         raise HTTPException(status_code=500, detail="Investor template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
+    # Get branding data
+    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    branding_data = await build_branding_data(brand_profile)
+    
     report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+    report_data.update(branding_data)  # Merge branding into report data
     html_content = render_template(template_content, report_data)
     pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
     
@@ -2564,7 +2715,12 @@ async def generate_affordability_pdf_get(
         raise HTTPException(status_code=500, detail="Affordability template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
+    # Get branding data
+    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    branding_data = await build_branding_data(brand_profile)
+    
     report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+    report_data.update(branding_data)  # Merge branding into report data
     html_content = render_template(template_content, report_data)
     pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
     
@@ -2605,12 +2761,12 @@ async def generate_seller_net_pdf_get(
         raise HTTPException(status_code=500, detail="Seller net sheet template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    branding_data = {}
+    # Get branding data
+    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    branding_data = await build_branding_data(brand_profile)
+    
     report_data = prepare_seller_net_sheet_report_data(calculation_data, property_data, current_user)
-    primary_color = branding_data.get("colors", {}).get("primary", "#10b981")
-    report_data["brandPrimaryColor"] = primary_color
-    report_data["brandPrimaryDark"] = primary_color + "dd" if primary_color else "#15803ddd"
-    report_data["agentLogoUrl"] = branding_data.get("assets", {}).get("agentLogoUrl", "")
+    report_data.update(branding_data)  # Merge branding into report data
     
     html_content = render_template(template_content, report_data)
     pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
@@ -2652,7 +2808,12 @@ async def generate_closing_date_pdf_get(
         raise HTTPException(status_code=500, detail="Closing date template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
+    # Get branding data
+    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    branding_data = await build_branding_data(brand_profile)
+    
     report_data = prepare_closing_date_report_data(calculation_data, property_data, current_user)
+    report_data.update(branding_data)  # Merge branding into report data
     html_content = render_template(template_content, report_data)
     pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
     
@@ -2694,9 +2855,11 @@ async def debug_report(tool: str, request: Request, current_user: Optional[User]
         # Prepare data for template
         if tool == "investor":
             # Get branding data for PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         elif tool == "affordability":
             # Load affordability template instead of investor template
             template_path = Path(__file__).parent / "templates" / "affordability_report.html"
@@ -2705,9 +2868,11 @@ async def debug_report(tool: str, request: Request, current_user: Optional[User]
             template_content = template_path.read_text(encoding='utf-8')
             
             # Get branding data for affordability PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         else:
             raise HTTPException(status_code=404, detail="Tool not supported")
         
@@ -2859,9 +3024,11 @@ async def generate_pdf_with_playwright_exact(tool: str, calculation_data: dict, 
         
         if tool == "investor":
             # Get branding data for PDF
-            branding_data = {}  # Branding disabled
+            brand_profile = await get_brand_profile(current_user.id) if current_user else None
+            branding_data = await build_branding_data(brand_profile)
             
             report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+            report_data.update(branding_data)
         else:
             raise HTTPException(status_code=404, detail="Tool not supported")
         
@@ -2891,9 +3058,11 @@ async def generate_pdf_with_playwright_exact(tool: str, calculation_data: dict, 
             
             if tool == "investor":
                 # Get branding data for PDF
-                branding_data = {}  # Branding disabled
+                brand_profile = await get_brand_profile(current_user.id) if current_user else None
+                branding_data = await build_branding_data(brand_profile)
                 
                 report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+                report_data.update(branding_data)
             else:
                 raise HTTPException(status_code=404, detail="Tool not supported")
             

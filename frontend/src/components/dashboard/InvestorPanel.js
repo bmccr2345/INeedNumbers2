@@ -94,6 +94,7 @@ const InvestorPanel = () => {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : ''
         },
+        credentials: 'include',
         body: JSON.stringify({
           property: {
             addressLine: investor.inputs?.addressLine || investor.property,

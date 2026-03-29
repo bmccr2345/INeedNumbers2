@@ -33,6 +33,7 @@ const BrandingProfilePage = () => {
       lastName: '',
       email: '',
       phone: '',
+      team: '',
       licenseNumber: '',
       licenseState: ''
     },
@@ -549,6 +550,18 @@ const BrandingProfilePage = () => {
                     onChange={(e) => handleInputChange('agent', 'phone', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Team Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.agent.team}
+                    onChange={(e) => handleInputChange('agent', 'team', e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    placeholder="The Smith Team"
                   />
                 </div>
                 <div>

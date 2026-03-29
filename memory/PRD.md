@@ -9,38 +9,42 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 - Mobile users accessing calculators via iOS app
 
 ## Core Requirements
-1. Financial calculators (Investor Deal Generator, Commission Split, Seller Net Sheet, Home Affordability)
+1. Financial calculators (Investor Deal Generator, Commission Split, Seller Net Sheet, Home Affordability, Closing Date)
 2. P&L tracker with deal management
 3. AI Coach with contextual analysis for different calculator types
 4. Dashboard with activity tracking and goal setting
 5. Mobile app support via Capacitor for iOS
+6. Agent branding on PDF reports
 
 ---
 
-## What's Been Implemented (Current Session - March 26, 2026)
+## What's Been Implemented
 
-### Desktop vs Mobile UI Optimizations
-- Hid Quick Actions, All Tools, and specific tool tiles on desktop using `lg:hidden`
-- Moved Financial Progress metrics directly onto Desktop Dashboard
-- Fixed iOS Capacitor PDF downloads with GET endpoints and `window.open()`
+### Session: March 29, 2026
 
-### Investor Deal Generator Fixes
-- **"Free" badge hidden on desktop** - Now only shows on mobile (`lg:hidden`)
-- **"Cash on Cash" card removed** from Fairy AI Coach modal (user request)
-- **AI Coach authentication fixed** - Now uses Clerk's `getToken()` instead of legacy localStorage token
+#### Agent Branding for PDF Reports (COMPLETE)
+- Added `team` field to BrandAgent model
+- Created `fetch_asset_as_base64()` helper for S3/local image fetching
+- Created `build_branding_data()` helper for building branding dict
+- Enabled branding in all 5 PDF generation endpoints
+- Updated all 5 PDF templates with dynamic colors and agent branding block
+- Added `credentials: 'include'` to all frontend PDF fetch calls
+- Added Team Name field to BrandingProfilePage.js
 
-### Commission Split & Seller Net Sheet Panels
-- Wired to live backend CRUD endpoints
-- History panels load from DB instead of mock data
-- View/Delete functionality working
-
-### Authentication & Auth Flicker Fix
-- Fixed Clerk Auth login flicker with route guards in `AuthContext.js`
-- Removed legacy cookie auth fallback - now strictly Clerk-only
-
-### P&L Updates
-- Fixed deal updates (changed PUT to PATCH)
-- Fixed NaN formatting on Cash on Cash metric
+#### UI/UX Fixes
+- Removed "Free" badge on desktop for Investor Deal Generator
+- Removed "Cash on Cash" card from AI Coach modal
+- Fixed AI Coach authentication (now uses Clerk getToken())
+- Fixed Mobile Add Deal form scroll issue (pb-32)
+- Fixed Mobile Add Expense modal (full rewrite with recurring support)
+- Fixed Clerk login flicker (guarded redirects on /auth/* paths)
+- Updated deprecated Clerk props (afterSignInUrl → fallbackRedirectUrl)
+- Fixed Closing Date PDF milestone ordering (Under Contract → Due Diligence → Home Inspection first)
+- Removed Status column from Closing Date PDF
+- Fixed Seller Net Sheet PDF header
+- Added Save button to Closing Date Calculator
+- Fixed View Timeline button to pass ID in URL
+- Added GET/DELETE endpoints for closing-date calculations
 
 ---
 
@@ -52,6 +56,7 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 - **Payments**: Stripe
 - **Mobile**: Capacitor (iOS)
 - **AI**: OpenAI GPT-4o-mini via Emergent LLM Key
+- **PDF**: WeasyPrint
 
 ---
 
@@ -62,25 +67,44 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 
 ### P1 (High Priority)
 - Deploy accumulated fixes to production
-- Populate `/features/*` pages with final screenshots
+- Test PDF branding with complete brand profile
 
 ### P2 (Medium Priority)
+- Populate `/features/*` pages with final screenshots
 - Refactor `server.py` into smaller domain-specific router files
 - Deploy separate `ops-frontend` admin application
-- Investigate race condition in axios interceptor (`AuthContext.js`)
 
 ### P3 (Low Priority)
 - Reinstate stricter CORS policy on backend (currently `*`)
+- Investigate race condition in axios interceptor (`AuthContext.js`)
 
 ---
 
 ## Key Files Reference
-- `/app/frontend/src/pages/FreeCalculator.js` - Investor Deal Generator
-- `/app/frontend/src/components/InvestorAICoach.js` - AI Coach modal for investor analysis
-- `/app/backend/app/routes/ai_coach.py` - AI Coach backend logic
+
+### Backend
+- `/app/backend/server.py` - Main API server (contains PDF generation, branding helpers)
+- `/app/backend/templates/*.html` - PDF report templates
+
+### Frontend
+- `/app/frontend/src/pages/BrandingProfilePage.js` - Agent branding settings
+- `/app/frontend/src/pages/ClosingDateCalculator.js` - Closing date tool
+- `/app/frontend/src/pages/FreeCalculator.js` - Investor deal generator
+- `/app/frontend/src/components/mobile/MobileAddExpenseModal.js` - Mobile expense form
 - `/app/frontend/src/contexts/AuthContext.js` - Clerk auth wrapper
 
 ---
 
 ## Known Issues
 - **Intermittent MongoDB Atlas connectivity** - SSL/auth errors in preview environment (infrastructure issue)
+
+---
+
+## 3rd Party Integrations
+- Clerk (Authentication)
+- Stripe (Payments)
+- MongoDB Atlas (Database)
+- OpenAI (AI Coach)
+- WeasyPrint (PDF Generation)
+- Capacitor (Native iOS/Android)
+- AWS S3 (Asset Storage)

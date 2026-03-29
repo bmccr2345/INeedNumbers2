@@ -35,7 +35,7 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  background: linear-gradient(135deg, {{brandPrimaryColor}} 0%, {{brandPrimaryDark}} 100%);
   color: white;
   padding: 25px;
   margin-bottom: 25px;
@@ -347,6 +347,28 @@ body {
 
 <!-- Header -->
 <div class="header">
+  {{#hasAgentBranding}}
+  <div class="agent-info">
+    <div class="agent-details">
+      {{#agentPhotoBase64}}
+      <img src="{{agentPhotoBase64}}" class="agent-avatar" style="object-fit:cover;" />
+      {{/agentPhotoBase64}}
+      {{^agentPhotoBase64}}
+      <div class="agent-avatar">{{agentInitials}}</div>
+      {{/agentPhotoBase64}}
+      <div class="agent-text">
+        <div class="agent-name">{{agentName}}</div>
+        <div class="agent-contact">{{#agentTeam}}{{agentTeam}} · {{/agentTeam}}{{agentBrokerage}}</div>
+        <div class="agent-contact">{{agentPhone}}{{#agentPhone}} · {{/agentPhone}}{{agentEmail}}</div>
+      </div>
+    </div>
+    <div class="brokerage-info">
+      <div>{{agentBrokerage}}</div>
+      <div style="font-size:12px;opacity:0.8">Licensed Real Estate Professional</div>
+    </div>
+  </div>
+  {{/hasAgentBranding}}
+  
   <h1>Home Purchase Timeline</h1>
   <p class="subtitle">{{propertyAddress}} • Contract to Closing: {{timelineLength}} Days</p>
   

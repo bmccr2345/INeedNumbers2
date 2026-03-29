@@ -288,6 +288,28 @@ body {
 
 <!-- Header -->
 <div class="header">
+  {{#hasAgentBranding}}
+  <div class="agent-info">
+    <div class="agent-details">
+      {{#agentPhotoBase64}}
+      <img src="{{agentPhotoBase64}}" class="agent-avatar" style="object-fit:cover;" />
+      {{/agentPhotoBase64}}
+      {{^agentPhotoBase64}}
+      <div class="agent-avatar">{{agentInitials}}</div>
+      {{/agentPhotoBase64}}
+      <div class="agent-text">
+        <div class="agent-name">{{agentName}}</div>
+        <div class="agent-contact">{{#agentTeam}}{{agentTeam}} · {{/agentTeam}}{{agentBrokerage}}</div>
+        <div class="agent-contact">{{agentPhone}}{{#agentPhone}} · {{/agentPhone}}{{agentEmail}}</div>
+      </div>
+    </div>
+    <div class="brokerage-info">
+      <div>{{agentBrokerage}}</div>
+      <div style="font-size:12px;opacity:0.8">Licensed Real Estate Professional</div>
+    </div>
+  </div>
+  {{/hasAgentBranding}}
+  
   <h1>Seller Net Sheet Analysis</h1>
   <p class="subtitle">{{#address}}{{address}} • {{/address}}Expected Sale Price: {{salePrice}} • Commission Rate: {{commissionRate}}</p>
   
