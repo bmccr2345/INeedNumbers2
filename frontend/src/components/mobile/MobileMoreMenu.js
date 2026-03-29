@@ -7,7 +7,8 @@ import {
   Shield, 
   Sparkles,
   HelpCircle,
-  X
+  X,
+  Palette
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -55,6 +56,15 @@ const MobileMoreMenu = ({ isOpen, onClose }) => {
       icon: Settings,
       action: () => {
         navigate('/settings');
+        onClose();
+      }
+    },
+    {
+      id: 'branding',
+      label: 'Branding Profile',
+      icon: Palette,
+      action: () => {
+        navigate('/app/branding');
         onClose();
       }
     },

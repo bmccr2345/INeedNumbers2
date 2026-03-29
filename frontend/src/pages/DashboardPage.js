@@ -22,7 +22,8 @@ import {
   Briefcase,
   PiggyBank,
   Store,
-  CheckSquare
+  CheckSquare,
+  Palette
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -482,6 +483,17 @@ const DashboardPage = () => {
                   >
                     <Settings className="w-4 h-4 mr-3" />
                     Profile & Billing
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      navigate('/app/branding');
+                      setShowAccountMenu(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Palette className="w-4 h-4 mr-3" />
+                    Branding Profile
                   </button>
                   
                   <button
