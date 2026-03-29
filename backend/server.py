@@ -1909,7 +1909,26 @@ def prepare_closing_date_report_data(calculation_data: dict, property_data: dict
     timeline = calculation_data.get('timeline', [])
     timeline_length = calculate_days_between(contract_date, closing_date)
     
-    # Generate timeline table HTML (excluding past-due items)
+    # Define milestone priority for sorting
+    # Priority order: Under Contract (1), Due Diligence Starts (2), Home Inspection (3), then rest by date
+    def get_milestone_priority(milestone):
+        name = milestone.get('name', '').lower()
+        if 'under contract' in name:
+            return (0, '')  # First
+        elif 'due diligence start' in name:
+            return (1, '')  # Second
+        elif 'home inspection' in name:
+            return (2, '')  # Third
+        else:
+            # Rest sorted by date
+            date_str = milestone.get('date', '')
+            return (3, date_str if date_str else 'z')  # 'z' puts items without dates at the end
+    
+    # Sort timeline with custom priority
+    if timeline:
+        timeline = sorted(timeline, key=get_milestone_priority)
+    
+    # Generate timeline table HTML (excluding past-due items, no Status column)
     timeline_table_html = ""
     if timeline:
         for milestone in timeline:
@@ -1928,15 +1947,12 @@ def prepare_closing_date_report_data(calculation_data: dict, property_data: dict
                 <td class="font-bold">{name}</td>
                 <td>{description}</td>
                 <td class="date-col">{date}</td>
-                <td class="text-right">
-                    <span class="{get_status_class(status)}">{status.title()}</span>
-                </td>
             </tr>"""
             
             if agent_note:
                 timeline_table_html += f"""
                 <tr>
-                    <td colspan="4" style="padding-left: 20px; font-style: italic; color: #2563eb; font-size: 11px;">
+                    <td colspan="3" style="padding-left: 20px; font-style: italic; color: #2563eb; font-size: 11px;">
                         Agent Note: "{agent_note}"
                     </td>
                 </tr>"""
