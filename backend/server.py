@@ -2060,6 +2060,7 @@ def prepare_closing_date_report_data(calculation_data: dict, property_data: dict
         timeline = sorted(timeline, key=get_milestone_priority)
     
     # Generate timeline table HTML (excluding past-due items, no Status column)
+    # EXCEPTION: Always include "Under Contract" and "Due Diligence Starts" regardless of status
     timeline_table_html = ""
     if timeline:
         for milestone in timeline:
@@ -2069,8 +2070,11 @@ def prepare_closing_date_report_data(calculation_data: dict, property_data: dict
             status = milestone.get('status', 'upcoming')
             agent_note = milestone.get('agentNote', '')
             
-            # Skip past-due items - only include upcoming and current items
-            if status in ['past-due', 'overdue']:
+            # Always include key milestones, skip other past-due items
+            name_lower = name.lower()
+            is_key_milestone = 'under contract' in name_lower or 'due diligence start' in name_lower
+            
+            if status in ['past-due', 'overdue'] and not is_key_milestone:
                 continue
             
             timeline_table_html += f"""
