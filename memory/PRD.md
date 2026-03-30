@@ -1,5 +1,31 @@
 # I Need Numbers - Product Requirements Document
 
+---
+
+## ⚠️ MANDATORY BUILD & DEPLOYMENT RULES — NEVER SKIP ⚠️
+
+### Frontend Changes (anything under /app/frontend/src/)
+After making ANY frontend changes, you MUST run:
+```bash
+cd /app/frontend && yarn build
+```
+This compiles React source files into the production bundle at `/app/frontend/build/`. The production site serves from that build folder, NOT from raw source files. **If you skip this step, no frontend changes will be visible in production after deployment.**
+
+### Backend Changes (server.py, templates, config)
+After making backend changes, restart the backend process:
+```bash
+sudo supervisorctl restart backend
+```
+
+### Before Declaring Deployment Ready, ALWAYS Confirm:
+1. ✅ Frontend changes → `yarn build` ran successfully (no errors)
+2. ✅ Backend changes → backend process restarted
+3. ✅ Verify build output: `ls -la /app/frontend/build/static/js/`
+
+**NEVER assume editing source files is enough. Source edits without a build are INVISIBLE in production.**
+
+---
+
 ## Original Problem Statement
 Build a real estate agent productivity platform with financial calculators, P&L tracking, AI coaching, and mobile app (Capacitor iOS) support.
 
