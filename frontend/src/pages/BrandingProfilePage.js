@@ -61,7 +61,7 @@ const BrandingProfilePage = () => {
   const [storageStatus, setStorageStatus] = useState({ ok: false, loading: true });
   
   // Ref for debounce timer
-  const saveTimerRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -82,8 +82,8 @@ const BrandingProfilePage = () => {
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
     };
   }, []);
@@ -163,14 +163,14 @@ const BrandingProfilePage = () => {
   const handleInputChange = (section, field, value) => {
     setFormData(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
+      [section]: { ...prev[section], [field]: value }
     }));
-    
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
+
+    // Clear any pending save before setting a new one
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
       saveBrandProfile();
     }, 1000);
   };
@@ -210,12 +210,11 @@ const BrandingProfilePage = () => {
         setBrandProfile(updatedProfile);
         console.log('Brand profile saved successfully');
       } else {
-        console.error('Failed to save brand profile:', response.status, response.statusText);
-        console.error('Failed to save your branding profile. Please try again.');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to save brand profile:', errorData?.detail || response.statusText || response.status);
       }
     } catch (error) {
-      console.error('Error saving brand profile:', error);
-      console.error('Network error saving profile. Please check your connection.');
+      console.error('Error saving brand profile:', error.response?.data?.detail || error.message || error);
     } finally {
       setSaving(false);
     }

@@ -614,6 +614,7 @@ class BrandProfile(BaseModel):
 class BrandProfileUpdate(BaseModel):
     agent: Optional[BrandAgent] = None
     brokerage: Optional[BrandBrokerage] = None
+    assets: Optional[BrandAssets] = None
     brand: Optional[BrandColors] = None
     footer: Optional[BrandFooter] = None
     planRules: Optional[BrandPlanRules] = None
@@ -941,12 +942,12 @@ async def get_brand_profile(user_id: str) -> Optional[BrandProfile]:
         default_profile = {
             "id": str(uuid.uuid4()),
             "userId": user_id,
-            "agent": BrandAgent().dict(),
-            "brokerage": BrandBrokerage().dict(),
-            "assets": BrandAssets().dict(),
-            "brand": BrandColors().dict(),
-            "footer": BrandFooter().dict(),
-            "planRules": BrandPlanRules().dict(),
+            "agent": BrandAgent().model_dump(),
+            "brokerage": BrandBrokerage().model_dump(),
+            "assets": BrandAssets().model_dump(),
+            "brand": BrandColors().model_dump(),
+            "footer": BrandFooter().model_dump(),
+            "planRules": BrandPlanRules().model_dump(),
             "completion": 0.0,
             "updatedAt": datetime.now(timezone.utc).isoformat()
         }
@@ -6668,57 +6669,60 @@ async def update_brand_profile_endpoint(
 ):
     """Update brand profile for authenticated user"""
     try:
-        # Get existing profile
+        # Get existing profile (creates default if missing)
         existing_profile = await get_brand_profile(current_user.id)
         if not existing_profile:
-            raise HTTPException(status_code=500, detail="Failed to get brand profile")
-        
-        # Prepare update data - only include fields that were actually provided
+            raise HTTPException(status_code=500, detail="Failed to get or create brand profile")
+
+        # Build update payload
         update_data = {"updatedAt": datetime.now(timezone.utc).isoformat()}
-        
+
         if profile_update.agent is not None:
-            update_data["agent"] = profile_update.agent.dict()
-        
+            update_data["agent"] = profile_update.agent.model_dump()
+
         if profile_update.brokerage is not None:
-            update_data["brokerage"] = profile_update.brokerage.dict()
-        
+            update_data["brokerage"] = profile_update.brokerage.model_dump()
+
+        if profile_update.assets is not None:
+            update_data["assets"] = profile_update.assets.model_dump()
+
         if profile_update.brand is not None:
-            update_data["brand"] = profile_update.brand.dict()
-        
+            update_data["brand"] = profile_update.brand.model_dump()
+
         if profile_update.footer is not None:
-            update_data["footer"] = profile_update.footer.dict()
-        
+            update_data["footer"] = profile_update.footer.model_dump()
+
         if profile_update.planRules is not None:
-            update_data["planRules"] = profile_update.planRules.dict()
-        
-        # Update in database
+            update_data["planRules"] = profile_update.planRules.model_dump()
+
+        # Write to database
         result = await db.brand_profiles.update_one(
             {"userId": current_user.id},
             {"$set": update_data}
         )
-        
+
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Brand profile not found")
-        
-        # Get updated profile and recalculate completion
+
+        # Re-fetch and recalculate completion
         updated_profile = await get_brand_profile(current_user.id)
-        if not updated_profile:
-            raise HTTPException(status_code=500, detail="Failed to retrieve updated profile")
-        
+        if updated_profile is None:
+            raise HTTPException(status_code=500, detail="Failed to re-fetch brand profile after update")
+
         completion_score = calculate_completion_score(updated_profile)
         await db.brand_profiles.update_one(
             {"userId": current_user.id},
             {"$set": {"completion": completion_score}}
         )
         updated_profile.completion = completion_score
-        
-        return updated_profile
-        
+
+        return updated_profile.model_dump()
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating brand profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error updating brand profile for user {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 @api_router.post("/brand/upload")
 async def upload_brand_asset(
