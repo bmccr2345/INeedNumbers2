@@ -26,6 +26,43 @@ sudo supervisorctl restart backend
 
 ---
 
+## 🚨 PRE-DEPLOYMENT CHECKLIST — MANDATORY BEFORE EVERY DEPLOY 🚨
+
+Before deploying ANY frontend changes, complete ALL steps below:
+
+### Step 1: Clean Build
+```bash
+cd /app/frontend
+rm -rf build node_modules/.cache
+yarn build
+```
+
+### Step 2: Verify CSS File Size
+Check that the CSS bundle is the expected size (~16KB):
+```bash
+ls -la /app/frontend/build/static/css/
+```
+If CSS file is abnormally small (<5KB), the build is corrupted. DO NOT DEPLOY.
+
+### Step 3: Visual Verification in Preview
+Take screenshots of BOTH:
+1. **Homepage** (`/`) — Must show proper layout, navigation, hero section with green gradient
+2. **The page you changed** — Verify your changes look correct
+
+### Step 4: Verify No Regressions
+Check that:
+- [ ] Navigation bar appears once (not duplicated)
+- [ ] All fonts are loading correctly
+- [ ] Green gradient hero is visible on homepage
+- [ ] Buttons and interactive elements have proper styling
+
+### Step 5: Only Then Deploy
+If ALL above checks pass, the build is safe to deploy.
+
+**If ANY visual issues appear in preview, DO NOT DEPLOY. Investigate and fix first.**
+
+---
+
 ## Original Problem Statement
 Build a real estate agent productivity platform with financial calculators, P&L tracking, AI coaching, and mobile app (Capacitor iOS) support.
 
