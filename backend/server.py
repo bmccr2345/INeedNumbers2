@@ -9172,6 +9172,16 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Error mounting AI Coach router: {e}")
 
+# Include Blog router
+try:
+    from app.blog_routes import blog_router
+    api_router.include_router(blog_router, tags=["blog"])
+    logger.info("Blog router mounted at /api/blog")
+except ImportError as e:
+    logger.warning(f"Could not import Blog router: {e}")
+except Exception as e:
+    logger.error(f"Error mounting Blog router: {e}")
+
 # Include Admin Command Center router (Stage 4) - PRODUCTION ONLY
 # Admin routes are only registered in production environment for security
 _admin_env = os.environ.get("NODE_ENV", "development")

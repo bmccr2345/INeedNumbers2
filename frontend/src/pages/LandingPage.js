@@ -146,6 +146,12 @@ const LandingPage = () => {
                 </button>
               )}
               <button 
+                onClick={() => navigate('/blog')}
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              >
+                Blog
+              </button>
+              <button 
                 onClick={() => navigate('/support')}
                 className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
@@ -197,6 +203,12 @@ const LandingPage = () => {
                   Pricing
                 </button>
               )}
+              <button 
+                onClick={() => { navigate('/blog'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+              >
+                Blog
+              </button>
               <button 
                 onClick={() => { navigate('/support'); setMobileMenuOpen(false); }}
                 className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"

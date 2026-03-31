@@ -72,6 +72,10 @@ import MobileLayout from "./layouts/MobileLayout";
 import MobileEntry from "./pages/MobileEntry";
 import CompleteSubscriptionPage from "./pages/CompleteSubscriptionPage";
 
+// Blog Pages
+import BlogListPage from "./pages/BlogListPage";
+import BlogPostPage from "./pages/BlogPostPage";
+
 // Feature Pages
 import FeaturesPage from "./pages/FeaturesPage";
 import AICoachFeature from "./pages/features/AICoachFeature";
@@ -284,6 +288,10 @@ function App() {
               <Route path="/features/pnl-tracker" element={<PnLTrackerFeature />} />
               <Route path="/features/cap-report" element={<CapReportFeature />} />
               <Route path="/features/action-tracker" element={<ActionTrackerFeature />} />
+              
+              {/* Blog Routes */}
+              <Route path="/blog" element={<BlogListPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
               
               {/* Admin Command Center moved to ops.ineednumbers.com */}
               

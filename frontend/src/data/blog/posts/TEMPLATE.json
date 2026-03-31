@@ -1,0 +1,110 @@
+{
+  "slug": "your-post-slug-here",
+  "title": "Your Post Title Here",
+  "metaTitle": "Your SEO Title (max 60 chars) | I Need Numbers",
+  "metaDescription": "Your meta description here. Should be 150-160 characters and include your target keyword naturally.",
+  "canonicalUrl": "https://ineednumbers.com/blog/your-post-slug-here",
+  "publishedAt": "2026-03-30T12:00:00Z",
+  "updatedAt": "2026-03-30T12:00:00Z",
+  "author": {
+    "name": "Author Name",
+    "role": "Role/Title",
+    "avatar": "/images/avatars/author.webp"
+  },
+  "category": "Business Planning",
+  "tags": ["real-estate", "business", "planning"],
+  "featuredImage": {
+    "url": "/images/blog/featured/your-post-slug-here.webp",
+    "alt": "Descriptive alt text for accessibility and SEO",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "A compelling 2-3 sentence summary that appears on the blog listing page. Max 300 characters.",
+  "estimatedReadTime": 5,
+  "targetKeyword": "your primary keyword",
+  "relatedSlugs": ["related-post-1", "related-post-2"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to track their success.",
+    "buttonText": "Start Free Trial",
+    "buttonUrl": "/auth/register"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "Your opening paragraph here. Use **bold** for emphasis and *italic* for subtle highlighting."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "First Major Section",
+      "id": "first-major-section"
+    },
+    {
+      "type": "paragraph",
+      "content": "Content for this section..."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "First bullet point",
+        "Second bullet point",
+        "Third bullet point"
+      ]
+    },
+    {
+      "type": "callout",
+      "style": "tip",
+      "content": "Pro tip: This is a highlighted callout box for important information."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Second Major Section",
+      "id": "second-major-section"
+    },
+    {
+      "type": "paragraph",
+      "content": "More content here..."
+    },
+    {
+      "type": "image",
+      "url": "/images/blog/content/your-post-slug-here-example.webp",
+      "alt": "Descriptive alt text",
+      "caption": "Optional caption for the image"
+    },
+    {
+      "type": "blockquote",
+      "content": "A notable quote or important statement.",
+      "attribution": "Source Name"
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Track Your Commission Splits",
+      "buttonText": "Try the Calculator",
+      "buttonUrl": "/tools/commission-split"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Frequently Asked Questions",
+      "id": "faq"
+    },
+    {
+      "type": "faq",
+      "items": [
+        {
+          "question": "What is the first question?",
+          "answer": "The answer to the first question."
+        },
+        {
+          "question": "What is the second question?",
+          "answer": "The answer to the second question."
+        }
+      ]
+    }
+  ],
+  "status": "draft"
+}
