@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-// Removed js-cookie import - using HttpOnly cookies now
 import { 
   Upload, 
   X, 
@@ -60,6 +59,9 @@ const BrandingProfilePage = () => {
   });
   const [uploadingAsset, setUploadingAsset] = useState(null);
   const [storageStatus, setStorageStatus] = useState({ ok: false, loading: true });
+  
+  // Ref for debounce timer
+  const saveTimeoutRef = useRef(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -76,6 +78,15 @@ const BrandingProfilePage = () => {
       checkStorageHealth();
     }
   }, [user]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const checkStorageHealth = async () => {
     try {
@@ -122,7 +133,7 @@ const BrandingProfilePage = () => {
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
         alert('Your session has expired. Please log in again.');
-        Cookies.remove('access_token');
+
         navigate('/auth/login');
         return;
       }
@@ -158,10 +169,13 @@ const BrandingProfilePage = () => {
       }
     }));
     
-    // Auto-save after a delay
-    setTimeout(() => {
+    // Proper debounced auto-save - clear previous timer before setting new one
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
       saveBrandProfile();
-    }, 1000);
+    }, 1500); // 1.5 second debounce
   };
 
   const saveBrandProfile = async () => {
@@ -189,7 +203,7 @@ const BrandingProfilePage = () => {
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
         alert('Your session has expired. Please log in again.');
-        Cookies.remove('access_token');
+
         navigate('/auth/login');
         return;
       }
@@ -236,7 +250,7 @@ const BrandingProfilePage = () => {
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
         alert('Your session has expired. Please log in again.');
-        Cookies.remove('access_token');
+
         navigate('/auth/login');
         return;
       }
@@ -292,7 +306,7 @@ const BrandingProfilePage = () => {
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
         alert('Your session has expired. Please log in again.');
-        Cookies.remove('access_token');
+
         navigate('/auth/login');
         return;
       }

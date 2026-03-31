@@ -6673,22 +6673,22 @@ async def update_brand_profile_endpoint(
         if not existing_profile:
             raise HTTPException(status_code=500, detail="Failed to get brand profile")
         
-        # Prepare update data
+        # Prepare update data - only include fields that were actually provided
         update_data = {"updatedAt": datetime.now(timezone.utc).isoformat()}
         
-        if profile_update.agent:
+        if profile_update.agent is not None:
             update_data["agent"] = profile_update.agent.dict()
         
-        if profile_update.brokerage:
+        if profile_update.brokerage is not None:
             update_data["brokerage"] = profile_update.brokerage.dict()
         
-        if profile_update.brand:
+        if profile_update.brand is not None:
             update_data["brand"] = profile_update.brand.dict()
         
-        if profile_update.footer:
+        if profile_update.footer is not None:
             update_data["footer"] = profile_update.footer.dict()
         
-        if profile_update.planRules:
+        if profile_update.planRules is not None:
             update_data["planRules"] = profile_update.planRules.dict()
         
         # Update in database
@@ -6702,13 +6702,15 @@ async def update_brand_profile_endpoint(
         
         # Get updated profile and recalculate completion
         updated_profile = await get_brand_profile(current_user.id)
-        if updated_profile:
-            completion_score = calculate_completion_score(updated_profile)
-            await db.brand_profiles.update_one(
-                {"userId": current_user.id},
-                {"$set": {"completion": completion_score}}
-            )
-            updated_profile.completion = completion_score
+        if not updated_profile:
+            raise HTTPException(status_code=500, detail="Failed to retrieve updated profile")
+        
+        completion_score = calculate_completion_score(updated_profile)
+        await db.brand_profiles.update_one(
+            {"userId": current_user.id},
+            {"$set": {"completion": completion_score}}
+        )
+        updated_profile.completion = completion_score
         
         return updated_profile
         

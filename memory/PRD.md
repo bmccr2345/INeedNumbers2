@@ -85,6 +85,14 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 
 ### Session: March 31, 2026
 
+#### Branding Profile Bug Fix (COMPLETE)
+- Fixed POST /api/brand/profile hanging issue
+- Backend: Added proper None handling when `get_brand_profile` returns None
+- Frontend: Fixed debouncing - was creating multiple concurrent requests on every keystroke
+- Frontend: Added `useRef` for proper debounce timer with cleanup on unmount
+- Frontend: Removed orphaned `Cookies.remove()` calls (import was already removed)
+- Increased debounce delay from 1s to 1.5s to reduce request frequency
+
 #### Blog Page Theme Update (COMPLETE)
 - Updated BlogListPage.jsx hero section to use homepage green gradient (`#1a5c3a` → `#2FA163` → `#3db574`)
 - Replaced dark gray theme (`gray-900` → `gray-800`) with brand-consistent green gradient
