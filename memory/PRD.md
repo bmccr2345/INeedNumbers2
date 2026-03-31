@@ -46,7 +46,22 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 
 ## What's Been Implemented
 
+### Session: March 31, 2026
+
+#### Blog Page Theme Update (COMPLETE)
+- Updated BlogListPage.jsx hero section to use homepage green gradient (`#1a5c3a` → `#2FA163` → `#3db574`)
+- Replaced dark gray theme (`gray-900` → `gray-800`) with brand-consistent green gradient
+- Updated text colors for contrast (white/80 for links, white/90 for subtext)
+
 ### Session: March 29, 2026
+
+#### Blog Feature (COMPLETE)
+- Full Blog architecture with React frontend and FastAPI backend
+- JSON-based posts stored in `/app/frontend/src/data/blog/posts/`
+- Auto-generated index via `/app/scripts/generate-blog-index.js`
+- SEO support via react-helmet-async
+- View tracking and email subscription via MongoDB
+- Backend routes: `POST /api/blog/view/{slug}`, `POST /api/blog/subscribe`, `GET /api/blog/popular`
 
 #### Agent Branding for PDF Reports (COMPLETE)
 - Added `team` field to BrandAgent model
@@ -92,6 +107,7 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 - None currently
 
 ### P1 (High Priority)
+- Test Blog email subscription end-to-end (saving to MongoDB)
 - Deploy accumulated fixes to production
 - Test PDF branding with complete brand profile
 
@@ -114,10 +130,15 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 
 ### Frontend
 - `/app/frontend/src/pages/BrandingProfilePage.js` - Agent branding settings
+- `/app/frontend/src/pages/BlogListPage.jsx` - Blog listing page
+- `/app/frontend/src/pages/BlogPostPage.jsx` - Individual blog post page
+- `/app/frontend/src/components/blog/*` - Blog components (BlogCard, BlogHeader, EmailCapture, etc.)
+- `/app/frontend/src/data/blog/` - Blog JSON data and index
 - `/app/frontend/src/pages/ClosingDateCalculator.js` - Closing date tool
 - `/app/frontend/src/pages/FreeCalculator.js` - Investor deal generator
 - `/app/frontend/src/components/mobile/MobileAddExpenseModal.js` - Mobile expense form
 - `/app/frontend/src/contexts/AuthContext.js` - Clerk auth wrapper
+- `/app/frontend/nginx.conf` - Cache-control headers for Cloudflare
 
 ---
 

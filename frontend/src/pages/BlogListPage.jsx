@@ -54,17 +54,22 @@ const BlogListPage = () => {
       <BlogSEO isListPage />
 
       <div className="min-h-screen bg-white">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white py-16 md:py-24">
+        {/* Hero Section - Matches homepage green gradient */}
+        <div 
+          className="text-white py-16 md:py-24"
+          style={{
+            background: 'linear-gradient(135deg, #1a5c3a 0%, #2FA163 50%, #3db574 100%)',
+          }}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Link to="/" className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors">
+            <Link to="/" className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
             <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
               Real Estate Business Insights
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl">
+            <p className="text-xl text-white/90 max-w-2xl">
               Expert tips, strategies, and insights to help you grow your real estate business, 
               track your success, and stay ahead of the competition.
             </p>
