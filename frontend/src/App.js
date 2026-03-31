@@ -308,6 +308,7 @@ function App() {
               <Route path="/agent-pnl-tracker" element={<Navigate to="/tools/agent-pl-tracker" replace />} />
               <Route path="/login" element={<Navigate to="/auth/login" replace />} />
               <Route path="/app/branding" element={<BrandingProfilePage />} />
+              <Route path="/dashboard/branding" element={<BrandingProfilePage />} />
               
               {/* Onboarding Routes */}
               <Route path="/onboarding" element={<WelcomeScreen />} />

@@ -61,7 +61,7 @@ const BrandingProfilePage = () => {
   const [storageStatus, setStorageStatus] = useState({ ok: false, loading: true });
   
   // Ref for debounce timer
-  const saveTimeoutRef = useRef(null);
+  const saveTimerRef = useRef(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -82,8 +82,8 @@ const BrandingProfilePage = () => {
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
       }
     };
   }, []);
@@ -118,7 +118,7 @@ const BrandingProfilePage = () => {
       // Check authentication using AuthContext (not manual token checking)
       if (!user) {
         console.error('User not authenticated');
-        alert('Please log in again to access your branding profile.');
+        console.error('Please log in again to access your branding profile.');
         navigate('/auth/login');
         return;
       }
@@ -132,7 +132,7 @@ const BrandingProfilePage = () => {
 
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
-        alert('Your session has expired. Please log in again.');
+        console.error('Your session has expired. Please log in again.');
 
         navigate('/auth/login');
         return;
@@ -150,11 +150,11 @@ const BrandingProfilePage = () => {
         });
       } else {
         console.error('Failed to load brand profile:', response.status, response.statusText);
-        alert('Failed to load your branding profile. Please try again.');
+        console.error('Failed to load your branding profile. Please try again.');
       }
     } catch (error) {
       console.error('Error loading brand profile:', error);
-      alert('Network error loading branding profile. Please check your connection.');
+      console.error('Network error loading branding profile. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -169,13 +169,10 @@ const BrandingProfilePage = () => {
       }
     }));
     
-    // Proper debounced auto-save - clear previous timer before setting new one
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    saveTimeoutRef.current = setTimeout(() => {
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
       saveBrandProfile();
-    }, 1500); // 1.5 second debounce
+    }, 1000);
   };
 
   const saveBrandProfile = async () => {
@@ -186,7 +183,7 @@ const BrandingProfilePage = () => {
       // Check authentication using AuthContext
       if (!user) {
         console.error('User not authenticated');
-        alert('Please log in again to save your profile.');
+        console.error('Please log in again to save your profile.');
         navigate('/auth/login');
         return;
       }
@@ -202,7 +199,7 @@ const BrandingProfilePage = () => {
 
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
-        alert('Your session has expired. Please log in again.');
+        console.error('Your session has expired. Please log in again.');
 
         navigate('/auth/login');
         return;
@@ -214,11 +211,11 @@ const BrandingProfilePage = () => {
         console.log('Brand profile saved successfully');
       } else {
         console.error('Failed to save brand profile:', response.status, response.statusText);
-        alert('Failed to save your branding profile. Please try again.');
+        console.error('Failed to save your branding profile. Please try again.');
       }
     } catch (error) {
       console.error('Error saving brand profile:', error);
-      alert('Network error saving profile. Please check your connection.');
+      console.error('Network error saving profile. Please check your connection.');
     } finally {
       setSaving(false);
     }
@@ -231,7 +228,7 @@ const BrandingProfilePage = () => {
       // Check authentication using AuthContext
       if (!user) {
         console.error('User not authenticated');
-        alert('Please log in again to upload files.');
+        console.error('Please log in again to upload files.');
         navigate('/auth/login');
         return;
       }
@@ -249,7 +246,7 @@ const BrandingProfilePage = () => {
 
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
-        alert('Your session has expired. Please log in again.');
+        console.error('Your session has expired. Please log in again.');
 
         navigate('/auth/login');
         return;
@@ -263,23 +260,23 @@ const BrandingProfilePage = () => {
         await loadBrandProfile();
         await checkStorageHealth();
         
-        alert('File uploaded successfully!');
+        console.error('File uploaded successfully!');
       } else {
         const error = await response.json();
         console.error('Upload failed:', error);
         
         // Show user-friendly error messages
         if (error.detail?.includes('File too large')) {
-          alert('File is too large. Maximum size is 5MB.');
+          console.error('File is too large. Maximum size is 5MB.');
         } else if (error.detail?.includes('Unsupported file type')) {
-          alert('Unsupported file type. Please use PNG, JPEG, or SVG files.');
+          console.error('Unsupported file type. Please use PNG, JPEG, or SVG files.');
         } else {
-          alert(error.detail || 'Upload failed. Please try again.');
+          console.error(error.detail || 'Upload failed. Please try again.');
         }
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Network error during upload. Please check your connection.');
+      console.error('Network error during upload. Please check your connection.');
     } finally {
       setUploadingAsset(null);
     }
@@ -290,7 +287,7 @@ const BrandingProfilePage = () => {
       // Check authentication using AuthContext
       if (!user) {
         console.error('User not authenticated');
-        alert('Please log in again to delete assets.');
+        console.error('Please log in again to delete assets.');
         navigate('/auth/login');
         return;
       }
@@ -305,7 +302,7 @@ const BrandingProfilePage = () => {
 
       if (response.status === 401) {
         console.error('Authentication token expired or invalid');
-        alert('Your session has expired. Please log in again.');
+        console.error('Your session has expired. Please log in again.');
 
         navigate('/auth/login');
         return;
@@ -313,15 +310,15 @@ const BrandingProfilePage = () => {
 
       if (response.ok) {
         await loadBrandProfile();
-        alert('Asset deleted successfully!');
+        console.error('Asset deleted successfully!');
       } else {
         const error = await response.json();
         console.error('Delete failed:', error);
-        alert(error.detail || 'Failed to delete asset.');
+        console.error(error.detail || 'Failed to delete asset.');
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert('Network error during deletion. Please check your connection.');
+      console.error('Network error during deletion. Please check your connection.');
     }
   };
 
@@ -357,11 +354,11 @@ const BrandingProfilePage = () => {
       } else {
         const errorData = await response.json();
         console.error('PDF generation failed:', errorData);
-        alert(`Failed to generate test PDF: ${errorData.detail || 'Unknown error'}`);
+        console.error(`Failed to generate test PDF: ${errorData.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('PDF generation error:', error);
-      alert('Network error during PDF generation. Please check your connection.');
+      console.error('Network error during PDF generation. Please check your connection.');
     } finally {
       setLoading(false);
     }
