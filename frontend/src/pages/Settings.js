@@ -11,10 +11,13 @@ import { ArrowLeft, User, Settings as SettingsIcon, Upload, Save } from 'lucide-
 import { toast } from 'sonner';
 import { safeLocalStorage } from '../utils/safeStorage';
 import { useIsMobile } from '../hooks/useMediaQuery';
+import { useAuth } from '../contexts/AuthContext';
+import API_BASE_URL from '../config/api';
 
 const Settings = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   
   // Agent profile state
   const [agentProfile, setAgentProfile] = useState({
@@ -33,15 +36,50 @@ const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Load agent profile on component mount
+  // Load agent profile on component mount or when user changes
   useEffect(() => {
     loadAgentProfile();
-  }, []);
+  }, [user]);
 
   const loadAgentProfile = async () => {
     try {
-      // TODO: Replace with actual API call when authentication is implemented
-      // For now, load from localStorage as demo
+      // If user is authenticated, load from API
+      if (user) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/brand/profile`, {
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const profile = await response.json();
+            // Map nested API structure to flat Settings page fields
+            const firstName = profile.agent?.firstName || '';
+            const lastName = profile.agent?.lastName || '';
+            const fullName = [firstName, lastName].filter(Boolean).join(' ');
+            
+            setAgentProfile({
+              agent_full_name: fullName,
+              agent_title_or_team: profile.agent?.team || profile.agent?.title || '',
+              agent_brokerage: profile.brokerage?.name || '',
+              agent_license_number: profile.brokerage?.licenseNumber || '',
+              agent_phone: profile.agent?.phone || '',
+              agent_email: profile.agent?.email || '',
+              agent_website: '', // Not stored in API currently
+              agent_brand_color: profile.brand?.primaryHex || '#5B56F1',
+              agent_logo_url: profile.assets?.agentLogo?.url || '',
+              agent_headshot_url: profile.assets?.headshot?.url || ''
+            });
+            return;
+          }
+        } catch (apiError) {
+          console.error('Error loading from API, falling back to localStorage:', apiError);
+        }
+      }
+      
+      // Fallback to localStorage for unauthenticated users or if API fails
       const savedProfile = safeLocalStorage.getItem('dealpack_agent_profile');
       if (savedProfile) {
         setAgentProfile(JSON.parse(savedProfile));
@@ -127,8 +165,58 @@ const Settings = () => {
         agent_website: formatWebsite(agentProfile.agent_website)
       };
 
-      // TODO: Replace with actual API call when authentication is implemented
-      // For now, save to localStorage as demo
+      // If user is authenticated, save to API
+      if (user) {
+        // Map flat Settings fields to nested API structure
+        const nameParts = formattedProfile.agent_full_name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        const apiPayload = {
+          agent: {
+            firstName: firstName,
+            lastName: lastName,
+            email: formattedProfile.agent_email || '',
+            phone: formattedProfile.agent_phone || '',
+            team: formattedProfile.agent_title_or_team || ''
+          },
+          brokerage: {
+            name: formattedProfile.agent_brokerage || '',
+            licenseNumber: formattedProfile.agent_license_number || '',
+            address: ''
+          },
+          brand: {
+            primaryHex: formattedProfile.agent_brand_color || '#16a34a',
+            secondaryHex: ''
+          },
+          footer: {
+            compliance: '',
+            cta: ''
+          }
+        };
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/brand/profile`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(apiPayload)
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('API save failed:', errorData);
+            throw new Error(errorData.detail || 'Failed to save to server');
+          }
+        } catch (apiError) {
+          console.error('Error saving to API:', apiError);
+          // Still save to localStorage as backup
+        }
+      }
+
+      // Also save to localStorage as backup/cache
       safeLocalStorage.setItem('dealpack_agent_profile', JSON.stringify(formattedProfile));
       
       setAgentProfile(formattedProfile);

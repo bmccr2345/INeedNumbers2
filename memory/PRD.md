@@ -83,6 +83,21 @@ Build a real estate agent productivity platform with financial calculators, P&L 
 
 ## What's Been Implemented
 
+### Session: April 1, 2026
+
+#### Settings Page API Integration (COMPLETE)
+- Settings.js now saves/loads branding data to/from the API instead of localStorage only
+- Added auth context import and API calls with `credentials: 'include'`
+- Maps flat Settings fields to nested API structure for POST
+- Maps nested API response to flat Settings fields for GET
+- Falls back to localStorage for unauthenticated users
+
+#### Login MFA Double Email Fix (COMPLETE)
+- Connected ClerkProvider to React Router with `routerPush`/`routerReplace` props
+- Service worker now excludes `/auth/*` routes from caching
+- Removed `/` from STATIC_ASSETS to prevent stale HTML during auth flows
+- Conditional StrictMode (development only) to prevent double mount issues
+
 ### Session: March 31, 2026
 
 #### Branding Profile Bug Fix (COMPLETE)
