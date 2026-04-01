@@ -68,6 +68,10 @@ const BrandingProfilePage = () => {
   const formDataRef = useRef(formData);
   // Ref for headshot file input (to trigger from Replace button)
   const headshotInputRef = useRef(null);
+  // Ref for agent logo file input
+  const agentLogoInputRef = useRef(null);
+  // Ref for broker logo file input
+  const brokerLogoInputRef = useRef(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -908,6 +912,19 @@ const BrandingProfilePage = () => {
                         Horizontal crop 4:1, recommended 800×200, transparent PNG or SVG, max 3 MB
                       </p>
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        {/* Hidden file input - always in DOM */}
+                        <input
+                          ref={agentLogoInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              handleAssetUpload('agentLogo', e.target.files[0]);
+                            }
+                          }}
+                          className="hidden"
+                          id="agent-logo-upload"
+                        />
                         {brandProfile?.assets?.agentLogo?.url ? (
                           <div>
                             <img 
@@ -916,7 +933,13 @@ const BrandingProfilePage = () => {
                               className="h-12 mx-auto mb-4 object-contain"
                             />
                             <div className="space-x-2">
-                              <Button variant="outline" size="sm">Replace</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => agentLogoInputRef.current?.click()}
+                              >
+                                Replace
+                              </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -929,17 +952,6 @@ const BrandingProfilePage = () => {
                         ) : (
                           <div>
                             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                if (e.target.files[0]) {
-                                  handleAssetUpload('agentLogo', e.target.files[0]);
-                                }
-                              }}
-                              className="hidden"
-                              id="agent-logo-upload"
-                            />
                             <label
                               htmlFor="agent-logo-upload"
                               className="cursor-pointer text-primary hover:text-primary-dark"
@@ -971,6 +983,19 @@ const BrandingProfilePage = () => {
                         Horizontal crop 4:1, recommended 800×200, transparent PNG or SVG, max 3 MB
                       </p>
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        {/* Hidden file input - always in DOM */}
+                        <input
+                          ref={brokerLogoInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              handleAssetUpload('brokerLogo', e.target.files[0]);
+                            }
+                          }}
+                          className="hidden"
+                          id="broker-logo-upload"
+                        />
                         {brandProfile?.assets?.brokerLogo?.url ? (
                           <div>
                             <img 
@@ -979,7 +1004,13 @@ const BrandingProfilePage = () => {
                               className="h-12 mx-auto mb-4 object-contain"
                             />
                             <div className="space-x-2">
-                              <Button variant="outline" size="sm">Replace</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => brokerLogoInputRef.current?.click()}
+                              >
+                                Replace
+                              </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -992,17 +1023,6 @@ const BrandingProfilePage = () => {
                         ) : (
                           <div>
                             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                if (e.target.files[0]) {
-                                  handleAssetUpload('brokerLogo', e.target.files[0]);
-                                }
-                              }}
-                              className="hidden"
-                              id="broker-logo-upload"
-                            />
                             <label
                               htmlFor="broker-logo-upload"
                               className="cursor-pointer text-primary hover:text-primary-dark"
