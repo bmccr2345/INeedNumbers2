@@ -135,7 +135,7 @@
 }
 
 /* ===== AI COACH SPOTLIGHT ===== */
-.ai-spotlight { padding:6rem 2rem; background:linear-gradient(180deg,var(--white) 0%,#faf5ff 100%); text-align:center; position:relative; overflow:hidden; }
+.ai-spotlight { padding:3rem 2rem; background:linear-gradient(180deg,var(--white) 0%,#faf5ff 100%); text-align:center; position:relative; overflow:hidden; }
 .ai-spotlight-inner { max-width:900px; margin:0 auto; }
 .ai-spotlight-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--purple-bg); color:var(--purple); padding:0.4rem 1rem; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:1.5rem; }
 .ai-spotlight h2 { font-size:2.5rem; color:var(--gray-900); margin-bottom:1rem; line-height:1.2; font-family: 'Playfair Display', Georgia, serif; }
@@ -166,7 +166,7 @@
 @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
 
 /* ===== PAIN SECTIONS ===== */
-.pain-section { padding:6rem 2rem; position:relative; overflow:hidden; }
+.pain-section { padding:4rem 2rem; position:relative; overflow:hidden; }
 .pain-section:nth-child(even) { background:var(--gray-50); }
 .pain-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
 .pain-section.reverse .pain-inner { direction:rtl; }
