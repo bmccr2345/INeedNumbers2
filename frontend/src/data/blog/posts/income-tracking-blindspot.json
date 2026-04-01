@@ -1,0 +1,119 @@
+{
+  "slug": "income-tracking-blindspot",
+  "title": "The Income Blindspot: Why You Don't Know What You're Making (And How to Fix It)",
+  "metaTitle": "The Income Blindspot: Why You Don't Know What You're Making | I Need Numbers",
+  "metaDescription": "Real estate agents: stop flying blind on your income. Learn why GCI tells only part of the story and how to track what you're actually making each month.",
+  "canonicalUrl": "https://ineednumbers.com/blog/income-tracking-blindspot",
+  "publishedAt": "2026-03-29T12:00:00Z",
+  "updatedAt": "2026-03-29T12:00:00Z",
+  "author": {
+    "name": "I Need Numbers Team",
+    "role": "Real Estate Tools & Insights",
+    "avatar": "/images/avatars/inn-team.webp"
+  },
+  "category": "Profit & Loss",
+  "tags": ["real-estate", "income", "profit-loss"],
+  "featuredImage": {
+    "url": "/images/blog/featured/default-blog.svg",
+    "alt": "The Income Blindspot: Why You Don't Know What You're Making (And How to Fix It)",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "Here's a question that stops most agents cold: \"What are you actually making this month?\" Not your projected GCI. Not your pipeline value. What will hit your bank account after splits, fees, taxes, and expenses?",
+  "estimatedReadTime": 3,
+  "targetKeyword": "real estate agent income tracking",
+  "relatedSlugs": ["gci-vs-real-profit", "busy-vs-strategic-real-estate-productivity"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to work smarter, track their income, and close more deals.",
+    "buttonText": "Track Your Real Income",
+    "buttonUrl": "/tools/agent-pl-tracker"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "Here's a question that stops most agents cold: \"What are you actually making this month?\" Not your projected GCI. Not your pipeline value. What will hit your bank account after splits, fees, taxes, and expenses?"
+    },
+    {
+      "type": "paragraph",
+      "content": "If you don't know the answer, you're not alone. Most real estate agents track their income like they're driving with a fogged windshield—they can see shapes and movement, but they can't tell if they're about to hit something. You don't know what you're making this month because the numbers live in too many places: your brokerage statement, your spreadsheet, your gut feeling, and maybe a napkin calculation."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Why GCI Is a Dangerous Number to Track",
+      "id": "why-gci-is-a-dangerous-number-to-track"
+    },
+    {
+      "type": "paragraph",
+      "content": "Gross Commission Income feels good. It's big, it's exciting, and it's what agents brag about at networking events. But GCI is a vanity metric. It doesn't account for your split, transaction fees, marketing costs, or the months when deals fall through at the last second. Basing your financial decisions on GCI is like budgeting based on your lottery ticket expectations."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The True Cost of Income Uncertainty",
+      "id": "the-true-cost-of-income-uncertainty"
+    },
+    {
+      "type": "paragraph",
+      "content": "When you don't know what you're actually making, you make poor decisions. You overspend during good months and panic during slow ones. You can't plan for taxes, can't budget for growth, and can't negotiate from a position of strength because you don't know what you actually need. This uncertainty creates stress that bleeds into every client interaction."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Building Real Visibility Into Your Earnings",
+      "id": "building-real-visibility-into-your-earnings"
+    },
+    {
+      "type": "paragraph",
+      "content": "Top-performing agents track their income with the same precision they use for their clients' net sheets. They know:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Expected closings this month",
+        "Commission amounts after splits",
+        "Outstanding receivables",
+        "Projected expenses",
+        "Actual take-home by month"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "This clarity transforms how you run your business. You can spot slow months coming, adjust your prospecting accordingly, and sleep better knowing exactly where you stand."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "From Guessing to Knowing",
+      "id": "from-guessing-to-knowing"
+    },
+    {
+      "type": "paragraph",
+      "content": "The agents who build sustainable businesses don't rely on memory or gut feelings. They have systems that surface their real income in real-time—no spreadsheets required, no waiting for brokerage statements, no surprises when the check arrives."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Know Your Numbers, Grow Your Business",
+      "id": "know-your-numbers-grow-your-business"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stop flying blind on your income. When you have clear visibility into what you're actually making—not just what you think you're making—you gain the confidence to make smart decisions, plan for growth, and build a business that lasts."
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Track Your Real Income",
+      "buttonText": "Track Your Real Income",
+      "buttonUrl": "/tools/agent-pl-tracker"
+    },
+    {
+      "type": "paragraph",
+      "content": "**Want real-time income clarity?** [I Need Numbers](https://ineednumbers.com) tracks your actual earnings after splits and fees, showing you what you're making this month, next month, and year-to-date. No more guessing. No more surprises."
+    }
+  ],
+  "status": "published"
+}

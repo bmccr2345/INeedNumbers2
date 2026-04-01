@@ -1,0 +1,130 @@
+{
+  "slug": "commission-cap-tracking",
+  "title": "Commission Cap Chaos: Are You Close to Keeping 100% of Your Money?",
+  "metaTitle": "Commission Cap Chaos: Are You Close to Keeping 100% of Your Money? | I Need Numbers",
+  "metaDescription": "Don't leave money on the table. Learn how to track your commission cap progress and why knowing your cap status can add thousands to your annual income.",
+  "canonicalUrl": "https://ineednumbers.com/blog/commission-cap-tracking",
+  "publishedAt": "2026-03-29T12:00:00Z",
+  "updatedAt": "2026-03-29T12:00:00Z",
+  "author": {
+    "name": "I Need Numbers Team",
+    "role": "Real Estate Tools & Insights",
+    "avatar": "/images/avatars/inn-team.webp"
+  },
+  "category": "Commission Tracking",
+  "tags": ["real-estate", "commission", "commission-tracking"],
+  "featuredImage": {
+    "url": "/images/blog/featured/default-blog.svg",
+    "alt": "Commission Cap Chaos: Are You Close to Keeping 100% of Your Money?",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "Imagine working the same amount but keeping significantly more of what you earn. For most agents, this isn't a fantasy—it's what happens when you hit your commission cap. The problem? You don't know how close you are to capping.",
+  "estimatedReadTime": 3,
+  "targetKeyword": "real estate commission cap tracking",
+  "relatedSlugs": ["commission-split-confusion", "busy-vs-strategic-real-estate-productivity"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to work smarter, track their income, and close more deals.",
+    "buttonText": "Track Your Commission Cap",
+    "buttonUrl": "/tools/commission"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "Imagine working the same amount but keeping significantly more of what you earn. For most agents, this isn't a fantasy—it's what happens when you hit your commission cap. The problem? You don't know how close you are to capping, so you can't plan for it, push for it, or even know when it happens."
+    },
+    {
+      "type": "paragraph",
+      "content": "Commission caps are one of the most powerful (and misunderstood) aspects of real estate compensation. Once you pay your brokerage's annual cap amount, you typically keep 100% of your commission for the rest of the year. For a producing agent, this can mean an extra $50,000 to $100,000+ in take-home income. Yet most agents track their cap progress like they're reading tea leaves—vaguely aware something exists but with no clear sense of where they stand."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Cap Blindness Problem",
+      "id": "the-cap-blindness-problem"
+    },
+    {
+      "type": "paragraph",
+      "content": "Most agents only learn they've capped when their brokerage tells them—or when they notice their checks got bigger. This reactive approach costs money. If you knew you were two deals away from capping, wouldn't you push a little harder this month? Wouldn't you prioritize those closings over less urgent tasks?"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Why Your Brokerage Statement Doesn't Tell the Full Story",
+      "id": "why-your-brokerage-statement-doesn-t-tell-the-full-story"
+    },
+    {
+      "type": "paragraph",
+      "content": "Brokerage statements show what happened. They don't project what's coming. They don't account for pending deals, transactions in escrow, or closings scheduled for next month. By the time you see the \"capped\" notification, you've already missed opportunities to optimize your pipeline around that milestone."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Strategic Agents Track Cap Progress in Real-Time",
+      "id": "strategic-agents-track-cap-progress-in-real-time"
+    },
+    {
+      "type": "paragraph",
+      "content": "The smartest agents treat their commission cap like a sales target. They know:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "How much they've paid toward their cap year-to-date",
+        "How much remains before they hit 100% splits",
+        "Which pending deals will push them over the threshold",
+        "How to structure their pipeline around cap timing"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "This visibility allows them to make strategic decisions—taking on that extra listing, pushing for an early closing, or doubling down on prospecting once they're in the high-earning zone."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Difference Between Capped and Uncapped Income",
+      "id": "the-difference-between-capped-and-uncapped-income"
+    },
+    {
+      "type": "paragraph",
+      "content": "For an agent doing $10M in annual volume with an average 3% commission split:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Uncapped:** You might keep 60-70% of commissions",
+        "**Capped:** You keep 100% after hitting your cap"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "That gap represents tens of thousands of dollars. Not knowing your status means you can't optimize for this windfall."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Know Your Cap, Maximize Your Income",
+      "id": "know-your-cap-maximize-your-income"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stop leaving money on the table. When you have clear visibility into your commission cap progress, you can plan strategically, push when it matters, and ensure you capture every dollar you've earned."
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Track Your Commission Cap",
+      "buttonText": "Track Your Commission Cap",
+      "buttonUrl": "/tools/commission"
+    },
+    {
+      "type": "paragraph",
+      "content": "**Track your cap in real-time:** [I Need Numbers](https://ineednumbers.com) shows you exactly how close you are to capping, factors in pending deals, and helps you plan your pipeline around this crucial income milestone."
+    }
+  ],
+  "status": "published"
+}

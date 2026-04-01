@@ -1,0 +1,141 @@
+{
+  "slug": "commission-split-confusion",
+  "title": "Commission Splits Demystified: Stop Confusing Your Clients (and Yourself)",
+  "metaTitle": "Commission Splits Demystified: Stop Confusing Your Clients | I Need Numbers",
+  "metaDescription": "Clear up commission confusion instantly. Learn how to explain commission splits to clients and track your actual earnings with professional calculations.",
+  "canonicalUrl": "https://ineednumbers.com/blog/commission-split-confusion",
+  "publishedAt": "2026-03-29T12:00:00Z",
+  "updatedAt": "2026-03-29T12:00:00Z",
+  "author": {
+    "name": "I Need Numbers Team",
+    "role": "Real Estate Tools & Insights",
+    "avatar": "/images/avatars/inn-team.webp"
+  },
+  "category": "Commission Tracking",
+  "tags": ["real-estate", "commission", "commission-tracking"],
+  "featuredImage": {
+    "url": "/images/blog/featured/default-blog.svg",
+    "alt": "Commission Splits Demystified: Stop Confusing Your Clients (and Yourself)",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "\"So if the house sells for $500,000 and the commission is 6%, you make $30,000?\" The buyer's eyes widen at what seems like a massive payday. You start explaining about listing splits, buyer agent splits, brokerage splits, transaction fees, and taxes. Their eyes glaze over.",
+  "estimatedReadTime": 3,
+  "targetKeyword": "real estate commission split calculator",
+  "relatedSlugs": ["commission-cap-tracking", "busy-vs-strategic-real-estate-productivity"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to work smarter, track their income, and close more deals.",
+    "buttonText": "Try the Commission Calculator",
+    "buttonUrl": "/tools/commission"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "\"So if the house sells for $500,000 and the commission is 6%, you make $30,000?\" The buyer's eyes widen at what seems like a massive payday. You start explaining about listing splits, buyer agent splits, brokerage splits, transaction fees, and taxes. Their eyes glaze over. The magic number evaporates. And you've lost the moment to build value around your services."
+    },
+    {
+      "type": "paragraph",
+      "content": "Commission split calculations are confusing—for everyone. Agents struggle to track their actual earnings. Clients struggle to understand where the money goes. And the confusion erodes trust at the exact moment you need it most."
+    },
+    {
+      "type": "paragraph",
+      "content": "When you can't clearly explain commission splits, you can't justify your value. And when you can't track your own splits accurately, you're flying blind on your income."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Why Commission Math Feels Like a Black Box",
+      "id": "why-commission-math-feels-like-a-black-box"
+    },
+    {
+      "type": "paragraph",
+      "content": "A typical real estate transaction involves multiple splits:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Total commission (usually 5-6%)",
+        "Listing side vs. buyer side (often 50/50)",
+        "Your brokerage split (anywhere from 50/50 to 100% if capped)",
+        "Team splits (if applicable)",
+        "Transaction fees and deductions"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "By the time you work through all these layers, the math that started at $30,000 might end up at $7,500 in your pocket—and that's before taxes and expenses. No wonder clients are confused when you say commissions are negotiable but you can't quickly explain what you actually earn."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Transparency Advantage",
+      "id": "the-transparency-advantage"
+    },
+    {
+      "type": "paragraph",
+      "content": "The agents who win in competitive situations can explain commission structures clearly and confidently. They show clients:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Where the total commission goes",
+        "Who gets what and why",
+        "The value provided at each stage",
+        "How their services justify the investment"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "This transparency transforms commission from a painful negotiation into a logical discussion about value."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Tracking Your Actual Earnings",
+      "id": "tracking-your-actual-earnings"
+    },
+    {
+      "type": "paragraph",
+      "content": "It's not just clients who are confused. Many agents don't know their effective commission rate across all transactions. They don't account for variations in splits between listings and buyer sides. They can't quickly calculate what they'll actually earn on a pending deal."
+    },
+    {
+      "type": "paragraph",
+      "content": "This uncertainty makes it impossible to plan, budget, or make strategic decisions about your business."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Professional Calculations for Professional Agents",
+      "id": "professional-calculations-for-professional-agents"
+    },
+    {
+      "type": "paragraph",
+      "content": "Top performers have systems that make commission calculations instant and accurate—for both client conversations and personal tracking. They know their numbers cold and can explain them clearly without scrambling for calculators or spreadsheets."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Clarity Wins Listings (and Income)",
+      "id": "clarity-wins-listings-and-income"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stop letting commission confusion undermine your value. When you can explain splits clearly to clients and track your actual earnings accurately, you build trust, close more deals, and run a smarter business."
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Try the Commission Calculator",
+      "buttonText": "Try the Commission Calculator",
+      "buttonUrl": "/tools/commission"
+    },
+    {
+      "type": "paragraph",
+      "content": "**Master commission calculations instantly:** [I Need Numbers](https://ineednumbers.com) provides professional commission split calculators that show exactly where the money goes—so you can explain value to clients and track your real income without the math headache."
+    }
+  ],
+  "status": "published"
+}

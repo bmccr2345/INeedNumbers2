@@ -1,0 +1,138 @@
+{
+  "slug": "gci-vs-real-profit",
+  "title": "GCI Is a Lie: How to Track Your Real Profit (Not Just Gross Commission)",
+  "metaTitle": "GCI Is a Lie: How to Track Your Real Profit | I Need Numbers",
+  "metaDescription": "Stop celebrating vanity metrics. Learn why GCI doesn't tell the real story and how tracking actual profit transforms your real estate business strategy.",
+  "canonicalUrl": "https://ineednumbers.com/blog/gci-vs-real-profit",
+  "publishedAt": "2026-03-29T12:00:00Z",
+  "updatedAt": "2026-03-29T12:00:00Z",
+  "author": {
+    "name": "I Need Numbers Team",
+    "role": "Real Estate Tools & Insights",
+    "avatar": "/images/avatars/inn-team.webp"
+  },
+  "category": "Profit & Loss",
+  "tags": ["real-estate", "income", "profit-loss"],
+  "featuredImage": {
+    "url": "/images/blog/featured/default-blog.svg",
+    "alt": "GCI Is a Lie: How to Track Your Real Profit (Not Just Gross Commission)",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "You closed $400,000 in GCI this year. You post about it on Instagram. You feel successful. But when you look at your actual bank account, something doesn't add up. Where did the money go?",
+  "estimatedReadTime": 3,
+  "targetKeyword": "real estate agent profit tracking",
+  "relatedSlugs": ["income-tracking-blindspot", "busy-vs-strategic-real-estate-productivity"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to work smarter, track their income, and close more deals.",
+    "buttonText": "Track Your Real Profit",
+    "buttonUrl": "/tools/agent-pl-tracker"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "You closed $400,000 in GCI this year. You post about it on Instagram. You feel successful. But when you look at your actual bank account, something doesn't add up. Where did the money go?"
+    },
+    {
+      "type": "paragraph",
+      "content": "Gross Commission Income is the metric agents love to celebrate and hate to analyze. It's big, it's brag-worthy, and it's almost completely disconnected from what you actually keep. Tracking real profit—not just GCI—is the difference between building wealth and just staying busy."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The GCI Trap",
+      "id": "the-gci-trap"
+    },
+    {
+      "type": "paragraph",
+      "content": "GCI ignores the reality of running a real estate business. It doesn't account for your split. It doesn't subtract transaction fees, marketing costs, CRM subscriptions, car expenses, or the thousand other costs that turn $400,000 into $180,000 (or less). Celebrating GCI is like celebrating your gross sales while ignoring that your expenses ate all your margin."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Why Most Agents Don't Track Real Profit",
+      "id": "why-most-agents-don-t-track-real-profit"
+    },
+    {
+      "type": "paragraph",
+      "content": "Tracking real profit requires work. You need to account for every expense, categorize every cost, and reconcile your books regularly. It's not as fun as tracking GCI. It doesn't look as impressive on social media. And many agents avoid it because they're afraid of what they'll find."
+    },
+    {
+      "type": "paragraph",
+      "content": "But ignorance isn't bliss—it's bankruptcy waiting to happen."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Agents Who Build Wealth Track Profit",
+      "id": "the-agents-who-build-wealth-track-profit"
+    },
+    {
+      "type": "paragraph",
+      "content": "Top-producing agents who actually build wealth think like business owners, not salespeople. They know their numbers:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Gross commission income",
+        "Total expenses (all of them)",
+        "Net profit before taxes",
+        "Effective hourly rate",
+        "Cost per transaction",
+        "Marketing ROI"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "These metrics tell the truth about their business—and let them make strategic decisions that compound over time."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Profit Clarity Changes Everything",
+      "id": "profit-clarity-changes-everything"
+    },
+    {
+      "type": "paragraph",
+      "content": "When you know your real profit, you make different decisions. You stop spending on marketing that doesn't convert. You evaluate your brokerage split based on what you actually keep. You price your services based on what you need to earn, not what sounds impressive."
+    },
+    {
+      "type": "paragraph",
+      "content": "Most importantly, you start building a business that serves your life—not just a job that keeps you busy."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "From Salesperson to Business Owner",
+      "id": "from-salesperson-to-business-owner"
+    },
+    {
+      "type": "paragraph",
+      "content": "The shift from tracking GCI to tracking profit is the shift from employee mindset to entrepreneur mindset. It's when you stop measuring activity and start measuring outcomes. It's when your business starts working for you instead of you working for your business."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Know Your Real Numbers, Build Real Wealth",
+      "id": "know-your-real-numbers-build-real-wealth"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stop celebrating vanity metrics. When you track your actual profit—not just your gross commission—you gain the clarity to build a business that generates wealth, not just activity."
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Track Your Real Profit",
+      "buttonText": "Track Your Real Profit",
+      "buttonUrl": "/tools/agent-pl-tracker"
+    },
+    {
+      "type": "paragraph",
+      "content": "**Track your real profit today:** [I Need Numbers](https://ineednumbers.com) helps you see beyond GCI to your actual income after splits, expenses, and costs—so you can make strategic decisions based on real numbers, not vanity metrics."
+    }
+  ],
+  "status": "published"
+}

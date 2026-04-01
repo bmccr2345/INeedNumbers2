@@ -1,0 +1,130 @@
+{
+  "slug": "sellers-proceeds-confusion",
+  "title": "Seller Shocked by Their Proceeds? How to Set Expectations Early",
+  "metaTitle": "Seller Shocked by Their Proceeds? How to Set Expectations Early | I Need Numbers",
+  "metaDescription": "Stop seller surprises at the closing table. Learn how to provide accurate net proceeds estimates upfront and build trust before the listing agreement.",
+  "canonicalUrl": "https://ineednumbers.com/blog/sellers-proceeds-confusion",
+  "publishedAt": "2026-03-29T12:00:00Z",
+  "updatedAt": "2026-03-29T12:00:00Z",
+  "author": {
+    "name": "I Need Numbers Team",
+    "role": "Real Estate Tools & Insights",
+    "avatar": "/images/avatars/inn-team.webp"
+  },
+  "category": "Tools & Calculators",
+  "tags": ["real-estate", "sellers", "tools-calculators"],
+  "featuredImage": {
+    "url": "/images/blog/featured/default-blog.svg",
+    "alt": "Seller Shocked by Their Proceeds? How to Set Expectations Early",
+    "width": 1200,
+    "height": 630
+  },
+  "excerpt": "The house sells for $450,000. The seller expects to walk away with $420,000. At closing, they receive $387,000. The look on their face—that mixture of confusion, disappointment, and suspicion directed at you—can kill your reputation faster than any online review.",
+  "estimatedReadTime": 3,
+  "targetKeyword": "seller net proceeds calculator",
+  "relatedSlugs": ["buyers-affordability-confusion", "closing-timeline-chaos"],
+  "cta": {
+    "type": "signup",
+    "headline": "Ready to grow your real estate business?",
+    "body": "Join thousands of agents using I Need Numbers to work smarter, track their income, and close more deals.",
+    "buttonText": "Try the Seller Net Sheet",
+    "buttonUrl": "/tools/net-sheet"
+  },
+  "sections": [
+    {
+      "type": "paragraph",
+      "content": "The house sells for $450,000. The seller expects to walk away with $420,000. At closing, they receive $387,000. The look on their face—that mixture of confusion, disappointment, and suspicion directed at you—can kill your reputation faster than any online review."
+    },
+    {
+      "type": "paragraph",
+      "content": "Sellers don't know their actual proceeds. They see the sale price and mentally subtract their mortgage balance. They forget about agent commissions, closing costs, title fees, prorated taxes, and a dozen other deductions that eat into their bottom line. When they get the final number, it feels like a bait-and-switch, even when you did nothing wrong."
+    },
+    {
+      "type": "paragraph",
+      "content": "Setting expectations early isn't just good service—it's reputation protection."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Proceeds Blindspot That Hurts Everyone",
+      "id": "the-proceeds-blindspot-that-hurts-everyone"
+    },
+    {
+      "type": "paragraph",
+      "content": "Most agents provide a rough net sheet at listing, then hope for the best. But rough estimates are dangerous. They don't account for negotiated repairs, buyer credits, or timing issues that affect prorations. And they certainly don't prepare sellers for the emotional impact of seeing that final number."
+    },
+    {
+      "type": "paragraph",
+      "content": "When sellers are surprised by their proceeds, they blame their agent. They question your commission. They wonder if you could have negotiated better. Even if the deal was fair, the surprise makes it feel unfair."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Professional Net Sheets Build Instant Credibility",
+      "id": "professional-net-sheets-build-instant-credibility"
+    },
+    {
+      "type": "paragraph",
+      "content": "The agents who win listings—and earn referrals—provide professional, detailed net proceeds estimates from day one. They show sellers:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Estimated sale price scenarios",
+        "All closing costs and deductions",
+        "Multiple net scenarios (best case, expected case, conservative case)",
+        "How different decisions affect the bottom line"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "This transparency builds trust before the listing even hits the market."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "When Sellers Know Their Numbers, They Make Better Decisions",
+      "id": "when-sellers-know-their-numbers-they-make-better-decisions"
+    },
+    {
+      "type": "paragraph",
+      "content": "Sellers who understand their actual proceeds make smarter choices. They price more realistically. They negotiate from a position of knowledge, not desperation. They're less likely to kill deals over minor repair requests because they understand the math."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "The Tool That Sets You Apart",
+      "id": "the-tool-that-sets-you-apart"
+    },
+    {
+      "type": "paragraph",
+      "content": "Top agents don't scribble numbers on napkins or send generic estimates. They provide polished, professional net proceeds calculations that sellers can review, share with their partners, and reference throughout the transaction."
+    },
+    {
+      "type": "paragraph",
+      "content": "This small step creates massive differentiation in a crowded market."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "Remove Proceeds Surprises, Earn Seller Trust",
+      "id": "remove-proceeds-surprises-earn-seller-trust"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stop leaving sellers to guess about their money. When you provide clear, professional net proceeds estimates from the first meeting, you build trust, set realistic expectations, and protect your reputation all the way to closing."
+    },
+    {
+      "type": "cta-inline",
+      "headline": "Try the Seller Net Sheet",
+      "buttonText": "Try the Seller Net Sheet",
+      "buttonUrl": "/tools/net-sheet"
+    },
+    {
+      "type": "paragraph",
+      "content": "**Create professional seller net sheets instantly:** [I Need Numbers](https://ineednumbers.com) lets you build beautiful, detailed net proceeds calculators that show sellers exactly what they'll walk away with—before they sign the listing agreement."
+    }
+  ],
+  "status": "published"
+}
