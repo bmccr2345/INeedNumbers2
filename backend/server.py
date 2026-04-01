@@ -275,16 +275,48 @@ def create_transparent_png_fallback() -> str:
 
 async def fetch_and_convert_s3_image(s3_url: str, max_size_kb: int = 500) -> str:
     """
-    Fetch image from S3 private URL and convert to base64 for PDF embedding.
+    Fetch image from S3 private URL or local storage and convert to base64 for PDF embedding.
     
     Args:
-        s3_url: S3 URL in format 's3://bucket/key' or direct key
+        s3_url: S3 URL in format 's3://bucket/key', direct key, or local API URL
         max_size_kb: Maximum image size in KB (for optimization)
     
     Returns:
         Base64 encoded image string, or empty string on failure
     """
-    if not s3_client or not s3_url:
+    if not s3_url:
+        return create_transparent_png_fallback()
+
+    # Handle local branding upload URLs (when S3 is not configured)
+    if s3_url.startswith('/api/uploads/branding/'):
+        try:
+            filename = s3_url.split('/')[-1]
+            local_path = f"/tmp/uploads/branding/{filename}"
+            if os.path.exists(local_path):
+                with open(local_path, 'rb') as f:
+                    image_data = f.read()
+                with Image.open(io.BytesIO(image_data)) as img:
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        img_format = 'PNG'
+                    else:
+                        img = img.convert('RGB')
+                        img_format = 'JPEG'
+                    if max(img.width, img.height) > 800:
+                        img.thumbnail((800, 800), Image.Resampling.LANCZOS)
+                    buffer = io.BytesIO()
+                    img.save(buffer, format=img_format, optimize=True)
+                    buffer.seek(0)
+                    base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                    logger.info(f"Successfully converted local image {filename} to base64")
+                    return base64_image
+            else:
+                logger.warning(f"Local branding file not found: {local_path}")
+                return create_transparent_png_fallback()
+        except Exception as e:
+            logger.error(f"Error reading local branding file: {e}")
+            return create_transparent_png_fallback()
+
+    if not s3_client:
         return create_transparent_png_fallback()
     
     try:
@@ -1132,6 +1164,14 @@ async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
     # Fetch headshot as base64 (use .url instead of .key)
     headshot_url = profile.assets.headshot.url if profile.assets.headshot else ""
     agent_photo_base64 = await fetch_asset_as_base64(headshot_url)
+
+    # Fetch logos as base64
+    agent_logo_base64 = ""
+    broker_logo_base64 = ""
+    if profile.assets.agentLogo and profile.assets.agentLogo.url:
+        agent_logo_base64 = await fetch_asset_as_base64(profile.assets.agentLogo.url)
+    if profile.assets.brokerLogo and profile.assets.brokerLogo.url:
+        broker_logo_base64 = await fetch_asset_as_base64(profile.assets.brokerLogo.url)
     
     return {
         "hasAgentBranding": has_branding,
@@ -1143,7 +1183,11 @@ async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
         "agentPhone": profile.agent.phone or "",
         "brandPrimaryColor": primary_hex,
         "brandPrimaryDark": primary_dark,
-        "agentPhotoBase64": agent_photo_base64
+        "agentPhotoBase64": agent_photo_base64,
+        "agentLogoBase64": agent_logo_base64,
+        "brokerLogoBase64": broker_logo_base64,
+        "hasAgentLogo": bool(agent_logo_base64),
+        "hasBrokerLogo": bool(broker_logo_base64)
     }
 
 def process_image_with_pillow(image_data: bytes, asset_type: str) -> bytes:

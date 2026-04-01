@@ -66,6 +66,8 @@ const BrandingProfilePage = () => {
   const saveTimeoutRef = useRef(null);
   // Ref for current formData (for debounced saves)
   const formDataRef = useRef(formData);
+  // Ref for headshot file input (to trigger from Replace button)
+  const headshotInputRef = useRef(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -826,6 +828,19 @@ const BrandingProfilePage = () => {
                         Square crop 1:1, recommended 600×600, max 5 MB, JPG/PNG
                       </p>
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        {/* Hidden file input - always in DOM */}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              handleAssetUpload('headshot', e.target.files[0]);
+                            }
+                          }}
+                          className="hidden"
+                          id="headshot-upload"
+                          ref={headshotInputRef}
+                        />
                         {brandProfile?.assets?.headshot?.url ? (
                           <div>
                             <img 
@@ -834,7 +849,13 @@ const BrandingProfilePage = () => {
                               className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
                             />
                             <div className="space-x-2">
-                              <Button variant="outline" size="sm">Replace</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => headshotInputRef.current?.click()}
+                              >
+                                Replace
+                              </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -850,17 +871,6 @@ const BrandingProfilePage = () => {
                             <p className="text-sm text-gray-500">
                               Drag and drop or click to upload
                             </p>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                if (e.target.files[0]) {
-                                  handleAssetUpload('headshot', e.target.files[0]);
-                                }
-                              }}
-                              className="hidden"
-                              id="headshot-upload"
-                            />
                             <label
                               htmlFor="headshot-upload"
                               className="mt-2 inline-block cursor-pointer text-primary hover:text-primary-dark"

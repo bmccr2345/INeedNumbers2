@@ -310,6 +310,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/brand/profile",
             "/api/brand/upload",
             "/api/brand/test-pdf",
+            "/api/pdf/generate",
+            "/api/pdf/generate-stream",
             "/api/dashboard/metrics",
             "/api/user/profile",
             "/api/pnl/deals",

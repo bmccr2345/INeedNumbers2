@@ -291,6 +291,9 @@ body {
       {{^agentPhotoBase64}}
       <div class="agent-avatar">{{agentInitials}}</div>
       {{/agentPhotoBase64}}
+      {{#hasAgentLogo}}
+      <img src="{{agentLogoBase64}}" style="max-width:100px; max-height:50px; object-fit:contain; margin-left:10px;" />
+      {{/hasAgentLogo}}
       <div class="agent-text">
         <div class="agent-name">{{agentName}}</div>
         <div class="agent-contact">{{#agentTeam}}{{agentTeam}} · {{/agentTeam}}{{agentBrokerage}}</div>
@@ -298,6 +301,9 @@ body {
       </div>
     </div>
     <div class="brokerage-info">
+      {{#hasBrokerLogo}}
+      <img src="{{brokerLogoBase64}}" style="max-width:120px; max-height:60px; object-fit:contain; margin-left:auto; margin-bottom:5px; display:block;" />
+      {{/hasBrokerLogo}}
       <div>{{agentBrokerage}}</div>
       <div style="font-size:12px;opacity:0.8">Licensed Real Estate Professional</div>
     </div>
