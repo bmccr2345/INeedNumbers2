@@ -31,7 +31,7 @@
 .brand-name-white { font-family:'Playfair Display',Georgia,serif; font-weight:800; color:white; white-space:nowrap; text-shadow:0 0 20px rgba(22,163,74,0.4); }
 
 /* ===== HERO ===== */
-.hero-redesign { min-height:100vh; display:flex; align-items:center; position:relative; overflow:hidden; background:linear-gradient(135deg,var(--navy) 0%,#1a3a2a 50%,var(--green-dark) 100%); padding-top:64px; }
+.hero-redesign { min-height:55vh; display:flex; align-items:center; position:relative; overflow:hidden; background:linear-gradient(135deg,var(--navy) 0%,#1a3a2a 50%,var(--green-dark) 100%); padding-top:64px; padding-bottom:2rem; }
 .hero-redesign::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background:radial-gradient(ellipse at 70% 40%, rgba(22,163,74,0.15) 0%, transparent 60%); }
 .hero-content { max-width:1200px; margin:0 auto; padding:4rem 2rem; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; position:relative; z-index:2; }
 .hero-text h1 { font-size:3.2rem; line-height:1.15; color:var(--white); margin-bottom:1.5rem; font-family: 'Playfair Display', Georgia, serif; }
