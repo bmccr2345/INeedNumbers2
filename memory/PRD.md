@@ -1,5 +1,19 @@
 # I Need Numbers - Product Requirements Document
 
+**Last Updated:** April 1, 2026
+
+---
+
+## Recent Changes (April 2026)
+
+### Homepage Redesign v2 - COMPLETED ✅
+- Created new homepage at `/app/frontend/src/pages/HomePageRedesign.jsx` and `/app/frontend/src/pages/HomePageRedesign.css`
+- Features: Dark green gradient hero, interactive dashboard mockup with animated cursor, AI Coach spotlight section, 8 "pain point" feature sections, mobile app banner, pricing card, trust section, final CTA
+- Preserves existing Navigation bar and Footer components
+- Implements Intersection Observer for scroll-triggered fade-up animations
+- Routes `/` to new homepage, old landing page available at `/landing-old`
+- iOS app restrictions remain in place (pricing/signup hidden on Capacitor)
+
 ---
 
 ## ⚠️ MANDATORY BUILD & DEPLOYMENT RULES — NEVER SKIP ⚠️
