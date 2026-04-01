@@ -25,6 +25,8 @@ const BrandingProfilePage = () => {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+  const [saveMessage, setSaveMessage] = useState('');
   const [brandProfile, setBrandProfile] = useState(null);
   const [formData, setFormData] = useState({
     agent: {
@@ -62,6 +64,8 @@ const BrandingProfilePage = () => {
   
   // Ref for debounce timer
   const saveTimeoutRef = useRef(null);
+  // Ref for current formData (for debounced saves)
+  const formDataRef = useRef(formData);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -87,6 +91,11 @@ const BrandingProfilePage = () => {
       }
     };
   }, []);
+
+  // Keep formDataRef in sync with formData
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   const checkStorageHealth = async () => {
     try {
@@ -194,7 +203,7 @@ const BrandingProfilePage = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formDataRef.current)
       });
 
       if (response.status === 401) {
@@ -208,13 +217,29 @@ const BrandingProfilePage = () => {
       if (response.ok) {
         const updatedProfile = await response.json();
         setBrandProfile(updatedProfile);
-        console.log('Brand profile saved successfully');
+        // Sync formData with server response so completion score updates
+        setFormData({
+          agent: updatedProfile.agent || formDataRef.current.agent,
+          brokerage: updatedProfile.brokerage || formDataRef.current.brokerage,
+          brand: updatedProfile.brand || formDataRef.current.brand,
+          footer: updatedProfile.footer || formDataRef.current.footer,
+          planRules: updatedProfile.planRules || formDataRef.current.planRules
+        });
+        setSaveStatus('success');
+        setSaveMessage('Profile saved successfully');
+        setTimeout(() => setSaveStatus(null), 3000);
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to save brand profile:', errorData?.detail || response.statusText || response.status);
+        setSaveStatus('error');
+        setSaveMessage(errorData?.detail || 'Failed to save profile');
+        setTimeout(() => setSaveStatus(null), 5000);
       }
     } catch (error) {
       console.error('Error saving brand profile:', error.response?.data?.detail || error.message || error);
+      setSaveStatus('error');
+      setSaveMessage('Network error — please try again');
+      setTimeout(() => setSaveStatus(null), 5000);
     } finally {
       setSaving(false);
     }
@@ -385,6 +410,34 @@ const BrandingProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Keyframe animation for toast */}
+      <style>{`@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
+      
+      {/* Save Status Toast */}
+      {saveStatus && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          padding: '12px 20px',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '14px',
+          fontWeight: 500,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          animation: 'slideIn 0.3s ease-out',
+          backgroundColor: saveStatus === 'success' ? '#f0fdf4' : '#fef2f2',
+          color: saveStatus === 'success' ? '#16a34a' : '#dc2626',
+          border: saveStatus === 'success' ? '1px solid #bbf7d0' : '1px solid #fecaca'
+        }}>
+          {saveStatus === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}
+          {saveMessage}
+        </div>
+      )}
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

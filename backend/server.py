@@ -6939,42 +6939,66 @@ async def delete_brand_asset(
 async def generate_test_pdf(
     current_user: User = Depends(require_auth)
 ):
-    """Generate a test PDF with current branding settings"""
+    """Generate a test PDF using Seller Net Sheet template with current branding"""
     try:
         # Get user's brand profile
-        brand_profile = await db.brand_profiles.find_one({"userId": current_user.id})
-        
-        # Create sample data for test PDF
-        test_data = {
-            "property_address": "123 Sample Street, Demo City, ST 12345",
-            "purchase_price": 450000,
-            "monthly_payment": 2156,
-            "loan_amount": 405000,
-            "down_payment": 45000,
-            "interest_rate": 6.5,
-            "term_years": 30,
-            "property_tax": 375,
-            "insurance": 125,
-            "pmi": 150,
-            "hoa": 0,
-            "total_monthly": 2806,
-            "client_name": "Sample Client",
-            "agent_name": current_user.full_name or "Your Name",
-            "agent_email": current_user.email,
-            "agent_phone": brand_profile.get("agent", {}).get("phone", "(555) 123-4567") if brand_profile else "(555) 123-4567",
-            "license_number": brand_profile.get("agent", {}).get("licenseNumber", "LIC123456") if brand_profile else "LIC123456",
-            "brokerage": brand_profile.get("agent", {}).get("brokerage", "Your Brokerage") if brand_profile else "Your Brokerage"
+        brand_profile_obj = await get_brand_profile(current_user.id)
+        branding_data = await build_branding_data(brand_profile_obj)
+
+        # Sample seller net sheet property data
+        sample_property_data = {
+            "address": "123 Sample Street, Demo City, ST 12345",
+            "expectedSalePrice": 450000,
+            "totalCommission": 6.0,
+            "sellerConcessions": 5000,
+            "firstPayoff": 280000,
+            "secondPayoff": 0,
+            "titleEscrowFee": 2500,
+            "recordingFee": 150,
+            "transferTax": 2700,
+            "docStamps": 0,
+            "hoaFees": 350,
+            "stagingPhotography": 1500,
+            "otherCosts": 500,
+            "proratedTaxes": 1800
         }
-        
-        # Generate the HTML content for the test PDF
-        html_content = await generate_test_pdf_html(test_data, current_user)
-        
-        # Generate PDF using WeasyPrint
+
+        # Calculate results from sample data
+        sale_price = 450000
+        commission_amount = sale_price * 0.06  # 6%
+        concessions_amount = 5000
+        total_payoffs = 280000
+        closing_costs = 2500 + 150 + 2700 + 0 + 350 + 1500 + 500 + 1800  # sum of all fees
+        total_deductions = commission_amount + concessions_amount + total_payoffs + closing_costs
+        estimated_net = sale_price - total_deductions
+
+        sample_calculation_data = {
+            "estimatedSellerNet": estimated_net,
+            "totalDeductions": total_deductions,
+            "commissionAmount": commission_amount,
+            "concessionsAmount": concessions_amount,
+            "closingCosts": closing_costs,
+            "totalPayoffs": total_payoffs,
+            "netAsPercentOfSale": (estimated_net / sale_price * 100) if sale_price > 0 else 0
+        }
+
+        # Prepare report data using existing helper
+        report_data = prepare_seller_net_sheet_report_data(
+            sample_calculation_data, sample_property_data, current_user
+        )
+        report_data.update(branding_data)
+
+        # Load and render the seller net sheet template
+        template_path = Path(__file__).parent / "templates" / "seller_net_sheet_report.html"
+        if not template_path.exists():
+            raise HTTPException(status_code=500, detail="Seller net sheet template not found")
+        template_content = template_path.read_text(encoding='utf-8')
+        html_content = render_template(template_content, report_data)
+
+        # Generate PDF
         pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
-        
-        # Return the PDF
+
         filename = f"branding_test_{current_user.id}_{int(time.time())}.pdf"
-        
         return Response(
             content=pdf_buffer,
             media_type="application/pdf",
@@ -6983,221 +7007,10 @@ async def generate_test_pdf(
                 "Content-Length": str(len(pdf_buffer))
             }
         )
-        
+
     except Exception as e:
         logger.error(f"Error generating test PDF: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate test PDF: {str(e)}")
-
-async def generate_test_pdf_html(data: dict, current_user) -> str:
-    """Generate HTML for test PDF with branding"""
-    
-    # Get branding data
-    try:
-        # This will use the existing brand resolve logic
-        brand_data = {}
-        if current_user:
-            # Use the existing get_brand_profile function
-            profile = await get_brand_profile(current_user.id)
-            if profile:
-                brand_data = {
-                    "agentLogo": profile.assets.agentLogo.url if profile.assets.agentLogo.url else "",
-                    "brokerLogo": profile.assets.brokerLogo.url if profile.assets.brokerLogo.url else "",
-                    "primaryColor": profile.brand.primaryHex,
-                    "secondaryColor": profile.brand.secondaryHex
-                }
-    except Exception:
-        brand_data = {}
-    
-    # Create a sample affordability report HTML
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Branding Test PDF</title>
-        <style>
-            @page {{
-                size: A4;
-                margin: 1in;
-            }}
-            
-            body {{
-                font-family: Arial, sans-serif;
-                color: #333;
-                line-height: 1.6;
-                margin: 0;
-                padding: 0;
-            }}
-            
-            .header {{
-                text-align: center;
-                border-bottom: 2px solid {brand_data.get("primaryColor", "#4a90e2")};
-                padding-bottom: 20px;
-                margin-bottom: 30px;
-            }}
-            
-            .logo {{
-                max-height: 80px;
-                margin-bottom: 10px;
-            }}
-            
-            .company-info {{
-                font-size: 12px;
-                color: #666;
-            }}
-            
-            .title {{
-                color: {brand_data.get("primaryColor", "#4a90e2")};
-                font-size: 24px;
-                font-weight: bold;
-                margin: 20px 0;
-                text-align: center;
-            }}
-            
-            .section {{
-                margin: 20px 0;
-                padding: 15px;
-                background: #f9f9f9;
-                border-left: 4px solid {brand_data.get("primaryColor", "#4a90e2")};
-            }}
-            
-            .section h3 {{
-                color: {brand_data.get("primaryColor", "#4a90e2")};
-                margin-top: 0;
-            }}
-            
-            .property-details {{
-                display: flex;
-                flex-wrap: wrap;
-                gap: 20px;
-            }}
-            
-            .detail-item {{
-                flex: 1;
-                min-width: 200px;
-            }}
-            
-            .detail-label {{
-                font-weight: bold;
-                color: #333;
-            }}
-            
-            .detail-value {{
-                font-size: 18px;
-                color: {brand_data.get("primaryColor", "#4a90e2")};
-            }}
-            
-            .footer {{
-                margin-top: 40px;
-                text-align: center;
-                font-size: 12px;
-                color: #666;
-                border-top: 1px solid #ddd;
-                padding-top: 20px;
-            }}
-            
-            .highlight-box {{
-                background: {brand_data.get("primaryColor", "#4a90e2")};
-                color: white;
-                padding: 15px;
-                text-align: center;
-                margin: 20px 0;
-            }}
-            
-            .highlight-box h2 {{
-                margin: 0;
-                font-size: 28px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            {f'<img src="{brand_data.get("agentLogo", "")}" class="logo" alt="Logo">' if brand_data.get("agentLogo") else ''}
-            <h1>Mortgage Affordability Analysis</h1>
-            <div class="company-info">
-                <strong>{data['agent_name']}</strong><br>
-                {data['brokerage']}<br>
-                {data['agent_email']} | {data['agent_phone']}<br>
-                License: {data['license_number']}
-            </div>
-        </div>
-        
-        <div class="title">Sample Property Analysis</div>
-        
-        <div class="section">
-            <h3>Property Information</h3>
-            <div class="detail-item">
-                <div class="detail-label">Property Address:</div>
-                <div class="detail-value">{data['property_address']}</div>
-            </div>
-            <br>
-            <div class="detail-item">
-                <div class="detail-label">Purchase Price:</div>
-                <div class="detail-value">${data['purchase_price']:,}</div>
-            </div>
-        </div>
-        
-        <div class="highlight-box">
-            <h2>Monthly Payment: ${data['monthly_payment']:,}</h2>
-        </div>
-        
-        <div class="section">
-            <h3>Loan Details</h3>
-            <div class="property-details">
-                <div class="detail-item">
-                    <div class="detail-label">Loan Amount:</div>
-                    <div class="detail-value">${data['loan_amount']:,}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Down Payment:</div>
-                    <div class="detail-value">${data['down_payment']:,}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Interest Rate:</div>
-                    <div class="detail-value">{data['interest_rate']}%</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Term:</div>
-                    <div class="detail-value">{data['term_years']} years</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h3>Monthly Payment Breakdown</h3>
-            <div class="property-details">
-                <div class="detail-item">
-                    <div class="detail-label">Principal & Interest:</div>
-                    <div class="detail-value">${data['monthly_payment']:,}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Property Tax:</div>
-                    <div class="detail-value">${data['property_tax']:,}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Insurance:</div>
-                    <div class="detail-value">${data['insurance']:,}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">PMI:</div>
-                    <div class="detail-value">${data['pmi']:,}</div>
-                </div>
-            </div>
-            <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border: 2px solid {brand_data.get("primaryColor", "#4a90e2")};">
-                <strong>Total Monthly Payment: ${data['total_monthly']:,}</strong>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>This is a sample PDF generated to showcase your branding.</strong></p>
-            <p>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
-            <p>© {datetime.now().year} {data['brokerage']}. All rights reserved.</p>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return html
 
 @api_router.get("/brand/resolve")
 async def resolve_brand_data(
