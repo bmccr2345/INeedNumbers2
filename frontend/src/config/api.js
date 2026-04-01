@@ -32,14 +32,14 @@ const getBackendUrl = () => {
   // Capacitor iOS/Android runs on localhost
   const isMobile = host === 'localhost' || host === '127.0.0.1';
 
-  // Custom production domain -> hardcoded production URL
+  // Custom production domain -> use same origin to preserve www/non-www and avoid cross-origin cookie issues
   if (isCustomProduction) {
-    return 'https://ineednumbers.com';
+    return typeof window !== 'undefined' ? window.location.origin : 'https://ineednumbers.com';
   }
 
-  // Mobile app -> hardcoded production URL
+  // Mobile app -> use production URL (with www for consistency)
   if (isMobile) {
-    return 'https://ineednumbers.com';
+    return 'https://www.ineednumbers.com';
   }
 
   // Emergent production or Preview -> use environment variable
