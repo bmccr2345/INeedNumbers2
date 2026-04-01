@@ -1,12 +1,12 @@
 // Service Worker for caching and performance optimization
 // VERSION BUMP: Increment to force cache clear on deploy
-const CACHE_NAME = 'ineednumbers-v2.0.0';
-const STATIC_CACHE = 'static-v2.0.0';
-const DYNAMIC_CACHE = 'dynamic-v2.0.0';
+const CACHE_NAME = 'ineednumbers-v2.1.0';
+const STATIC_CACHE = 'static-v2.1.0';
+const DYNAMIC_CACHE = 'dynamic-v2.1.0';
 
 // Resources to cache immediately (EXCLUDING API calls and main JS bundle)
+// NOTE: Removed '/' to prevent serving stale cached HTML during auth flows
 const STATIC_ASSETS = [
-  '/',
   '/calculator',
   '/tools',
   '/pricing',
@@ -55,6 +55,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // NEVER intercept auth pages — let them always go to network
+  // This prevents stale cached states during login/MFA flows
+  if (url.pathname.startsWith('/auth/')) {
+    return; // Don't call event.respondWith, let the browser handle normally
+  }
 
   // Handle API requests
   if (url.pathname.startsWith('/api/')) {
