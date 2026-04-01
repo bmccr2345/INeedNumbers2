@@ -4,7 +4,6 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import BlogCard from '../components/blog/BlogCard';
 import BlogSEO from '../components/blog/BlogSEO';
-import EmailCapture from '../components/blog/EmailCapture';
 import { blogPosts, categories } from '../data/blog/index';
 import { ArrowLeft } from 'lucide-react';
 
@@ -128,16 +127,8 @@ const BlogListPage = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {displayedPosts.map((post, index) => (
-                  <React.Fragment key={post.slug}>
-                    <BlogCard post={post} />
-                    {/* Insert email capture after 3rd post */}
-                    {index === 2 && filteredPosts.length > 3 && (
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <EmailCapture source="blog-listing" />
-                      </div>
-                    )}
-                  </React.Fragment>
+                {displayedPosts.map((post) => (
+                  <BlogCard key={post.slug} post={post} />
                 ))}
               </div>
 
@@ -157,13 +148,6 @@ const BlogListPage = () => {
             </>
           )}
         </div>
-
-        {/* Bottom Email Capture */}
-        {filteredPosts.length <= 3 && (
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-            <EmailCapture source="blog-listing-bottom" />
-          </div>
-        )}
       </div>
     </>
   );
