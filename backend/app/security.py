@@ -307,7 +307,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         # Allow unauthenticated requests to auth-required endpoints to pass through
         # so the endpoint can return proper 401 errors instead of 403 CSRF errors
         auth_required_endpoints = [
+            "/api/brand/profile",
             "/api/brand/upload",
+            "/api/brand/test-pdf",
             "/api/dashboard/metrics",
             "/api/user/profile",
             "/api/pnl/deals",

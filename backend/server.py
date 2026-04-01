@@ -988,7 +988,7 @@ def calculate_completion_score(profile: BrandProfile) -> float:
 
 async def fetch_asset_as_base64(asset_key: str) -> str:
     """
-    Fetch an asset from S3 or local storage and return as base64 data URL.
+    Fetch an asset from S3, local storage, or URL and return as base64 data URL.
     This is needed because WeasyPrint's local_only_fetcher blocks remote URLs.
     """
     if not asset_key:
@@ -1009,7 +1009,7 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
         }
         mime_type = mime_map.get(ext, 'image/jpeg')
         
-        # Check if it's a local file
+        # Check if it's a local file path
         if asset_key.startswith('local/'):
             local_path = f"/tmp/uploads/{asset_key.replace('local/', '')}"
             if os.path.exists(local_path):
@@ -1021,7 +1021,37 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
                 logger.warning(f"Local asset not found: {local_path}")
                 return ""
         
-        # Fetch from S3
+        # Check if it's a local API URL (from /api/uploads/)
+        if asset_key.startswith('/api/uploads/branding/'):
+            filename = asset_key.replace('/api/uploads/branding/', '')
+            local_path = f"/tmp/uploads/branding/{filename}"
+            if os.path.exists(local_path):
+                with open(local_path, 'rb') as f:
+                    file_bytes = f.read()
+                b64_data = base64.b64encode(file_bytes).decode('utf-8')
+                return f"data:{mime_type};base64,{b64_data}"
+            else:
+                logger.warning(f"Local branding asset not found: {local_path}")
+                return ""
+        
+        # Check if it's a full URL (S3 or other remote)
+        if asset_key.startswith('https://') or asset_key.startswith('http://'):
+            import urllib.request
+            try:
+                with urllib.request.urlopen(asset_key, timeout=10) as response:
+                    file_bytes = response.read()
+                # Detect MIME type from actual content
+                if file_bytes[:8] == b'\x89PNG\r\n\x1a\n':
+                    mime_type = 'image/png'
+                elif file_bytes[:2] == b'\xff\xd8':
+                    mime_type = 'image/jpeg'
+                b64_data = base64.b64encode(file_bytes).decode('utf-8')
+                return f"data:{mime_type};base64,{b64_data}"
+            except Exception as url_error:
+                logger.warning(f"Failed to fetch asset from URL {asset_key}: {url_error}")
+                return ""
+        
+        # Fetch from S3 using key
         if settings.s3_bucket and settings.aws_access_key_id:
             try:
                 s3_client = boto3.client(
@@ -1099,9 +1129,9 @@ async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
     # Determine if we have enough branding info to show
     has_branding = bool(agent_name or profile.brokerage.name)
     
-    # Fetch headshot as base64
-    headshot_key = profile.assets.headshot.key if profile.assets.headshot else ""
-    agent_photo_base64 = await fetch_asset_as_base64(headshot_key)
+    # Fetch headshot as base64 (use .url instead of .key)
+    headshot_url = profile.assets.headshot.url if profile.assets.headshot else ""
+    agent_photo_base64 = await fetch_asset_as_base64(headshot_url)
     
     return {
         "hasAgentBranding": has_branding,
