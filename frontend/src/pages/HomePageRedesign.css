@@ -110,6 +110,30 @@
   .hero-ai-badge{margin-left:auto;margin-right:auto;}
 }
 
+/* ===== iOS APP BANNER ===== */
+.ios-banner { background:linear-gradient(135deg,#f3e8ff 0%,#ede9fe 50%,#f3e8ff 100%); padding:0.65rem 2rem; display:flex; align-items:center; justify-content:center; gap:1.25rem; border-bottom:1px solid rgba(139,92,246,0.15); }
+.ios-banner-inner { display:flex; align-items:center; gap:1rem; max-width:800px; }
+.ios-banner-phone { width:28px; height:48px; border:2px solid #8b5cf6; border-radius:8px; position:relative; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ios-banner-phone::before { content:''; width:12px; height:2px; background:rgba(139,92,246,0.4); border-radius:1px; position:absolute; top:4px; }
+.ios-banner-phone::after { content:''; width:6px; height:6px; border:1.5px solid rgba(139,92,246,0.4); border-radius:50%; position:absolute; bottom:3px; }
+.ios-banner-phone-screen { width:16px; height:22px; background:linear-gradient(135deg,#16a34a,#0d7a36); border-radius:3px; display:flex; align-items:center; justify-content:center; }
+.ios-banner-phone-screen::after { content:'$'; color:white; font-size:9px; font-weight:800; }
+.ios-banner-copy { display:flex; flex-direction:column; gap:0.1rem; }
+.ios-banner-headline { font-size:0.85rem; color:#0f172a; font-weight:600; letter-spacing:-0.01em; line-height:1.2; }
+.ios-banner-sub { font-size:0.7rem; color:#64748b; font-weight:400; line-height:1.2; }
+.ios-banner-badge { display:inline-flex; align-items:center; gap:0.5rem; background:#8b5cf6; color:#fff; padding:0.4rem 0.9rem; border-radius:20px; font-size:0.75rem; font-weight:500; text-decoration:none; transition:all 0.2s; white-space:nowrap; flex-shrink:0; letter-spacing:0.01em; border:none; }
+.ios-banner-badge:hover { background:#7c3aed; }
+.ios-banner-badge svg { width:14px; height:14px; fill:currentColor; }
+@media(max-width:600px){
+  .ios-banner { padding:0.5rem 1rem; }
+  .ios-banner-inner { gap:0.75rem; }
+  .ios-banner-headline { font-size:0.75rem; }
+  .ios-banner-sub { font-size:0.6rem; }
+  .ios-banner-badge { font-size:0.65rem; padding:0.3rem 0.7rem; }
+  .ios-banner-phone { width:22px; height:38px; border-radius:6px; }
+  .ios-banner-phone-screen { width:12px; height:17px; }
+}
+
 /* ===== AI COACH SPOTLIGHT ===== */
 .ai-spotlight { padding:6rem 2rem; background:linear-gradient(180deg,var(--white) 0%,#faf5ff 100%); text-align:center; position:relative; overflow:hidden; }
 .ai-spotlight-inner { max-width:900px; margin:0 auto; }
