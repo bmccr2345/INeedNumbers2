@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Search, Filter, Download, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
+import axios from 'axios';
+import { FileText, Search, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -14,7 +15,6 @@ const InvestorPanel = () => {
   const [investors, setInvestors] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
-  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     loadInvestors();
@@ -45,103 +45,13 @@ const InvestorPanel = () => {
     if (!confirm('Delete this investor deal?')) return;
     
     try {
-      await mockDashboardAPI.investor.delete(id);
+      await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`);
       setInvestors(prev => prev.filter(item => item.id !== id));
-      
-      // Show success toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
-      toast.textContent = 'Investor deal deleted.';
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-      
+      toast.success('Investor deal deleted.');
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Delete failed. Please try again.');
-    }
-  };
-
-  const handleDownloadPDF = async (investor) => {
-    try {
-      setDownloadingId(investor.id);
-      
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      const calculation_data = investor.results || {};
-      const property_data = {
-        address: investor.inputs?.addressLine || investor.property,
-        ...investor.inputs
-      };
-
-      if (isIOS) {
-        const params = new URLSearchParams({
-          calculation_data: JSON.stringify(calculation_data),
-          property_data: JSON.stringify(property_data)
-        });
-        const url = `${API_BASE_URL}/api/reports/investor/pdf?${params.toString()}`;
-        window.open(url, '_blank');
-        toast.success('PDF opened. Use share icon to save.');
-        setDownloadingId(null);
-        return;
-      }
-
-      // EXISTING DESKTOP LOGIC (UNCHANGED)
-      const token = localStorage.getItem('auth_token');
-      
-      const response = await fetch(`${API_BASE_URL}/api/reports/investor/pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          property: {
-            addressLine: investor.inputs?.addressLine || investor.property,
-            purchasePrice: investor.inputs?.purchasePrice || 0,
-            monthlyRent: investor.inputs?.monthlyRent || 0,
-            downPaymentPercent: investor.inputs?.downPaymentPercent || 20,
-            interestRate: investor.inputs?.interestRate || 7,
-            loanTermYears: investor.inputs?.loanTermYears || 30,
-            vacancyRate: investor.inputs?.vacancyRate || 5,
-            propertyType: investor.inputs?.propertyType || 'Single Family'
-          },
-          expenses: {
-            propertyTaxesMonthly: investor.inputs?.propertyTaxesMonthly || 0,
-            insuranceMonthly: investor.inputs?.insuranceMonthly || 0,
-            hoaMonthly: investor.inputs?.hoaMonthly || 0,
-            propertyManagementMonthly: investor.inputs?.propertyManagementMonthly || 0,
-            maintenanceReserveMonthly: investor.inputs?.maintenanceReserveMonthly || 0,
-            utilitiesMonthly: investor.inputs?.utilitiesMonthly || 0,
-            otherExpensesMonthly: investor.inputs?.otherExpensesMonthly || 0
-          },
-          metrics: investor.results || {}
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('PDF generation failed');
-      }
-      
-      const blob = await response.blob();
-      const filename = `investor-analysis-${investor.property.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF downloaded successfully!');
-      
-    } catch (error) {
-      console.error('PDF download failed:', error);
-      toast.error('PDF download failed. Please try again.');
-    } finally {
-      setDownloadingId(null);
+      toast.error('Delete failed. Please try again.');
+      await loadInvestors();
     }
   };
 
@@ -159,20 +69,17 @@ const InvestorPanel = () => {
     if (!confirm(`Delete ${selectedItems.length} selected deals?`)) return;
     
     try {
-      await mockDashboardAPI.investor.bulkDelete(selectedItems);
+      // Delete each selected item using axios
+      await Promise.all(
+        selectedItems.map(id => axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`))
+      );
       setInvestors(prev => prev.filter(item => !selectedItems.includes(item.id)));
       setSelectedItems([]);
-      
-      // Show success toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
-      toast.textContent = `${selectedItems.length} deals deleted.`;
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-      
+      toast.success(`${selectedItems.length} deals deleted.`);
     } catch (error) {
       console.error('Bulk delete failed:', error);
-      alert('Bulk delete failed. Please try again.');
+      toast.error('Bulk delete failed. Please try again.');
+      await loadInvestors();
     }
   };
 
@@ -306,7 +213,6 @@ const InvestorPanel = () => {
                         </th>
                         <th className="pb-2">Property</th>
                         <th className="pb-2">Last Updated</th>
-                        <th className="pb-2">Created</th>
                         <th className="pb-2">Actions</th>
                       </tr>
                     </thead>
@@ -326,22 +232,15 @@ const InvestorPanel = () => {
                               }}
                             />
                           </td>
-                          <td className="py-3 text-sm font-medium">{investor.property}</td>
+                          <td 
+                            className="py-3 text-sm font-medium text-primary hover:text-secondary cursor-pointer hover:underline"
+                            onClick={() => handleEdit(investor)}
+                          >
+                            {investor.property}
+                          </td>
                           <td className="py-3 text-sm text-gray-500">{formatDate(investor.lastUpdated)}</td>
                           <td className="py-3">
                             <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleDownloadPDF(investor)}
-                                disabled={downloadingId === investor.id}
-                                className="text-primary hover:text-secondary text-sm disabled:opacity-50"
-                                title="Download PDF"
-                              >
-                                {downloadingId === investor.id ? (
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Download className="w-4 h-4" />
-                                )}
-                              </button>
                               <button
                                 onClick={() => handleEdit(investor)}
                                 className="text-gray-600 hover:text-gray-800 text-sm"
@@ -375,13 +274,6 @@ const InvestorPanel = () => {
                         </div>
                       </div>
                       <div className="flex justify-end items-center space-x-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleDownloadPDF(investor)}
-                          disabled={downloadingId === investor.id}
-                        >
-                          {downloadingId === investor.id ? 'Generating...' : 'Download PDF'}
-                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
