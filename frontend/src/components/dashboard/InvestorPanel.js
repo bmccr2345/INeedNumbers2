@@ -43,14 +43,16 @@ const InvestorPanel = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this investor deal?')) return;
-    
+
     try {
-      await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
       setInvestors(prev => prev.filter(item => item.id !== id));
       toast.success('Investor deal deleted.');
     } catch (error) {
       console.error('Delete failed:', error);
-      toast.error('Delete failed. Please try again.');
       await loadInvestors();
     }
   };
@@ -67,18 +69,20 @@ const InvestorPanel = () => {
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
     if (!window.confirm(`Delete ${selectedItems.length} selected deals?`)) return;
-    
+
     try {
       // Delete each selected item using axios
       await Promise.all(
-        selectedItems.map(id => axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`))
+        selectedItems.map(id => axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }))
       );
       setInvestors(prev => prev.filter(item => !selectedItems.includes(item.id)));
       setSelectedItems([]);
       toast.success(`${selectedItems.length} deals deleted.`);
     } catch (error) {
       console.error('Bulk delete failed:', error);
-      toast.error('Bulk delete failed. Please try again.');
       await loadInvestors();
     }
   };
