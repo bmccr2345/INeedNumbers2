@@ -42,7 +42,7 @@ const InvestorPanel = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this investor deal?')) return;
+    if (!window.confirm('Delete this investor deal?')) return;
     
     try {
       await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`);
@@ -66,7 +66,7 @@ const InvestorPanel = () => {
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    if (!confirm(`Delete ${selectedItems.length} selected deals?`)) return;
+    if (!window.confirm(`Delete ${selectedItems.length} selected deals?`)) return;
     
     try {
       // Delete each selected item using axios
@@ -213,7 +213,7 @@ const InvestorPanel = () => {
                         </th>
                         <th className="pb-2">Property</th>
                         <th className="pb-2">Last Updated</th>
-                        <th className="pb-2">Actions</th>
+                        <th className="pb-2"></th>
                       </tr>
                     </thead>
                     <tbody>

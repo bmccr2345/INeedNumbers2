@@ -673,7 +673,7 @@ const FreeCalculator = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 sm:px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 pt-8 pb-16">
         {/* Validation Warnings (PART 6) */}
         {warnings.length > 0 && (
           <div className="mb-6 space-y-2">

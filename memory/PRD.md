@@ -1,10 +1,22 @@
 # I Need Numbers - Product Requirements Document
 
-**Last Updated:** April 1, 2026
+**Last Updated:** April 2, 2026
 
 ---
 
 ## Recent Changes (April 2026)
+
+### Round 2 Bug Fixes - COMPLETED ✅ (April 2, 2026)
+- **ClosingDatePanel.js**: Removed fake download feature (generated text files), changed Eye icon to Edit icon, made timeline titles clickable
+- **InvestorPanel.js**: Fixed confirm → window.confirm, removed "Actions" column header (now blank), property name clickable for edit
+- **FreeCalculator.js**: Added location.state editDeal loading, fixed footer spacing (py-8 → pt-8 pb-16)
+
+### Investor Analysis Panel - 4 Bug Fixes - COMPLETED ✅ (April 2, 2026)
+- Removed "Created" header column from desktop table
+- Added useLocation to FreeCalculator.js to populate form when editing deals
+- Made property names clickable in the investor panel
+- Replaced mockDashboardAPI.investor.delete() with pure axios.delete() calls
+- Removed all download PDF functionality from the panel
 
 ### Homepage Redesign v2 - COMPLETED ✅
 - Created new homepage at `/app/frontend/src/pages/HomePageRedesign.jsx` and `/app/frontend/src/pages/HomePageRedesign.css`

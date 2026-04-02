@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, Trash2, Eye, HelpCircle, Clock, CheckCircle, AlertCircle, XCircle, Download } from 'lucide-react';
+import { Calendar, ExternalLink, Trash2, Edit, HelpCircle, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -215,73 +215,6 @@ const ClosingDatePanel = () => {
     } catch (error) {
       console.error('Delete failed:', error);
       toast.error('Delete failed. Please try again.');
-    }
-  };
-
-  const handleDownload = async (item) => {
-    try {
-      toast.loading('Generating PDF...');
-
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      const calculation_data = {
-        timeline: [
-          {
-            name: 'Under Contract',
-            date: item.underContractDate,
-            type: 'contract',
-            status: 'completed',
-            description: 'Contract was signed and executed'
-          },
-          {
-            name: 'Closing Date',
-            date: item.closingDate,
-            type: 'closing',
-            status: 'upcoming',
-            description: 'Final closing and transfer of ownership'
-          }
-        ],
-        totalDays: Math.ceil((new Date(item.closingDate) - new Date(item.underContractDate)) / (1000 * 60 * 60 * 24)),
-        milestoneCount: item.milestone_count || 2
-      };
-      
-      const property_data = {
-        title: item.title,
-        underContractDate: item.underContractDate,
-        closingDate: item.closingDate
-      };
-
-      // Note: This is still using mock data - real API integration pending
-      // For now, we'll simulate with a text file
-      const pdfContent = `Closing Timeline PDF - ${item.title}\n\nContract Date: ${formatDate(item.underContractDate)}\nClosing Date: ${formatDate(item.closingDate)}\nMilestones: ${item.milestone_count}`;
-      const blob = new Blob([pdfContent], { type: 'text/plain' });
-      const filename = `${item.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
-
-      if (isIOS) {
-        const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        toast.dismiss();
-        toast.success('File opened. Use share icon to save.');
-        return;
-      }
-
-      // EXISTING DESKTOP LOGIC
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.dismiss();
-      toast.success('PDF downloaded successfully!');
-      
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast.dismiss();
-      toast.error('Download failed. Please try again.');
     }
   };
 
@@ -613,11 +546,13 @@ const ClosingDatePanel = () => {
               <div className="space-y-4">
                 {history.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div 
-                      className="flex-1 cursor-pointer hover:opacity-80"
-                      onClick={() => navigate(`/tools/closing-date?id=${item.id}`)}
-                    >
-                      <h3 className="font-medium text-gray-900">{item.title}</h3>
+                    <div className="flex-1">
+                      <h3
+                        className="font-medium text-gray-900 cursor-pointer hover:text-primary"
+                        onClick={() => navigate(`/tools/closing-date?id=${item.id}`)}
+                      >
+                        {item.title}
+                      </h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span>Contract: {formatDate(item.underContractDate)}</span>
                         <span>Closing: {formatDate(item.closingDate)}</span>
@@ -630,19 +565,10 @@ const ClosingDatePanel = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate(`/tools/closing-date?id=${item.id}`)}
-                        className="text-primary hover:text-primary"
-                        title="View Timeline"
+                        className="text-gray-600 hover:text-gray-800"
+                        title="Edit Timeline"
                       >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDownload(item)}
-                        className="text-green-600 hover:text-green-700"
-                        title="Download PDF"
-                      >
-                        <Download className="w-4 h-4" />
+                        <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
