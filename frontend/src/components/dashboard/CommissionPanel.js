@@ -29,6 +29,7 @@ const CommissionPanel = () => {
       const items = (response.data.items || []).map(item => ({
         id: item.id,
         date: item.created_at,
+        address: item.inputs?.address || '',
         gross: item.results?.totalCommission || item.inputs?.salePrice || 0,
         takeHome: item.results?.agentTakeHome || 0,
         title: item.title,
@@ -51,12 +52,7 @@ const CommissionPanel = () => {
     if (!confirm('Delete this commission split?')) return;
     
     try {
-      const backendUrl = API_BASE_URL;
-      const token = localStorage.getItem('auth_token');
-      await axios.delete(`${backendUrl}/api/commission/${id}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        withCredentials: true
-      });
+      await axios.delete(`${API_BASE_URL}/api/commission/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
       
       // Show success toast
@@ -153,6 +149,7 @@ const CommissionPanel = () => {
                     <thead>
                       <tr className="text-left text-sm text-gray-500">
                         <th className="pb-2">Date</th>
+                        <th className="pb-2">Address</th>
                         <th className="pb-2">Take-Home</th>
                         <th className="pb-2">Actions</th>
                       </tr>
@@ -161,6 +158,7 @@ const CommissionPanel = () => {
                       {history.map((split) => (
                         <tr key={split.id} className="border-t">
                           <td className="py-2 text-sm">{formatDate(split.date)}</td>
+                          <td className="py-2 text-sm text-gray-700">{split.address || '—'}</td>
                           <td className="py-2 text-sm font-medium text-primary">
                             {formatCurrency(split.takeHome * 100)}
                           </td>
@@ -196,6 +194,9 @@ const CommissionPanel = () => {
                         <div>
                           <div className="font-medium">{formatCurrency(split.gross * 100)}</div>
                           <div className="text-sm text-gray-500">{formatDate(split.date)}</div>
+                          {split.address && (
+                            <div className="text-sm text-gray-600 truncate max-w-[200px]">{split.address}</div>
+                          )}
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
