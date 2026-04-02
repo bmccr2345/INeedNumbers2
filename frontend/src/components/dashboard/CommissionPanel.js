@@ -49,22 +49,16 @@ const CommissionPanel = () => {
   // Removed form handling functions since we now redirect to full calculator
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this commission split?')) return;
-    
+    if (!window.confirm('Delete this commission split?')) return;
+
     try {
       await axios.delete(`${API_BASE_URL}/api/commission/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
-      
-      // Show success toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
-      toast.textContent = 'Commission split deleted.';
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-      
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Delete failed. Please try again.');
+      // Reload history to check if delete actually succeeded
+      // (middleware issues can cause error responses even on successful deletes)
+      await loadHistory();
     }
   };
 
