@@ -6098,6 +6098,57 @@ async def save_affordability_calculation(
         logger.error(f"Error saving affordability calculation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/affordability/history")
+async def get_affordability_history(
+    current_user: User = Depends(require_auth),
+    limit: int = 10
+):
+    """Get user's affordability calculation history"""
+    try:
+        calculations = await db.affordability_calculations.find(
+            {"user_id": current_user.id}
+        ).sort("created_at", -1).limit(limit).to_list(length=limit)
+        
+        # Format the response
+        formatted_calcs = []
+        for calc in calculations:
+            formatted_calcs.append({
+                "id": calc.get("id"),
+                "title": calc.get("title", "Untitled"),
+                "created_at": calc.get("created_at"),
+                "inputs": calc.get("inputs", {}),
+                "results": calc.get("results", {})
+            })
+        
+        return {"items": formatted_calcs}
+        
+    except Exception as e:
+        logger.error(f"Error fetching affordability history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/affordability/{calculation_id}")
+async def delete_affordability_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth)
+):
+    """Delete an affordability calculation"""
+    try:
+        result = await db.affordability_calculations.delete_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+        
+        return {"message": "Calculation deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting affordability calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Investor Deal Save Endpoint
 @api_router.post("/investor/save")
 async def save_investor_deal(

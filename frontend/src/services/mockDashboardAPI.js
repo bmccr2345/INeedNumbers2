@@ -143,13 +143,42 @@ export const mockDashboardAPI = {
     },
     
     history: async ({ limit = 50, cursor = null } = {}) => {
-      // No mortgage history API exists - return empty for new users
-      return { items: [], nextCursor: null };
+      // Call real API for affordability/mortgage history
+      try {
+        const response = await axios.get(`${backendUrl}/api/affordability/history`, {
+          ...getAuthConfig(),
+          params: { limit }
+        });
+        // Transform response to match expected format for MortgagePanel
+        const items = (response.data?.items || []).map(calc => ({
+          id: calc.id,
+          title: calc.title || 'Untitled Calculation',
+          date: calc.created_at,
+          // Map inputs to expected fields
+          homePrice: calc.inputs?.homePrice || 0,
+          loanAmount: (parseFloat(String(calc.inputs?.homePrice || '0').replace(/[^0-9.-]/g, '')) || 0) - 
+                      (parseFloat(String(calc.inputs?.downPayment || '0').replace(/[^0-9.-]/g, '')) || 0),
+          payment: calc.results?.piti || calc.results?.monthlyPayment || 0,
+          monthlyPayment: calc.results?.piti || calc.results?.monthlyPayment || 0,
+          saved: true,
+          inputs: calc.inputs,
+          results: calc.results
+        }));
+        return { items, nextCursor: null };
+      } catch (error) {
+        console.error('Failed to load affordability history:', error);
+        return { items: [], nextCursor: null };
+      }
     },
     
     delete: async (id) => {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      return { success: true };
+      try {
+        await axios.delete(`${backendUrl}/api/affordability/${id}`, getAuthConfig());
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to delete affordability calculation:', error);
+        return { success: false };
+      }
     }
   },
 
