@@ -180,9 +180,22 @@ logger.info(f"CORS configured for origins: {cors_origins}")
 @app.middleware("http")
 async def body_size_limit_middleware(request: Request, call_next):
     """Enforce JSON body size limits globally."""
-    if request.headers.get("content-type", "").startswith("application/json"):
-        enforce_body_limit(request, config.MAX_JSON_BODY_KB)
-    return await call_next(request)
+    try:
+        if request.headers.get("content-type", "").startswith("application/json"):
+            enforce_body_limit(request, config.MAX_JSON_BODY_KB)
+        response = await call_next(request)
+        return response
+    except RuntimeError as e:
+        if "No response returned" in str(e):
+            # This happens when an inner middleware raises an HTTPException
+            # that doesn't propagate correctly through Starlette's middleware chain.
+            # Return a generic 500 to prevent the entire server from crashing.
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Internal server error"}
+            )
+        raise
 
 # Health check endpoint (REQUIRED for production)
 @app.get("/health")
