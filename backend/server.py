@@ -5063,6 +5063,7 @@ async def verify_subscription_status(request: Request):
 
 # Closing Date Calculator Models
 class ClosingDateCalculatorInput(BaseModel):
+    address: Optional[str] = ""
     underContractDate: str
     closingDate: str
     pestInspectionDays: Optional[str] = ""

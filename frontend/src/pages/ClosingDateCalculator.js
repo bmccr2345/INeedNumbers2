@@ -96,46 +96,38 @@ const ClosingDateCalculator = () => {
   const loadSavedCalculation = async (calculationId) => {
     try {
       setIsLoadingCalculation(true);
-      const token = await getToken();
-      
-      const response = await fetch(`${backendUrl}/api/closing-date/${calculationId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[ClosingDateCalculator] Loaded saved calculation:', data);
-        
-        // Populate the form with saved inputs
-        if (data.inputs) {
-          setInputs(data.inputs);
-        }
-        
-        // If timeline was saved, restore it
-        if (data.timeline && data.timeline.length > 0) {
-          // Convert date strings back to Date objects for the timeline
-          const restoredTimeline = data.timeline.map(milestone => ({
-            ...milestone,
-            date: new Date(milestone.date)
-          }));
-          setTimeline(restoredTimeline);
-        }
-        
-        toast.success('Timeline loaded successfully');
-      } else if (response.status === 404) {
-        toast.error('Timeline not found');
-        // Clear the ID from URL
-        navigate('/tools/closing-date', { replace: true });
-      } else {
-        throw new Error('Failed to load timeline');
+
+      const response = await axios.get(`${backendUrl}/api/closing-date/${calculationId}`);
+      const data = response.data;
+
+      console.log('[ClosingDateCalculator] Loaded saved calculation:', data);
+
+      // Populate the form with saved inputs (merge with defaults)
+      if (data.inputs) {
+        setInputs(prev => ({
+          ...prev,
+          ...data.inputs
+        }));
       }
+
+      // If timeline was saved, restore it
+      if (data.timeline && data.timeline.length > 0) {
+        const restoredTimeline = data.timeline.map(milestone => ({
+          ...milestone,
+          date: new Date(milestone.date)
+        }));
+        setTimeline(restoredTimeline);
+      }
+
+      toast.success('Timeline loaded successfully');
     } catch (error) {
       console.error('[ClosingDateCalculator] Error loading calculation:', error);
-      toast.error('Failed to load saved timeline');
+      if (error.response?.status === 404) {
+        toast.error('Timeline not found');
+        navigate('/tools/closing-date', { replace: true });
+      } else {
+        toast.error('Failed to load saved timeline');
+      }
     } finally {
       setIsLoadingCalculation(false);
     }

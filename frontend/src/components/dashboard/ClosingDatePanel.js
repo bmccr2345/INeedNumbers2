@@ -613,7 +613,10 @@ const ClosingDatePanel = () => {
               <div className="space-y-4">
                 {history.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer hover:opacity-80"
+                      onClick={() => navigate(`/tools/closing-date?id=${item.id}`)}
+                    >
                       <h3 className="font-medium text-gray-900">{item.title}</h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span>Contract: {formatDate(item.underContractDate)}</span>
