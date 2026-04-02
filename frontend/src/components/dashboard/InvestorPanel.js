@@ -213,7 +213,6 @@ const InvestorPanel = () => {
                         </th>
                         <th className="pb-2">Property</th>
                         <th className="pb-2">Last Updated</th>
-                        <th className="pb-2"></th>
                       </tr>
                     </thead>
                     <tbody>
