@@ -5,7 +5,6 @@ import { FileText, Search, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
-import { toast } from 'sonner';
 import { mockDashboardAPI, formatDate } from '../../services/mockDashboardAPI';
 import API_BASE_URL from '../../config/api';
 
@@ -45,12 +44,8 @@ const InvestorPanel = () => {
     if (!window.confirm('Delete this investor deal?')) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`);
       setInvestors(prev => prev.filter(item => item.id !== id));
-      toast.success('Investor deal deleted.');
     } catch (error) {
       console.error('Delete failed:', error);
       await loadInvestors();
@@ -71,16 +66,11 @@ const InvestorPanel = () => {
     if (!window.confirm(`Delete ${selectedItems.length} selected deals?`)) return;
 
     try {
-      // Delete each selected item using axios
       await Promise.all(
-        selectedItems.map(id => axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`, {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
-        }))
+        selectedItems.map(id => axios.delete(`${API_BASE_URL}/api/investor/deals/${id}`))
       );
       setInvestors(prev => prev.filter(item => !selectedItems.includes(item.id)));
       setSelectedItems([]);
-      toast.success(`${selectedItems.length} deals deleted.`);
     } catch (error) {
       console.error('Bulk delete failed:', error);
       await loadInvestors();

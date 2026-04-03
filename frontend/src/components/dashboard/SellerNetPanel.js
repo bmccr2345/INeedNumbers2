@@ -20,12 +20,7 @@ const SellerNetPanel = () => {
   const loadHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const backendUrl = API_BASE_URL;
-      const token = localStorage.getItem('auth_token');
-      const response = await axios.get(`${backendUrl}/api/seller-net/history?limit=10`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        withCredentials: true
-      });
+      const response = await axios.get(`${API_BASE_URL}/api/seller-net/history?limit=10`);
       setHistory(response.data.items || []);
     } catch (error) {
       console.error('Failed to load net sheet history:', error);
@@ -36,27 +31,14 @@ const SellerNetPanel = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this net sheet estimate?')) return;
-    
+    if (!window.confirm('Delete this net sheet estimate?')) return;
+
     try {
-      const backendUrl = API_BASE_URL;
-      const token = localStorage.getItem('auth_token');
-      await axios.delete(`${backendUrl}/api/seller-net/${id}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        withCredentials: true
-      });
+      await axios.delete(`${API_BASE_URL}/api/seller-net/${id}`);
       setHistory(prev => prev.filter(item => item.id !== id));
-      
-      // Show success toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
-      toast.textContent = 'Net sheet estimate deleted.';
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-      
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Delete failed. Please try again.');
+      await loadHistory();
     }
   };
 
