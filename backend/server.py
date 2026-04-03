@@ -2715,8 +2715,9 @@ async def generate_commission_pdf_get(
         raise HTTPException(status_code=500, detail="Commission split template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    # Get branding data
-    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    # Get branding data — use user_id query param as fallback when iOS doesn't send auth cookies
+    user_id_for_branding = current_user.id if current_user else request.query_params.get("user_id")
+    brand_profile = await get_brand_profile(user_id_for_branding) if user_id_for_branding else None
     branding_data = await build_branding_data(brand_profile)
     
     # Use existing report data preparation (same as POST endpoint)
@@ -2764,8 +2765,9 @@ async def generate_investor_pdf_get(
         raise HTTPException(status_code=500, detail="Investor template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    # Get branding data
-    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    # Get branding data — use user_id query param as fallback when iOS doesn't send auth cookies
+    user_id_for_branding = current_user.id if current_user else request.query_params.get("user_id")
+    brand_profile = await get_brand_profile(user_id_for_branding) if user_id_for_branding else None
     branding_data = await build_branding_data(brand_profile)
     
     report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
@@ -2811,8 +2813,9 @@ async def generate_affordability_pdf_get(
         raise HTTPException(status_code=500, detail="Affordability template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    # Get branding data
-    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    # Get branding data — use user_id query param as fallback when iOS doesn't send auth cookies
+    user_id_for_branding = current_user.id if current_user else request.query_params.get("user_id")
+    brand_profile = await get_brand_profile(user_id_for_branding) if user_id_for_branding else None
     branding_data = await build_branding_data(brand_profile)
     
     report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
@@ -2857,8 +2860,9 @@ async def generate_seller_net_pdf_get(
         raise HTTPException(status_code=500, detail="Seller net sheet template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    # Get branding data
-    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    # Get branding data — use user_id query param as fallback when iOS doesn't send auth cookies
+    user_id_for_branding = current_user.id if current_user else request.query_params.get("user_id")
+    brand_profile = await get_brand_profile(user_id_for_branding) if user_id_for_branding else None
     branding_data = await build_branding_data(brand_profile)
     
     report_data = prepare_seller_net_sheet_report_data(calculation_data, property_data, current_user)
@@ -2904,8 +2908,9 @@ async def generate_closing_date_pdf_get(
         raise HTTPException(status_code=500, detail="Closing date template not found")
     template_content = template_path.read_text(encoding='utf-8')
     
-    # Get branding data
-    brand_profile = await get_brand_profile(current_user.id) if current_user else None
+    # Get branding data — use user_id query param as fallback when iOS doesn't send auth cookies
+    user_id_for_branding = current_user.id if current_user else request.query_params.get("user_id")
+    brand_profile = await get_brand_profile(user_id_for_branding) if user_id_for_branding else None
     branding_data = await build_branding_data(brand_profile)
     
     report_data = prepare_closing_date_report_data(calculation_data, property_data, current_user)

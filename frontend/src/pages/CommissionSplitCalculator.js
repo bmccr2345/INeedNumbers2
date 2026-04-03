@@ -291,6 +291,7 @@ const CommissionSplitCalculator = () => {
         calculation_data: JSON.stringify(results),
         property_data: JSON.stringify(inputs)
       });
+      if (user?.id) params.append('user_id', user.id);
       const url = `${API_BASE_URL}/api/reports/commission/pdf?${params.toString()}`;
       window.open(url, '_blank');
       toast.success('PDF opened. Use share icon to save.');
