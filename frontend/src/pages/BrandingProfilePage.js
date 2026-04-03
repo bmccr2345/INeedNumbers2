@@ -820,8 +820,8 @@ const BrandingProfilePage = () => {
           {/* Asset Upload Sections - Only shown for paid users */}
           {isPaid && (
             <>
-              {/* Headshot Upload */}
-              <Card>
+              {/* Headshot Upload - Coming Soon */}
+              <Card className="opacity-60">
                 <CardHeader>
                   <CardTitle>Agent Headshot</CardTitle>
                 </CardHeader>
@@ -831,74 +831,23 @@ const BrandingProfilePage = () => {
                       <p className="text-sm text-gray-600 mb-4">
                         Square crop 1:1, recommended 600×600, max 5 MB, JPG/PNG
                       </p>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        {/* Hidden file input - always in DOM */}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files[0]) {
-                              handleAssetUpload('headshot', e.target.files[0]);
-                            }
-                          }}
-                          className="hidden"
-                          id="headshot-upload"
-                          ref={headshotInputRef}
-                        />
-                        {brandProfile?.assets?.headshot?.url ? (
-                          <div>
-                            <img 
-                              src={brandProfile.assets.headshot.url}
-                              alt="Headshot"
-                              className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-                            />
-                            <div className="space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => headshotInputRef.current?.click()}
-                              >
-                                Replace
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleAssetDelete('headshot')}
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-100">
+                        <div className="text-gray-500">
+                          <div className="w-12 h-12 rounded-full bg-gray-300 mx-auto mb-4 flex items-center justify-center">
+                            <span className="text-gray-500 text-lg">📷</span>
                           </div>
-                        ) : (
-                          <div>
-                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-sm text-gray-500">
-                              Drag and drop or click to upload
-                            </p>
-                            <label
-                              htmlFor="headshot-upload"
-                              className="mt-2 inline-block cursor-pointer text-primary hover:text-primary-dark"
-                            >
-                              Choose File
-                            </label>
-                          </div>
-                        )}
-                        {uploadingAsset === 'headshot' && (
-                          <div className="mt-4">
-                            <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                            <p className="text-sm text-gray-500 mt-2">Uploading...</p>
-                          </div>
-                        )}
+                          <p className="text-lg font-semibold text-gray-600">Coming Soon</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Pro-only Logo Uploads */}
+              {/* Pro-only Logo Uploads - Coming Soon */}
               {isPro && (
                 <>
-                  <Card>
+                  <Card className="opacity-60">
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         Agent/Team Logo
@@ -911,65 +860,18 @@ const BrandingProfilePage = () => {
                       <p className="text-sm text-gray-600 mb-4">
                         Horizontal crop 4:1, recommended 800×200, transparent PNG or SVG, max 3 MB
                       </p>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        {/* Hidden file input - always in DOM */}
-                        <input
-                          ref={agentLogoInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files[0]) {
-                              handleAssetUpload('agentLogo', e.target.files[0]);
-                            }
-                          }}
-                          className="hidden"
-                          id="agent-logo-upload"
-                        />
-                        {brandProfile?.assets?.agentLogo?.url ? (
-                          <div>
-                            <img 
-                              src={brandProfile.assets.agentLogo.url}
-                              alt="Agent Logo"
-                              className="h-12 mx-auto mb-4 object-contain"
-                            />
-                            <div className="space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => agentLogoInputRef.current?.click()}
-                              >
-                                Replace
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleAssetDelete('agentLogo')}
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-100">
+                        <div className="text-gray-500">
+                          <div className="w-12 h-12 rounded bg-gray-300 mx-auto mb-4 flex items-center justify-center">
+                            <span className="text-gray-500 text-lg">🖼️</span>
                           </div>
-                        ) : (
-                          <div>
-                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <label
-                              htmlFor="agent-logo-upload"
-                              className="cursor-pointer text-primary hover:text-primary-dark"
-                            >
-                              Upload Agent/Team Logo
-                            </label>
-                          </div>
-                        )}
-                        {uploadingAsset === 'agentLogo' && (
-                          <div className="mt-4">
-                            <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                          </div>
-                        )}
+                          <p className="text-lg font-semibold text-gray-600">Coming Soon</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="opacity-60">
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         Brokerage Logo
@@ -982,60 +884,13 @@ const BrandingProfilePage = () => {
                       <p className="text-sm text-gray-600 mb-4">
                         Horizontal crop 4:1, recommended 800×200, transparent PNG or SVG, max 3 MB
                       </p>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        {/* Hidden file input - always in DOM */}
-                        <input
-                          ref={brokerLogoInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files[0]) {
-                              handleAssetUpload('brokerLogo', e.target.files[0]);
-                            }
-                          }}
-                          className="hidden"
-                          id="broker-logo-upload"
-                        />
-                        {brandProfile?.assets?.brokerLogo?.url ? (
-                          <div>
-                            <img 
-                              src={brandProfile.assets.brokerLogo.url}
-                              alt="Brokerage Logo"
-                              className="h-12 mx-auto mb-4 object-contain"
-                            />
-                            <div className="space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => brokerLogoInputRef.current?.click()}
-                              >
-                                Replace
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleAssetDelete('brokerLogo')}
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-100">
+                        <div className="text-gray-500">
+                          <div className="w-12 h-12 rounded bg-gray-300 mx-auto mb-4 flex items-center justify-center">
+                            <span className="text-gray-500 text-lg">🏢</span>
                           </div>
-                        ) : (
-                          <div>
-                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <label
-                              htmlFor="broker-logo-upload"
-                              className="cursor-pointer text-primary hover:text-primary-dark"
-                            >
-                              Upload Brokerage Logo
-                            </label>
-                          </div>
-                        )}
-                        {uploadingAsset === 'brokerLogo' && (
-                          <div className="mt-4">
-                            <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                          </div>
-                        )}
+                          <p className="text-lg font-semibold text-gray-600">Coming Soon</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
