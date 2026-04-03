@@ -397,7 +397,8 @@ export const AuthProvider = ({ children }) => {
     getPlanLimits,
     canPerformAction,
     getCurrentPlan,
-    hasActiveSubscription
+    hasActiveSubscription,
+    getToken
   };
 
   return (

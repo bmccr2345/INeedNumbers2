@@ -32,7 +32,7 @@ const AffordabilityCalculator = () => {
   const navigate = useNavigate();
   const { calculationId } = useParams();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, getToken } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
   
   // Check if auth is complete (regardless of login status)
@@ -382,32 +382,32 @@ const AffordabilityCalculator = () => {
 
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    if (isIOS) {
-      const params = new URLSearchParams({
-        calculation_data: JSON.stringify(results),
-        property_data: JSON.stringify(inputs)
-      });
-      if (user?.id) params.append('user_id', user.id);
-      const url = `${API_BASE_URL}/api/reports/affordability/pdf?${params.toString()}`;
-      window.open(url, '_blank');
-      toast.success('PDF opened. Use share icon to save.');
-      return;
-    }
-
-    // EXISTING DESKTOP LOGIC (UNCHANGED)
     try {
       const backendUrl = API_BASE_URL;
-      
+
       const payload = {
         calculation_data: results,
         property_data: inputs
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (getToken) {
+        try {
+          const token = await getToken();
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (e) {
+          console.warn('Failed to get auth token for PDF:', e);
+        }
+      }
+
       const response = await fetch(`${backendUrl}/api/reports/affordability/pdf`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify(payload)
       });
@@ -417,27 +417,33 @@ const AffordabilityCalculator = () => {
       }
 
       const pdfBlob = await response.blob();
-      
+
       const disposition = response.headers.get('Content-Disposition');
       let filename = 'affordability_analysis.pdf';
       if (disposition && disposition.includes('filename=')) {
         filename = disposition.split('filename=')[1].replace(/"/g, '');
       }
 
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF downloaded successfully!');
-      
+      if (isIOS) {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        window.open(blobUrl, '_blank');
+        toast.success('PDF opened. Use share icon to save.');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+      } else {
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success('PDF downloaded successfully!');
+      }
+
     } catch (error) {
       console.error('PDF download error:', error);
-      toast.error('Failed to download PDF. Please try again.');
+      toast.error('Error downloading PDF. Please try again.');
     }
   };
 
