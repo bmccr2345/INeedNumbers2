@@ -1,10 +1,22 @@
 # I Need Numbers - Product Requirements Document
 
-**Last Updated:** April 2, 2026
+**Last Updated:** April 3, 2026
 
 ---
 
 ## Recent Changes (April 2026)
+
+### iOS PDF Download Fix (v3 FINAL) - COMPLETED ✅ (April 3, 2026)
+- **Problem:** iOS Capacitor app failed to download PDFs. WKWebView blocks `blob:` URLs at the navigation delegate level.
+- **Solution:** Implemented a `/prepare` endpoint pattern across all 5 calculator files:
+  - `CommissionSplitCalculator.js`
+  - `AffordabilityCalculator.js`
+  - `SellerNetSheetCalculator.js`
+  - `ClosingDateCalculator.js`
+  - `FreeCalculator.js` (Investor)
+- **Backend:** Uses temporary in-memory PDF storage with UUID tokens via `POST /api/reports/{tool}/pdf/prepare` → returns `{ download_url, token }`
+- **Frontend:** iOS devices call `/prepare`, then open the real HTTPS URL via `@capacitor/browser` (SFSafariViewController). Desktop continues using blob download.
+- **Verification:** 5 occurrences of `pdf/prepare` confirmed in production bundle after `yarn build`
 
 ### Round 2 Bug Fixes - COMPLETED ✅ (April 2, 2026)
 - **ClosingDatePanel.js**: Removed fake download feature (generated text files), changed Eye icon to Edit icon, made timeline titles clickable
