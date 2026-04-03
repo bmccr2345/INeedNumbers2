@@ -2516,6 +2516,142 @@ async def get_report_preview(tool: str, request: Request, current_user: Optional
         logger.error(f"Error generating report preview: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============================================================
+# Temporary PDF Storage for iOS download workaround
+# ============================================================
+# WKWebView in Capacitor blocks blob: URLs, so we store PDFs
+# temporarily and serve them via a GET endpoint with a UUID token.
+_temp_pdf_store = {}  # {token: {"pdf_bytes": bytes, "filename": str, "created_at": float}}
+_TEMP_PDF_EXPIRY_SECONDS = 300  # 5 minutes
+
+def _cleanup_expired_pdfs():
+    """Remove PDFs older than 5 minutes"""
+    import time
+    now = time.time()
+    expired = [t for t, d in _temp_pdf_store.items() if now - d["created_at"] > _TEMP_PDF_EXPIRY_SECONDS]
+    for t in expired:
+        del _temp_pdf_store[t]
+
+@api_router.get("/reports/pdf/download/{token}")
+async def download_temp_pdf(token: str):
+    """
+    Serve a previously generated PDF by its temporary token.
+    This endpoint requires no authentication — the UUID token is the auth.
+    Used by iOS/Capacitor clients that cannot handle blob: URLs.
+    """
+    _cleanup_expired_pdfs()
+
+    if token not in _temp_pdf_store:
+        raise HTTPException(status_code=404, detail="PDF expired or not found. Please generate a new one.")
+
+    entry = _temp_pdf_store[token]
+    pdf_bytes = entry["pdf_bytes"]
+    filename = entry["filename"]
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"inline; filename={filename}",
+            "Cache-Control": "no-cache, no-store, must-revalidate"
+        }
+    )
+
+@api_router.post("/reports/{tool}/pdf/prepare")
+async def prepare_pdf(tool: str, request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
+    """
+    Generate a PDF and store it temporarily. Returns a JSON response with
+    a download URL instead of the raw PDF binary. Used by iOS/Capacitor
+    clients that need a real HTTPS URL to display the PDF.
+    """
+    try:
+        # Get calculation data from request body
+        body = await request.json()
+        calculation_data = body.get('calculation_data', {})
+        property_data = body.get('property_data', {})
+
+        if not calculation_data and not property_data:
+            raise HTTPException(status_code=400, detail="Calculation data and property data required")
+
+        # Get branding data
+        brand_profile = await get_brand_profile(current_user.id) if current_user else None
+        branding_data = await build_branding_data(brand_profile)
+
+        # Load template based on tool type
+        if tool == "investor":
+            template_path = Path(__file__).parent / "templates" / "investor_report_comprehensive.html"
+            report_data = prepare_investor_report_data(calculation_data, property_data, current_user)
+        elif tool == "affordability":
+            template_path = Path(__file__).parent / "templates" / "affordability_report.html"
+            report_data = await prepare_affordability_report_data_generic(calculation_data, property_data, current_user)
+        elif tool == "commission":
+            template_path = Path(__file__).parent / "templates" / "commission_split_report.html"
+            report_data = prepare_commission_split_report_data(calculation_data, property_data, current_user)
+        elif tool == "seller-net":
+            template_path = Path(__file__).parent / "templates" / "seller_net_sheet_report.html"
+            report_data = prepare_seller_net_sheet_report_data(calculation_data, property_data, current_user)
+        elif tool == "closing-date":
+            template_path = Path(__file__).parent / "templates" / "closing_date_report.html"
+            report_data = prepare_closing_date_report_data(calculation_data, property_data, current_user)
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown tool: {tool}")
+
+        if not template_path.exists():
+            raise HTTPException(status_code=500, detail=f"Report template not found for {tool}")
+
+        template_content = template_path.read_text(encoding='utf-8')
+
+        # Merge branding data with report data
+        report_data.update(branding_data)
+
+        # Render the template
+        html_content = render_template(template_content, report_data)
+
+        # Generate the PDF
+        pdf_buffer = await generate_pdf_with_weasyprint_from_html(html_content)
+
+        # Generate filename
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        if tool == "affordability":
+            home_price = property_data.get('homePrice', 'Unknown')
+            filename = f"affordability_analysis_{home_price}_{date_str}.pdf"
+        elif tool == "commission":
+            sale_price = calculation_data.get('salePrice', 'Unknown')
+            filename = f"commission_split_{sale_price}_{date_str}.pdf"
+        elif tool == "seller-net":
+            sale_price = property_data.get('salePrice', 'Unknown')
+            filename = f"seller_net_sheet_{sale_price}_{date_str}.pdf"
+        elif tool == "closing-date":
+            closing_date = property_data.get('closingDate', 'Unknown')
+            clean_closing = closing_date.replace('/', '-').replace(' ', '_') if closing_date != 'Unknown' else 'Unknown'
+            filename = f"closing_timeline_{clean_closing}_{date_str}.pdf"
+        else:
+            property_address = property_data.get('address', 'Property')
+            clean_address = re.sub(r'[^\w\s-]', '', property_address).replace(' ', '_')
+            filename = f"investor_{clean_address}_{date_str}.pdf"
+
+        # Store with a UUID token
+        import time
+        token = str(uuid.uuid4())
+        _cleanup_expired_pdfs()
+        _temp_pdf_store[token] = {
+            "pdf_bytes": pdf_buffer,
+            "filename": filename,
+            "created_at": time.time()
+        }
+
+        return JSONResponse(content={
+            "token": token,
+            "download_url": f"/api/reports/pdf/download/{token}",
+            "filename": filename
+        })
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error preparing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/reports/{tool}/pdf")
 async def generate_pdf(tool: str, request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     """

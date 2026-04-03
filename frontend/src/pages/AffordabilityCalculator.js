@@ -380,31 +380,6 @@ const AffordabilityCalculator = () => {
       return;
     }
 
-    // Detect iOS BEFORE doing anything async
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    // CRITICAL: On iOS, open the window SYNCHRONOUSLY in the click handler
-    // BEFORE the fetch() call. If we wait until after fetch(), the browser
-    // blocks it as a popup because we've lost the user gesture context.
-    let pdfWindow = null;
-    if (isIOS) {
-      pdfWindow = window.open('about:blank', '_blank');
-      if (pdfWindow) {
-        pdfWindow.document.write(
-          '<html><head><title>Generating PDF...</title></head>' +
-          '<body style="display:flex;justify-content:center;align-items:center;' +
-          'height:100vh;margin:0;font-family:-apple-system,Arial,sans-serif;' +
-          'background:#f5f5f5">' +
-          '<div style="text-align:center">' +
-          '<div style="font-size:48px;margin-bottom:16px">📄</div>' +
-          '<h2 style="color:#333;margin:0 0 8px">Generating your PDF...</h2>' +
-          '<p style="color:#666;margin:0">This will only take a moment</p>' +
-          '</div></body></html>'
-        );
-      }
-    }
-
     try {
       const backendUrl = API_BASE_URL;
 
@@ -413,6 +388,12 @@ const AffordabilityCalculator = () => {
         property_data: inputs
       };
 
+      // Detect iOS and Capacitor native app
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+      // Build headers
       const headers = {
         'Content-Type': 'application/json',
       };
@@ -428,38 +409,52 @@ const AffordabilityCalculator = () => {
         }
       }
 
-      const response = await fetch(`${backendUrl}/api/reports/affordability/pdf`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`PDF generation failed: ${response.statusText}`);
-      }
-
-      const pdfBlob = await response.blob();
-
-      const disposition = response.headers.get('Content-Disposition');
-      let filename = 'affordability_analysis.pdf';
-      if (disposition && disposition.includes('filename=')) {
-        filename = disposition.split('filename=')[1].replace(/"/g, '');
-      }
-
       if (isIOS) {
-        // iOS path: navigate the already-open window to the PDF blob
-        const blobUrl = window.URL.createObjectURL(pdfBlob);
+        // iOS PATH: Use the /prepare endpoint + real HTTPS URL
+        const prepareResponse = await fetch(`${backendUrl}/api/reports/affordability/pdf/prepare`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        });
 
-        if (pdfWindow && !pdfWindow.closed) {
-          pdfWindow.location.href = blobUrl;
-        } else {
-          window.location.href = blobUrl;
+        if (!prepareResponse.ok) {
+          throw new Error(`PDF generation failed: ${prepareResponse.statusText}`);
         }
 
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 120000);
+        const { download_url } = await prepareResponse.json();
+        const fullDownloadUrl = `${backendUrl}${download_url}`;
+
+        if (isCapacitor) {
+          const { Browser } = await import('@capacitor/browser');
+          await Browser.open({ url: fullDownloadUrl });
+        } else {
+          window.location.href = fullDownloadUrl;
+        }
+
         toast.success('PDF opened — use the share button to save or send it!');
+
       } else {
+        // DESKTOP PATH: Existing blob download
+        const response = await fetch(`${backendUrl}/api/reports/affordability/pdf`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`PDF generation failed: ${response.statusText}`);
+        }
+
+        const pdfBlob = await response.blob();
+
+        const disposition = response.headers.get('Content-Disposition');
+        let filename = 'affordability_analysis.pdf';
+        if (disposition && disposition.includes('filename=')) {
+          filename = disposition.split('filename=')[1].replace(/"/g, '');
+        }
+
         const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
@@ -468,14 +463,12 @@ const AffordabilityCalculator = () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+
         toast.success('PDF downloaded successfully!');
       }
 
     } catch (error) {
       console.error('PDF download error:', error);
-      if (pdfWindow && !pdfWindow.closed) {
-        pdfWindow.close();
-      }
       toast.error('Failed to download PDF. Please try again.');
     }
   };
