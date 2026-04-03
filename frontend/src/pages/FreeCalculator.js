@@ -464,8 +464,7 @@ const FreeCalculator = () => {
       return;
     }
 
-    // Detect iOS (Safari, Capacitor WebView, or any iOS browser)
-    // iPadOS reports as "MacIntel" with maxTouchPoints > 1, not as "iPad"
+    // Detect iOS BEFORE doing anything async
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -473,6 +472,27 @@ const FreeCalculator = () => {
       ...propertyData,
       totalUnits: propertyData.propertyType === 'multi-family' ? calculateTotalUnits() : null
     };
+
+    // CRITICAL: On iOS, open the window SYNCHRONOUSLY in the click handler
+    // BEFORE the fetch() call. If we wait until after fetch(), the browser
+    // blocks it as a popup because we've lost the user gesture context.
+    let pdfWindow = null;
+    if (isIOS) {
+      pdfWindow = window.open('about:blank', '_blank');
+      if (pdfWindow) {
+        pdfWindow.document.write(
+          '<html><head><title>Generating PDF...</title></head>' +
+          '<body style="display:flex;justify-content:center;align-items:center;' +
+          'height:100vh;margin:0;font-family:-apple-system,Arial,sans-serif;' +
+          'background:#f5f5f5">' +
+          '<div style="text-align:center">' +
+          '<div style="font-size:48px;margin-bottom:16px">📄</div>' +
+          '<h2 style="color:#333;margin:0 0 8px">Generating your PDF...</h2>' +
+          '<p style="color:#666;margin:0">This will only take a moment</p>' +
+          '</div></body></html>'
+        );
+      }
+    }
 
     try {
       const backendUrl = API_BASE_URL;
@@ -519,19 +539,18 @@ const FreeCalculator = () => {
       }
 
       if (isIOS) {
-        // iOS doesn't support <a download> + .click() — it silently fails.
-        // Instead, open the blob in a new tab. iOS shows its native PDF viewer
-        // with the share sheet (Mail, Messages, AirDrop, Save to Files, etc.)
+        // iOS path: navigate the already-open window to the PDF blob
         const blobUrl = window.URL.createObjectURL(pdfBlob);
-        const newWindow = window.open(blobUrl, '_blank');
 
-        if (!newWindow) {
-          // Popup was blocked — fall back to replacing current page
+        if (pdfWindow && !pdfWindow.closed) {
+          pdfWindow.location.href = blobUrl;
+        } else {
+          // Window was closed or blocked — try location fallback
           window.location.href = blobUrl;
         }
 
-        // Don't revoke immediately — the new tab needs time to load the blob
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+        // Don't revoke for 2 minutes — the window needs time to load
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 120000);
 
         toast.success('PDF opened — use the share button to save or send it!');
       } else {
@@ -550,7 +569,11 @@ const FreeCalculator = () => {
 
     } catch (error) {
       console.error('PDF download error:', error);
-      toast.error('Error downloading PDF. Please try again.');
+      // Close the loading window if it was opened
+      if (pdfWindow && !pdfWindow.closed) {
+        pdfWindow.close();
+      }
+      toast.error('Failed to download PDF. Please try again.');
     }
   };
 
