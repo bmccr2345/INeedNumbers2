@@ -588,6 +588,7 @@ class BrandAsset(BaseModel):
     h: int = 0
     mime: str = ""
     updatedAt: str = ""
+    b64: str = ""
 
 class BrandAgent(BaseModel):
     firstName: str = ""
@@ -1010,20 +1011,24 @@ def calculate_completion_score(profile: BrandProfile) -> float:
     
     return min(score, 100.0)
 
-async def fetch_asset_as_base64(asset_key: str) -> str:
+async def fetch_asset_as_base64(asset_key: str, stored_b64: str = "") -> str:
     """
     Fetch an asset from S3, local storage, or URL and return as base64 data URL.
     This is needed because WeasyPrint's local_only_fetcher blocks remote URLs.
+    Falls back to stored_b64 if local files are missing (e.g., after server restart).
     """
-    if not asset_key:
+    if not asset_key and not stored_b64:
         return ""
+
+    # If we have stored base64 data from MongoDB, use it directly as fallback
+    # But first try to get from local file/S3/URL for freshest data
     
     try:
         import base64
         import mimetypes
         
         # Determine MIME type from key
-        ext = asset_key.lower().split('.')[-1] if '.' in asset_key else 'jpeg'
+        ext = asset_key.lower().split('.')[-1] if asset_key and '.' in asset_key else 'png'
         mime_map = {
             'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg',
@@ -1031,10 +1036,10 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
             'gif': 'image/gif',
             'webp': 'image/webp'
         }
-        mime_type = mime_map.get(ext, 'image/jpeg')
+        mime_type = mime_map.get(ext, 'image/png')
         
         # Check if it's a local file path
-        if asset_key.startswith('local/'):
+        if asset_key and asset_key.startswith('local/'):
             local_path = f"/tmp/uploads/{asset_key.replace('local/', '')}"
             if os.path.exists(local_path):
                 with open(local_path, 'rb') as f:
@@ -1043,10 +1048,10 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
                 return f"data:{mime_type};base64,{b64_data}"
             else:
                 logger.warning(f"Local asset not found: {local_path}")
-                return ""
+                # Fall through to check stored_b64
         
         # Check if it's a local API URL (from /api/uploads/)
-        if asset_key.startswith('/api/uploads/branding/'):
+        if asset_key and asset_key.startswith('/api/uploads/branding/'):
             filename = asset_key.replace('/api/uploads/branding/', '')
             local_path = f"/tmp/uploads/branding/{filename}"
             if os.path.exists(local_path):
@@ -1055,11 +1060,11 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
                 b64_data = base64.b64encode(file_bytes).decode('utf-8')
                 return f"data:{mime_type};base64,{b64_data}"
             else:
-                logger.warning(f"Local branding asset not found: {local_path}")
-                return ""
+                logger.warning(f"Local branding asset not found: {local_path}, will use stored b64 if available")
+                # Fall through to check stored_b64
         
         # Check if it's a full URL (S3 or other remote)
-        if asset_key.startswith('https://') or asset_key.startswith('http://'):
+        if asset_key and (asset_key.startswith('https://') or asset_key.startswith('http://')):
             import urllib.request
             try:
                 with urllib.request.urlopen(asset_key, timeout=10) as response:
@@ -1073,19 +1078,19 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
                 return f"data:{mime_type};base64,{b64_data}"
             except Exception as url_error:
                 logger.warning(f"Failed to fetch asset from URL {asset_key}: {url_error}")
-                return ""
+                # Fall through to check stored_b64
         
         # Fetch from S3 using key
-        if settings.s3_bucket and settings.aws_access_key_id:
+        if asset_key and config.S3_BUCKET and config.S3_ACCESS_KEY_ID:
             try:
-                s3_client = boto3.client(
+                s3_client_local = boto3.client(
                     's3',
-                    aws_access_key_id=settings.aws_access_key_id,
-                    aws_secret_access_key=settings.aws_secret_access_key,
-                    region_name=settings.aws_region or 'us-east-1'
+                    aws_access_key_id=config.S3_ACCESS_KEY_ID,
+                    aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
+                    region_name=config.S3_REGION or 'us-east-1'
                 )
                 
-                response = s3_client.get_object(Bucket=settings.s3_bucket, Key=asset_key)
+                response = s3_client_local.get_object(Bucket=config.S3_BUCKET, Key=asset_key)
                 file_bytes = response['Body'].read()
                 
                 # Detect MIME type from actual content if possible
@@ -1099,13 +1104,26 @@ async def fetch_asset_as_base64(asset_key: str) -> str:
                 
             except Exception as s3_error:
                 logger.warning(f"Failed to fetch asset from S3: {asset_key} - {s3_error}")
-                return ""
-        else:
-            logger.warning(f"S3 not configured, cannot fetch asset: {asset_key}")
+                # Fall through to check stored_b64
+        
+        # Fallback: Use stored base64 from MongoDB if available
+        if stored_b64:
+            logger.info(f"Using stored b64 fallback for asset: {asset_key}")
+            return f"data:{mime_type};base64,{stored_b64}"
+        
+        if not asset_key:
             return ""
+            
+        logger.warning(f"No stored b64 and S3 not configured, cannot fetch asset: {asset_key}")
+        return ""
             
     except Exception as e:
         logger.error(f"Error fetching asset as base64: {asset_key} - {e}")
+        # Last resort: try stored_b64
+        if stored_b64:
+            ext = asset_key.lower().split('.')[-1] if asset_key and '.' in asset_key else 'png'
+            mime_type = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png'}.get(ext, 'image/png')
+            return f"data:{mime_type};base64,{stored_b64}"
         return ""
 
 async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
@@ -1153,17 +1171,24 @@ async def build_branding_data(profile: Optional[BrandProfile]) -> dict:
     # Determine if we have enough branding info to show
     has_branding = bool(agent_name or profile.brokerage.name)
     
-    # Fetch headshot as base64 (use .url instead of .key)
+    # Fetch headshot as base64 — pass stored b64 as fallback for when /tmp files are gone
     headshot_url = profile.assets.headshot.url if profile.assets.headshot else ""
-    agent_photo_base64 = await fetch_asset_as_base64(headshot_url)
+    headshot_stored_b64 = profile.assets.headshot.b64 if profile.assets.headshot else ""
+    agent_photo_base64 = await fetch_asset_as_base64(headshot_url, stored_b64=headshot_stored_b64)
 
     # Fetch logos as base64
     agent_logo_base64 = ""
     broker_logo_base64 = ""
-    if profile.assets.agentLogo and profile.assets.agentLogo.url:
-        agent_logo_base64 = await fetch_asset_as_base64(profile.assets.agentLogo.url)
-    if profile.assets.brokerLogo and profile.assets.brokerLogo.url:
-        broker_logo_base64 = await fetch_asset_as_base64(profile.assets.brokerLogo.url)
+    if profile.assets.agentLogo and (profile.assets.agentLogo.url or profile.assets.agentLogo.b64):
+        agent_logo_base64 = await fetch_asset_as_base64(
+            profile.assets.agentLogo.url,
+            stored_b64=profile.assets.agentLogo.b64
+        )
+    if profile.assets.brokerLogo and (profile.assets.brokerLogo.url or profile.assets.brokerLogo.b64):
+        broker_logo_base64 = await fetch_asset_as_base64(
+            profile.assets.brokerLogo.url,
+            stored_b64=profile.assets.brokerLogo.b64
+        )
     
     return {
         "hasAgentBranding": has_branding,
@@ -6801,7 +6826,22 @@ async def get_brand_profile_endpoint(current_user: User = Depends(require_auth))
         if not profile:
             raise HTTPException(status_code=500, detail="Failed to create brand profile")
         
-        return profile
+        # Check if any assets need re-upload (have URL but no stored b64)
+        profile_doc = await db.brand_profiles.find_one({"userId": current_user.id})
+        needs_reupload = []
+        if profile_doc:
+            assets = profile_doc.get('assets', {})
+            if assets.get('headshot', {}).get('url') and not assets.get('headshot', {}).get('b64'):
+                needs_reupload.append('headshot')
+            if assets.get('agentLogo', {}).get('url') and not assets.get('agentLogo', {}).get('b64'):
+                needs_reupload.append('agentLogo')
+            if assets.get('brokerLogo', {}).get('url') and not assets.get('brokerLogo', {}).get('b64'):
+                needs_reupload.append('brokerLogo')
+        
+        # Return profile with needsReupload flag
+        response = profile.model_dump()
+        response['needsReupload'] = needs_reupload
+        return response
         
     except HTTPException:
         raise
@@ -6954,13 +6994,16 @@ async def upload_brand_asset(
         image = Image.open(io.BytesIO(processed_data))
         width, height = image.size
         
-        # Update brand profile with new asset
+        # Update brand profile with new asset (store base64 so images survive server restarts)
+        import base64 as b64_module
+        b64_encoded = b64_module.b64encode(processed_data).decode('utf-8')
         asset_data = {
             "url": url,
             "w": width,
             "h": height,
             "mime": "image/png",
-            "updatedAt": datetime.now(timezone.utc).isoformat()
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+            "b64": b64_encoded
         }
         
         # Update database
@@ -7003,27 +7046,49 @@ async def upload_brand_asset(
 
 @api_router.get("/uploads/branding/{filename}")
 async def serve_branding_file(filename: str):
-    """Serve locally uploaded branding files (development only)"""
+    """Serve locally uploaded branding files, with MongoDB b64 fallback"""
     import os
+    import base64
     from fastapi.responses import FileResponse
     
-    if s3_client:
-        raise HTTPException(status_code=404, detail="Local files not available in production")
-    
     file_path = f"/tmp/uploads/branding/{filename}"
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    # Verify filename contains user ID for basic security
-    if not any(char.isdigit() for char in filename):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    return FileResponse(
-        path=file_path,
-        media_type="image/png",
-        headers={"Cache-Control": "public, max-age=3600"}
-    )
+
+    # Try local file first
+    if os.path.exists(file_path):
+        return FileResponse(
+            path=file_path,
+            media_type="image/png",
+            headers={"Cache-Control": "public, max-age=3600"}
+        )
+
+    # Fallback: reconstruct from MongoDB stored base64
+    # Filename format: {userId}-{assetType}-{timestamp}.png
+    try:
+        # Parse filename to extract userId and asset type
+        parts = filename.rsplit('.', 1)[0]  # Remove .png extension
+        # Split on last two hyphens to get: userId, assetType, timestamp
+        segments = parts.split('-')
+        # Asset type is second-to-last segment, timestamp is last
+        asset_type = segments[-2]  # headshot, agentLogo, or brokerLogo
+        timestamp = segments[-1]
+        user_id = '-'.join(segments[:-2])  # Everything before asset type
+
+        if asset_type in ['headshot', 'agentLogo', 'brokerLogo']:
+            profile_doc = await db.brand_profiles.find_one({"userId": user_id})
+            if profile_doc and profile_doc.get('assets', {}).get(asset_type, {}).get('b64'):
+                b64_data = profile_doc['assets'][asset_type]['b64']
+                image_bytes = base64.b64decode(b64_data)
+
+                # Re-cache locally for future requests
+                os.makedirs("/tmp/uploads/branding", exist_ok=True)
+                with open(file_path, 'wb') as f:
+                    f.write(image_bytes)
+
+                return Response(content=image_bytes, media_type="image/png")
+    except Exception as e:
+        logger.warning(f"Failed to reconstruct branding file from MongoDB: {e}")
+
+    raise HTTPException(status_code=404, detail="File not found")
 
 @api_router.delete("/brand/asset")
 async def delete_brand_asset(
