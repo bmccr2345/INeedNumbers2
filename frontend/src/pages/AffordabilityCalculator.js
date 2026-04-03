@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -31,6 +31,7 @@ import API_BASE_URL from '../config/api';
 const AffordabilityCalculator = () => {
   const navigate = useNavigate();
   const { calculationId } = useParams();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { effectivePlan } = usePlanPreview(user?.plan);
   
@@ -79,13 +80,16 @@ const AffordabilityCalculator = () => {
 
   // Load shared calculation if calculationId is provided, otherwise ensure fields are clear
   useEffect(() => {
+    const calcId = searchParams.get('calc');
     if (calculationId) {
       loadSharedCalculation();
+    } else if (calcId) {
+      loadSavedCalculation(calcId);
     } else {
       // Ensure fields are cleared when accessing calculator fresh
       clearAllFields();
     }
-  }, [calculationId]);
+  }, [calculationId, searchParams]);
 
   const clearAllFields = () => {
     setInputs({
@@ -137,6 +141,29 @@ const AffordabilityCalculator = () => {
       console.error('Error loading shared calculation:', error);
       toast.error('Failed to load shared calculation');
       navigate('/tools/affordability');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSavedCalculation = async (calcId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${backendUrl}/api/affordability/${calcId}`);
+
+      if (response.data) {
+        const { inputs: savedInputs, results: savedResults } = response.data;
+        if (savedInputs) {
+          setInputs(savedInputs);
+        }
+        if (savedResults) {
+          setResults(savedResults);
+        }
+        toast.success('Calculation loaded successfully');
+      }
+    } catch (error) {
+      console.error('Error loading saved calculation:', error);
+      toast.error('Failed to load calculation');
     } finally {
       setLoading(false);
     }

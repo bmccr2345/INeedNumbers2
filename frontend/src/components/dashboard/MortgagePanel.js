@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, ExternalLink, Trash2, Eye } from 'lucide-react';
+import { Calculator, ExternalLink, Trash2, Edit } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { mockDashboardAPI, formatCurrency, formatDate } from '../../services/mockDashboardAPI';
@@ -156,10 +156,10 @@ const MortgagePanel = () => {
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => navigate(`/tools/affordability?calc=${calc.id}`)}
-                                className="text-primary hover:text-secondary text-sm"
-                                title="Open calculation"
+                                className="text-gray-600 hover:text-gray-800 text-sm"
+                                title="Edit calculation"
                               >
-                                <Eye className="w-4 h-4" />
+                                <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(calc.id)}

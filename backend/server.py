@@ -6142,6 +6142,35 @@ async def delete_affordability_calculation(
         logger.error(f"Error deleting affordability calculation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/affordability/{calculation_id}")
+async def get_affordability_calculation(
+    calculation_id: str,
+    current_user: User = Depends(require_auth)
+):
+    """Get a single affordability calculation by ID"""
+    try:
+        calculation = await db.affordability_calculations.find_one({
+            "id": calculation_id,
+            "user_id": current_user.id
+        })
+
+        if not calculation:
+            raise HTTPException(status_code=404, detail="Calculation not found")
+
+        return {
+            "id": calculation.get("id"),
+            "title": calculation.get("title", "Untitled"),
+            "created_at": calculation.get("created_at"),
+            "inputs": calculation.get("inputs", {}),
+            "results": calculation.get("results", {})
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching affordability calculation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Investor Deal Save Endpoint
 @api_router.post("/investor/save")
 async def save_investor_deal(

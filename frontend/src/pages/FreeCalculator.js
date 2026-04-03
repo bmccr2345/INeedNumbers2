@@ -1217,61 +1217,6 @@ const FreeCalculator = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                onClick={calculateMetrics}
-                disabled={isCalculating || !propertyData.purchasePrice || !propertyData.monthlyRent}
-                className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800"
-              >
-                {isCalculating ? 'Calculating...' : 'Calculate Metrics'}
-              </Button>
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  onClick={handleDownloadPDF}
-                  disabled={!metrics}
-                  className="flex items-center space-x-2 bg-primary hover:bg-primary/90"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Download PDF</span>
-                </Button>
-                
-                {/* Fairy AI Coach Button */}
-                {effectivePlan === 'PRO' ? (
-                  <Button 
-                    onClick={() => setShowAICoach(true)}
-                    disabled={!metrics}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                    data-testid="fairy-ai-coach-btn"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Fairy AI Coach</span>
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => navigate('/pricing')}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white opacity-75"
-                    data-testid="fairy-ai-coach-locked-btn"
-                  >
-                    <Lock className="w-4 h-4" />
-                    <span>Fairy AI Coach (Pro)</span>
-                  </Button>
-                )}
-                
-                {user && ['STARTER', 'PRO'].includes(user.plan) && metrics && (
-                  <Button
-                    onClick={handleSaveCalculation}
-                    disabled={isSaving}
-                    variant="outline"
-                    className="flex items-center space-x-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>{isSaving ? 'Saving...' : 'Save Deal'}</span>
-                  </Button>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Results Panel */}
@@ -1527,6 +1472,60 @@ const FreeCalculator = () => {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Action Buttons */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <Button
+                        onClick={calculateMetrics}
+                        disabled={isCalculating || !propertyData.purchasePrice || !propertyData.monthlyRent}
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800"
+                      >
+                        {isCalculating ? 'Calculating...' : 'Recalculate Metrics'}
+                      </Button>
+                      <Button
+                        onClick={handleDownloadPDF}
+                        disabled={!metrics}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Download PDF Report
+                      </Button>
+                      {effectivePlan === 'PRO' ? (
+                        <Button
+                          onClick={() => setShowAICoach(true)}
+                          disabled={!metrics}
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                          data-testid="fairy-ai-coach-btn"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Fairy AI Coach
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => navigate('/pricing')}
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white opacity-75"
+                          data-testid="fairy-ai-coach-locked-btn"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Fairy AI Coach (Pro)
+                        </Button>
+                      )}
+                      {user && ['STARTER', 'PRO'].includes(user.plan) && (
+                        <Button
+                          onClick={handleSaveCalculation}
+                          disabled={isSaving}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          {isSaving ? 'Saving...' : 'Save Deal'}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </>
             ): (
               <Card>
@@ -1542,6 +1541,13 @@ const FreeCalculator = () => {
                     <div className="text-xs text-gray-400">
                       * Required: Purchase Price and Monthly Rent
                     </div>
+                    <Button
+                      onClick={calculateMetrics}
+                      disabled={isCalculating || !propertyData.purchasePrice || !propertyData.monthlyRent}
+                      className="w-full bg-gradient-to-r from-primary to-secondary hover:from-emerald-700 hover:to-emerald-800 mt-4"
+                    >
+                      {isCalculating ? 'Calculating...' : 'Calculate Metrics'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

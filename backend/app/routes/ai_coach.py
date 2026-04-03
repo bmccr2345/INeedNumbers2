@@ -880,6 +880,18 @@ async def generate_coach(
                 set_cache(cache_key, json.dumps(analysis_response))
                 # STAGE 3: Add usage status to response
                 return JSONResponse(content=merge_usage_status(analysis_response, usage_status))
+            elif context in ("investor_deal_analysis", "custom_investor_analysis"):
+                # INVESTOR ANALYSIS - Response is plain text, not JSON
+                # Return it directly as a text response
+                logger.info(f"Investor Analysis - Raw AI response: {text[:500]}...")
+
+                investor_response = {
+                    "response": text.strip(),
+                    "context": context
+                }
+
+                set_cache(cache_key, json.dumps(investor_response))
+                return JSONResponse(content=merge_usage_status(investor_response, usage_status))
             else:
                 # Standard AI Coach processing
                 # Strip markdown code block syntax if present
