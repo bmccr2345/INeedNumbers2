@@ -951,7 +951,7 @@ def get_effective_plan(current_user: Optional[User], plan_preview: Optional[str]
     if plan_preview and plan_preview in ['FREE', 'STARTER', 'PRO']:
         return plan_preview
     if current_user:
-        return current_user.plan.value
+        return current_user.plan if isinstance(current_user.plan, str) else current_user.plan.value
     return 'FREE'
 
 # Brand Profile Helper Functions
@@ -1390,7 +1390,7 @@ async def prepare_affordability_report_data_generic(calculation_data: dict, prop
             profile = await get_brand_profile(current_user.id)
             if profile:
                 # Process brand profile into branding data format
-                plan = current_user.plan.value
+                plan = current_user.plan if isinstance(current_user.plan, str) else current_user.plan.value
                 is_paid_user = plan in ["STARTER", "PRO"]
                 
                 # Prepare agent name
@@ -1705,7 +1705,7 @@ def prepare_investor_report_data(calculation_data: dict, property_data: dict, cu
     return {
         "generatedAt": datetime.now().strftime("%B %d, %Y at %I:%M %p"),
         "preparedBy": current_user.full_name if current_user else "Real Estate Professional",
-        "isPro": current_user and current_user.plan.value in ["STARTER", "PRO"] if current_user else False,
+        "isPro": current_user and current_user.plan in ["STARTER", "PRO"] if current_user else False,
         
         # Property Information Section
         "property": {
@@ -7198,7 +7198,7 @@ async def resolve_brand_data(
             )
         
         # Apply plan-based rules for PDF branding
-        plan = current_user.plan.value
+        plan = current_user.plan if isinstance(current_user.plan, str) else current_user.plan.value
         is_paid_user = plan in ["STARTER", "PRO"]  # Only STARTER and PRO get branding
         show_logos = plan in ["STARTER", "PRO"]
         show_cta = plan == "PRO"
