@@ -395,7 +395,10 @@ const ClosingDateCalculator = () => {
       return;
     }
 
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Detect iOS (Safari, Capacitor WebView, or any iOS browser)
+    // iPadOS reports as "MacIntel" with maxTouchPoints > 1, not as "iPad"
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     const calculation_data = {
       timeline: timeline,
@@ -446,10 +449,16 @@ const ClosingDateCalculator = () => {
       }
 
       if (isIOS) {
-        const blobUrl = URL.createObjectURL(pdfBlob);
-        window.open(blobUrl, '_blank');
-        toast.success('PDF opened. Use share icon to save.');
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        // iOS doesn't support <a download> + .click() — it silently fails.
+        const blobUrl = window.URL.createObjectURL(pdfBlob);
+        const newWindow = window.open(blobUrl, '_blank');
+
+        if (!newWindow) {
+          window.location.href = blobUrl;
+        }
+
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+        toast.success('PDF opened — use the share button to save or send it!');
       } else {
         const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
