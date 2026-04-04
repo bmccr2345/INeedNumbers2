@@ -10,6 +10,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const iosRestricted = isIOSApp();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -26,6 +27,7 @@ const Navigation = () => {
             </span>
           </Link>
           
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <button onClick={() => navigate('/features')} className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">Features</button>
             {!iosRestricted && <button onClick={() => navigate('/pricing')} className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">Pricing</button>}
@@ -44,8 +46,85 @@ const Navigation = () => {
               </>
             )}
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            className="md:hidden p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
+          <div className="container mx-auto px-6 py-4 space-y-3">
+            <button 
+              onClick={() => { navigate('/features'); setMobileMenuOpen(false); }}
+              className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+            >
+              Features
+            </button>
+            {!iosRestricted && (
+              <button 
+                onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+              >
+                Pricing
+              </button>
+            )}
+            <button 
+              onClick={() => { navigate('/blog'); setMobileMenuOpen(false); }}
+              className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+            >
+              Blog
+            </button>
+            <button 
+              onClick={() => { navigate('/support'); setMobileMenuOpen(false); }}
+              className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+            >
+              Support
+            </button>
+            {user ? (
+              <button 
+                onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => { navigate('/auth/login'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
+                >
+                  Sign In
+                </button>
+                {!iosRestricted && (
+                  <button 
+                    onClick={() => { navigate('/auth/register'); setMobileMenuOpen(false); }}
+                    className="block w-full bg-[#16a34a] hover:bg-[#0d7a36] text-white font-semibold py-3 px-4 rounded-lg text-center text-lg mt-2 transition-colors"
+                  >
+                    Get Started
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

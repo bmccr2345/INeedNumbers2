@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { ChevronDown, ChevronRight, Check, Menu, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { isIOSApp } from '../utils/platform';
 
@@ -176,55 +176,65 @@ const LandingPage = () => {
 
             {/* Mobile menu button */}
             <button 
-              className="md:hidden text-gray-700 p-2"
+              className="md:hidden text-gray-700 p-2 focus:outline-none"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
               data-testid="mobile-menu-btn"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100">
-            <div className="container mx-auto px-6 py-4 space-y-4">
+          <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
+            <div className="container mx-auto px-6 py-4 space-y-3">
               <button 
                 onClick={() => { navigate('/features'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
               >
                 Features
               </button>
               {!iosRestricted && (
                 <button 
                   onClick={() => { navigate('/pricing'); setMobileMenuOpen(false); }}
-                  className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                  className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
                 >
                   Pricing
                 </button>
               )}
               <button 
                 onClick={() => { navigate('/blog'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
               >
                 Blog
               </button>
               <button 
                 onClick={() => { navigate('/support'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
               >
                 Support
               </button>
               <button 
                 onClick={() => { navigate('/auth/login'); setMobileMenuOpen(false); }}
-                className="block w-full text-left text-gray-700 hover:text-gray-900 py-2 text-lg"
+                className="block w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-3 px-2 text-lg font-medium rounded-md transition-colors"
               >
                 Sign In
               </button>
               {!iosRestricted && (
                 <Button 
                   onClick={() => { handleStartCoach(); setMobileMenuOpen(false); }}
-                  className="w-full bg-[#2FA163] hover:bg-[#268a54] text-white font-medium"
+                  className="w-full bg-[#2FA163] hover:bg-[#268a54] text-white font-medium py-3 mt-2"
                 >
                   Hire My AI Coach
                 </Button>
