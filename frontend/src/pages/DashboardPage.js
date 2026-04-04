@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Calculator, 
@@ -23,7 +23,9 @@ import {
   PiggyBank,
   Store,
   CheckSquare,
-  Palette
+  Palette,
+  Menu,
+  X
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -55,12 +57,14 @@ import { useOnboarding } from '../context/OnboardingContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout, loading } = useAuth();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('homepage'); // Default to homepage
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({
     planTrack: true,
     workDeals: true,
@@ -131,6 +135,30 @@ const DashboardPage = () => {
 
     checkOnboardingStatus();
   }, [user, navigate]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname, activeTab]);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
 
   // Sidebar categories with sub-tabs
   const sidebarStructure = [
@@ -440,24 +468,37 @@ const DashboardPage = () => {
   // The MobileLayout component handles header and navigation
   return (
     <div className="md:min-h-screen bg-gray-50 md:flex md:flex-col">
-      {/* Header - Only show on desktop (md and up) */}
-      <header className="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-40">
+      {/* Header - Desktop (md+) full header, Mobile (below lg) simplified with hamburger */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
+            {/* Left side: Hamburger (mobile only) + Logo */}
             <div className="flex items-center">
+              {/* Hamburger Menu Button - Only visible below lg */}
+              <button
+                className="lg:hidden p-2 mr-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Open navigation menu"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+              
               <img 
                 src={`${process.env.REACT_APP_ASSETS_URL}/job_agent-portal-27/artifacts/azdcmpew_Logo_with_brown_background-removebg-preview.png`} 
                 alt="I Need Numbers" 
                 className="h-8 w-auto"
               />
-              <span className="ml-3 text-xl font-bold text-primary tracking-wide font-poppins">
+              <span className="ml-3 text-xl font-bold text-primary tracking-wide font-poppins hidden sm:inline">
                 I NEED NUMBERS
               </span>
             </div>
 
-            {/* Account Menu */}
-            <div className="relative">
+            {/* Account Menu - Hidden on mobile (md shows it) */}
+            <div className="relative hidden md:block">
               <Button
                 variant="ghost"
                 onClick={() => setShowAccountMenu(!showAccountMenu)}
@@ -543,6 +584,164 @@ const DashboardPage = () => {
           </div>
         </div>
       </header>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-[9997] lg:hidden" 
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div className="fixed inset-0 bg-black/40" />
+        </div>
+      )}
+
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed top-0 left-0 z-[9998] h-full w-[280px] max-w-[80vw] bg-white border-r border-gray-200 shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Mobile Sidebar Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <span className="font-semibold text-gray-900">Menu</span>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2 rounded-md text-gray-400 hover:text-gray-600"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Mobile Sidebar Nav Items */}
+        <div className="overflow-y-auto h-[calc(100vh-60px)] p-4">
+          <div className="space-y-1">
+            {sidebarStructure.map((item) => {
+              const isItemAvailable = item.available.includes(user?.plan || 'FREE');
+              
+              if (item.type === 'single') {
+                const isActive = activeTab === item.tabId;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      handleTabClick(item.tabId);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-gray-700 hover:text-emerald-700 hover:bg-emerald-50'
+                    }`}
+                  >
+                    {item.icon}
+                    <span className="ml-3 truncate">{item.name}</span>
+                  </button>
+                );
+              }
+              
+              if (!isItemAvailable) return null;
+              
+              const isExpanded = expandedCategories[item.id];
+              
+              return (
+                <div key={item.id} className="space-y-1">
+                  <button
+                    onClick={() => toggleCategory(item.id)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center">
+                      {item.icon}
+                      <span className="ml-3">{item.name}</span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-500" />
+                    )}
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="ml-6 space-y-0.5 border-l-2 border-gray-200 pl-3">
+                      {item.subTabs.map((subTab) => {
+                        const isActive = activeTab === subTab.id;
+                        const isSubAvailable = subTab.available.includes(user?.plan || 'FREE');
+                        
+                        return (
+                          <button
+                            key={subTab.id}
+                            onClick={() => {
+                              if (isSubAvailable) {
+                                handleTabClick(subTab.id);
+                                setMobileMenuOpen(false);
+                              }
+                            }}
+                            disabled={!isSubAvailable}
+                            className={`w-full flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                              isActive
+                                ? 'bg-emerald-100 text-emerald-700 font-medium border-l-2 border-emerald-600 -ml-[14px] pl-[14px]'
+                                : isSubAvailable
+                                ? 'text-gray-600 hover:text-emerald-700 hover:bg-emerald-50'
+                                : 'text-gray-400 cursor-not-allowed opacity-50'
+                            }`}
+                          >
+                            {subTab.icon}
+                            <span className="ml-2 truncate">{subTab.name}</span>
+                            {subTab.proOnly && !isSubAvailable && (
+                              <span className="ml-auto text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                                Pro
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile Account Section */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="px-3 py-2 text-xs text-gray-500 uppercase tracking-wider">
+              Account
+            </div>
+            <div className="space-y-1">
+              <button
+                onClick={() => {
+                  navigate('/account');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+              >
+                <Settings className="w-4 h-4 mr-3" />
+                Profile & Billing
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/support');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+              >
+                <FileText className="w-4 h-4 mr-3" />
+                Support
+              </button>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+              >
+                <LogOut className="w-4 h-4 mr-3" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
