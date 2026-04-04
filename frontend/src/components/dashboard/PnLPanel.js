@@ -57,6 +57,14 @@ const PnLPanel = () => {
   const [editingCell, setEditingCell] = useState(null); // { type: 'deal'|'expense', id: string, field: string }
   const [editValue, setEditValue] = useState('');
   
+  // Edit expense modal state
+  const [showEditExpense, setShowEditExpense] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  // Budget editing state
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [budgetInputValue, setBudgetInputValue] = useState('');
+  
   // AI Coach state
   const [showAICoach, setShowAICoach] = useState(false);
 
@@ -216,7 +224,7 @@ const PnLPanel = () => {
 
       const dealData = {
         house_address: newDeal.house_address,
-        amount_sold_for: parseFloat(newDeal.amount_sold_for) || 0,
+        amount_sold_for: parseFloat(newDeal.amount_sold_for.replace(/,/g, '')) || 0,
         commission_percent: parseFloat(newDeal.commission_percent) || 3,
         split_percent: parseFloat(newDeal.split_percent) || 100,
         team_brokerage_split_percent: parseFloat(newDeal.team_brokerage_split_percent) || 0,
@@ -424,6 +432,206 @@ const PnLPanel = () => {
       } else {
         setError(error.response?.data?.detail || 'Failed to delete expense');
       }
+    }
+  };
+
+  // Handle opening edit expense modal
+  const handleEditExpense = (expense) => {
+    setEditingExpense({
+      id: expense.id,
+      date: expense.date || '',
+      category: expense.category || '',
+      description: expense.description || '',
+      amount: expense.amount?.toString() || '',
+      budget: expense.budget?.toString() || '0'
+    });
+    setShowEditExpense(true);
+  };
+
+  // Handle update expense form submission
+  const handleUpdateExpense = async (e) => {
+    e.preventDefault();
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
+      const updateData = {
+        date: editingExpense.date,
+        category: editingExpense.category,
+        description: editingExpense.description,
+        amount: parseFloat(editingExpense.amount) || 0,
+        budget: parseFloat(editingExpense.budget) || 0
+      };
+
+      await axios.patch(`${backendUrl}/api/pnl/expenses/${editingExpense.id}`, updateData, {
+        withCredentials: true,
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      setEditingExpense(null);
+      setShowEditExpense(false);
+      await loadPnLData();
+    } catch (error) {
+      console.error('Failed to update expense:', error);
+      if (error.response?.status === 401) {
+        setError('Authentication required');
+      } else {
+        setError('Failed to update expense');
+      }
+    }
+  };
+
+  // Handle setting a budget for a category
+  const handleSetBudget = async (category) => {
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
+      const budgetAmount = parseFloat(budgetInputValue) || 0;
+      if (budgetAmount <= 0) {
+        setError('Please enter a valid budget amount');
+        return;
+      }
+
+      await axios.post(`${backendUrl}/api/pnl/budgets?month=${selectedMonth}`, {
+        category: category,
+        monthly_budget: budgetAmount
+      }, {
+        withCredentials: true,
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      setEditingBudget(null);
+      setBudgetInputValue('');
+      await loadPnLData();
+    } catch (error) {
+      console.error('Failed to set budget:', error);
+      setError('Failed to set budget');
+    }
+  };
+
+  // Format number with commas for display in Add Deal
+  const formatAmountWithCommas = (value) => {
+    if (!value) return '';
+    const numericValue = value.toString().replace(/[^0-9]/g, '');
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  // Handle amount change with formatting for Add Deal
+  const handleDealAmountChange = (e) => {
+    const formattedValue = formatAmountWithCommas(e.target.value);
+    setNewDeal(prev => ({ ...prev, amount_sold_for: formattedValue }));
+  };
+
+  // Generate CSV export for month or year
+  const handleExportCSV = async (period = 'month') => {
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication required. Please sign in again.');
+        return;
+      }
+
+      // Prepare data for CSV
+      const deals = pnlSummary?.deals || [];
+      const expenses = pnlSummary?.expenses || [];
+      const totalIncome = pnlSummary?.total_income || 0;
+      const totalExpenses = pnlSummary?.total_expenses || 0;
+      const netIncome = pnlSummary?.net_income || 0;
+
+      // Get month name for filename
+      const [year, month] = selectedMonth.split('-');
+      const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleString('default', { month: 'long' });
+
+      let csvContent = '';
+      let filename = '';
+
+      if (period === 'month') {
+        filename = `PnL_${monthName}_${year}.csv`;
+        
+        // Section 1: Income - Closed Deals
+        csvContent += 'Income - Closed Deals\n';
+        csvContent += '"Property Address","Sale Price","Commission %","Split %","Team/Brokerage Split %","Cap Amount","Final Income","Lead Source","Closing Date"\n';
+        
+        deals.forEach(deal => {
+          const address = (deal.house_address || '').replace(/"/g, '""');
+          csvContent += `"${address}","${formatCurrency(deal.amount_sold_for)}","${deal.commission_percent}%","${deal.split_percent}%","${deal.team_brokerage_split_percent}%","${formatCurrency(deal.cap_amount || 0)}","${formatCurrency(deal.final_income)}","${deal.lead_source || ''}","${new Date(deal.closing_date).toLocaleDateString()}"\n`;
+        });
+        
+        csvContent += `\n"Total Income:","${formatCurrency(totalIncome)}"\n\n`;
+        
+        // Section 2: Expenses - Business Costs
+        csvContent += 'Expenses - Business Costs\n';
+        csvContent += '"Date","Category","Description","Amount"\n';
+        
+        expenses.forEach(expense => {
+          const description = (expense.description || '').replace(/"/g, '""');
+          csvContent += `"${new Date(expense.date).toLocaleDateString()}","${expense.category}","${description}","${formatCurrency(expense.amount)}"\n`;
+        });
+        
+        csvContent += `\n"Total Expenses:","${formatCurrency(totalExpenses)}"\n\n`;
+        
+        // Section 3: Summary
+        csvContent += 'Monthly P&L Summary\n';
+        csvContent += `"Total Income:","${formatCurrency(totalIncome)}"\n`;
+        csvContent += `"Total Expenses:","${formatCurrency(totalExpenses)}"\n`;
+        csvContent += `"Net Income:","${formatCurrency(netIncome)}"\n`;
+        
+      } else {
+        // Year export - would need to fetch full year data from API
+        filename = `PnL_Annual_${year}.csv`;
+        
+        // For now, export current month data with annual header
+        csvContent += `Annual P&L Report - ${year}\n\n`;
+        csvContent += `Month: ${monthName} ${year}\n\n`;
+        
+        // Same structure as month export
+        csvContent += 'Income - Closed Deals\n';
+        csvContent += '"Property Address","Sale Price","Commission %","Split %","Team/Brokerage Split %","Cap Amount","Final Income","Lead Source","Closing Date"\n';
+        
+        deals.forEach(deal => {
+          const address = (deal.house_address || '').replace(/"/g, '""');
+          csvContent += `"${address}","${formatCurrency(deal.amount_sold_for)}","${deal.commission_percent}%","${deal.split_percent}%","${deal.team_brokerage_split_percent}%","${formatCurrency(deal.cap_amount || 0)}","${formatCurrency(deal.final_income)}","${deal.lead_source || ''}","${new Date(deal.closing_date).toLocaleDateString()}"\n`;
+        });
+        
+        csvContent += `\n"Total Income:","${formatCurrency(totalIncome)}"\n\n`;
+        
+        csvContent += 'Expenses - Business Costs\n';
+        csvContent += '"Date","Category","Description","Amount"\n';
+        
+        expenses.forEach(expense => {
+          const description = (expense.description || '').replace(/"/g, '""');
+          csvContent += `"${new Date(expense.date).toLocaleDateString()}","${expense.category}","${description}","${formatCurrency(expense.amount)}"\n`;
+        });
+        
+        csvContent += `\n"Total Expenses:","${formatCurrency(totalExpenses)}"\n\n`;
+        
+        csvContent += 'P&L Summary\n';
+        csvContent += `"Total Income:","${formatCurrency(totalIncome)}"\n`;
+        csvContent += `"Total Expenses:","${formatCurrency(totalExpenses)}"\n`;
+        csvContent += `"Net Income:","${formatCurrency(netIncome)}"\n`;
+      }
+
+      // Create and download the CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+      setError('Failed to export data');
     }
   };
 
@@ -716,7 +924,7 @@ const PnLPanel = () => {
               {!isMobile && (
                 <>
                   <Button
-                    onClick={() => handleExport('month')}
+                    onClick={() => handleExportCSV('month')}
                     variant="outline"
                     className="text-sm"
                   >
@@ -724,7 +932,7 @@ const PnLPanel = () => {
                     Export Month
                   </Button>
                   <Button
-                    onClick={() => handleExport('year')}
+                    onClick={() => handleExportCSV('year')}
                     variant="outline"
                     className="text-sm"
                   >
@@ -1492,14 +1700,24 @@ const PnLPanel = () => {
                                     ) : '—'}
                                   </td>
                                   <td className="py-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => deleteExpense(expense.id)}
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    <div className="flex space-x-1">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleEditExpense(expense)}
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                      >
+                                        <Edit3 className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => deleteExpense(expense.id)}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -1531,39 +1749,104 @@ const PnLPanel = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(pnlSummary.budget_utilization).map(([category, util]) => (
-                          <div key={category} className="border rounded-lg p-4">
-                            <h4 className="font-medium text-gray-900 mb-2">{category}</h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span>Budget:</span>
-                                <span className="font-semibold">{formatCurrency(util.budget)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span>Spent:</span>
-                                <span className="font-semibold text-red-600">{formatCurrency(util.spent)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span>Remaining:</span>
-                                <span className={`font-semibold ${util.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {formatCurrency(util.remaining)}
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                <div 
-                                  className={`h-2 rounded-full ${
-                                    util.percent > 100 ? 'bg-red-500' : 
-                                    util.percent > 80 ? 'bg-yellow-500' : 'bg-green-500'
-                                  }`}
-                                  style={{ width: `${Math.min(util.percent, 100)}%` }}
-                                ></div>
-                              </div>
-                              <div className="text-xs text-gray-500 text-center">
-                                {util.percent.toFixed(1)}% utilized
+                        {Object.entries(pnlSummary.budget_utilization).map(([category, util]) => {
+                          const hasBudget = util.budget > 0;
+                          const isOverBudget = hasBudget && util.spent > util.budget;
+                          
+                          return (
+                            <div key={category} className="border rounded-lg p-4">
+                              <h4 className="font-medium text-gray-900 mb-2">{category}</h4>
+                              <div className="space-y-2">
+                                {hasBudget ? (
+                                  <>
+                                    <div className="flex justify-between text-sm">
+                                      <span>Budget:</span>
+                                      <span className="font-semibold">{formatCurrency(util.budget)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span>Spent:</span>
+                                      <span className="font-semibold text-red-600">{formatCurrency(util.spent)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span>{isOverBudget ? 'Over budget by:' : 'Remaining:'}</span>
+                                      <span className={`font-semibold ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
+                                        {isOverBudget ? formatCurrency(Math.abs(util.remaining)) : formatCurrency(util.remaining)}
+                                      </span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                      <div 
+                                        className={`h-2 rounded-full ${
+                                          util.percent > 100 ? 'bg-red-500' : 
+                                          util.percent > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                        }`}
+                                        style={{ width: `${Math.min(util.percent, 100)}%` }}
+                                      ></div>
+                                    </div>
+                                    <div className={`text-xs text-center ${util.percent > 100 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                                      {util.percent.toFixed(1)}% utilized
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex justify-between text-sm">
+                                      <span>Budget:</span>
+                                      <span className="text-gray-400 italic">No budget set</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span>Spent:</span>
+                                      <span className="font-semibold text-red-600">{formatCurrency(util.spent)}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                      <div className="h-2 rounded-full bg-gray-300" style={{ width: '0%' }}></div>
+                                    </div>
+                                    <div className="text-xs text-center text-gray-400 italic">
+                                      No budget set
+                                    </div>
+                                    {editingBudget === category ? (
+                                      <div className="flex items-center space-x-2 mt-2">
+                                        <Input
+                                          type="number"
+                                          placeholder="Enter budget"
+                                          value={budgetInputValue}
+                                          onChange={(e) => setBudgetInputValue(e.target.value)}
+                                          className="h-8 text-sm"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleSetBudget(category)}
+                                          className="h-8 bg-green-600 hover:bg-green-700 text-white"
+                                        >
+                                          <Check className="w-3 h-3" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setEditingBudget(null);
+                                            setBudgetInputValue('');
+                                          }}
+                                          className="h-8"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => {
+                                          setEditingBudget(category);
+                                          setBudgetInputValue('');
+                                        }}
+                                        className="text-xs text-blue-600 hover:text-blue-800 underline mt-1"
+                                      >
+                                        Set Budget
+                                      </button>
+                                    )}
+                                  </>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -1599,10 +1882,10 @@ const PnLPanel = () => {
                       <Label htmlFor="amount_sold_for">Amount Sold For *</Label>
                       <Input
                         id="amount_sold_for"
-                        type="number"
+                        type="text"
                         value={newDeal.amount_sold_for}
-                        onChange={(e) => setNewDeal(prev => ({ ...prev, amount_sold_for: e.target.value }))}
-                        placeholder="500000"
+                        onChange={handleDealAmountChange}
+                        placeholder="500,000"
                         className="mt-1"
                         required
                       />
@@ -2038,6 +2321,106 @@ const PnLPanel = () => {
           </div>
         )}
       </div>
+      
+      {/* Edit Expense Modal */}
+      {showEditExpense && editingExpense && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
+            <CardHeader>
+              <CardTitle>Edit Expense</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleUpdateExpense} className="space-y-4">
+                <div>
+                  <Label htmlFor="edit_expense_date">Date *</Label>
+                  <Input
+                    id="edit_expense_date"
+                    type="date"
+                    value={editingExpense.date}
+                    onChange={(e) => setEditingExpense(prev => ({ ...prev, date: e.target.value }))}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_expense_category">Category *</Label>
+                  <select
+                    id="edit_expense_category"
+                    value={editingExpense.category}
+                    onChange={(e) => setEditingExpense(prev => ({ ...prev, category: e.target.value }))}
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select category</option>
+                    {expenseCategories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_expense_description">Description</Label>
+                  <Input
+                    id="edit_expense_description"
+                    value={editingExpense.description}
+                    onChange={(e) => setEditingExpense(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief description..."
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_expense_amount">Amount *</Label>
+                  <Input
+                    id="edit_expense_amount"
+                    type="number"
+                    step="0.01"
+                    value={editingExpense.amount}
+                    onChange={(e) => setEditingExpense(prev => ({ ...prev, amount: e.target.value }))}
+                    placeholder="100.00"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_expense_budget">Budget for this Category</Label>
+                  <Input
+                    id="edit_expense_budget"
+                    type="number"
+                    step="0.01"
+                    value={editingExpense.budget}
+                    onChange={(e) => setEditingExpense(prev => ({ ...prev, budget: e.target.value }))}
+                    placeholder="1000.00"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="flex space-x-2 pt-4">
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Save Changes
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowEditExpense(false);
+                      setEditingExpense(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       {/* AI Coach Modal */}
       <PnLAICoach 

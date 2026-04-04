@@ -1,10 +1,50 @@
 # I Need Numbers - Product Requirements Document
 
-**Last Updated:** April 3, 2026
+**Last Updated:** April 4, 2026
 
 ---
 
 ## Recent Changes (April 2026)
+
+### 5 Desktop-Only Changes - COMPLETED ✅ (April 4, 2026)
+
+**Change 1: Homepage Active Deals Table Redesign + Edit Feature**
+- Updated `ActiveDealsCard.js` to match P&L Tracker's table-style layout
+- Added table columns: Property Address, Contract Signed, DD Start, DD Over, DD Status, Closing Date, Final Income, Actions
+- Added Edit icon (pencil) to Actions column alongside existing Trash icon
+- Added Edit Deal modal with full form fields (address, amount, commission %, split %, team split %, lead source, dates)
+- Amount field supports comma formatting for better readability
+- Implemented `@clerk/clerk-react` for auth token handling
+
+**Change 2: Edit Expense Feature on P&L Tracker**
+- Added Edit icon (pencil) to Expenses table Actions column (before Trash icon)
+- Added Edit Expense modal with fields: Date, Category, Description, Amount, Budget
+- Implemented `handleEditExpense()` and `handleUpdateExpense()` functions
+- Uses PATCH endpoint `/api/pnl/expenses/{expense_id}`
+
+**Change 3: Budget Utilization Summary Fix**
+- Fixed display when budget is $0 (no budget set):
+  - Shows "No budget set" instead of "$0"
+  - Shows "Spent: $X" without negative remaining
+  - Progress bar appears empty/gray
+  - Added "Set Budget" button to inline-set budget for category
+- When budget > 0 and overspent: Shows "Over budget by $X" in red
+- Uses POST endpoint `/api/pnl/budgets?month=YYYY-MM`
+
+**Change 4: Add Deal Amount Comma Formatting**
+- Amount Sold For field now displays with commas (e.g., "1,250,000")
+- Placeholder updated to "500,000"
+- `handleDealAmountChange()` formats input live
+- Commas stripped before API submission
+
+**Change 5: CSV Export Implementation**
+- Export Month: Generates `PnL_[Month]_[Year].csv` with Income, Expenses, and Summary sections
+- Export Year: Generates `PnL_Annual_[Year].csv` with same structure
+- Uses browser Blob download mechanism
+- Proper CSV escaping for fields with commas
+
+**Backend Changes:**
+- Updated `PATCH /api/pnl/deals/{deal_id}` to accept date fields: `contract_signed`, `due_diligence_start`, `due_diligence_over`
 
 ### iOS PDF Download Fix (v3 FINAL) - COMPLETED ✅ (April 3, 2026)
 - **Problem:** iOS Capacitor app failed to download PDFs. WKWebView blocks `blob:` URLs at the navigation delegate level.

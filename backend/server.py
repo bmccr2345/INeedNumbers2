@@ -7753,7 +7753,7 @@ async def update_pnl_deal(
         for field, value in update_data.items():
             if field in ["amount_sold_for", "commission_percent", "split_percent", "team_brokerage_split_percent"]:
                 update_fields[field] = float(value)
-            elif field in ["house_address", "lead_source", "closing_date"]:
+            elif field in ["house_address", "lead_source", "closing_date", "contract_signed", "due_diligence_start", "due_diligence_over"]:
                 update_fields[field] = str(value)
         
         # Recalculate final income if any financial fields were updated
