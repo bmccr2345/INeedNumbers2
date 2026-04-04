@@ -837,40 +837,8 @@ const ActionTrackerPanel = () => {
         </Card>
       )}
 
-      {/* Reflection - Hidden on desktop */}
-      <Card className="lg:hidden">
-        <CardHeader>
-          <CardTitle>End-of-Day Reflection</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Label htmlFor="reflection">What did I do today that directly led to income?</Label>
-            <Textarea
-              id="reflection"
-              value={dailyEntry?.reflection || ''}
-              onChange={(e) => {
-                const newReflection = e.target.value;
-                setDailyEntry(prev => ({
-                  ...prev,
-                  completed: prev?.completed || {},
-                  hours: prev?.hours || {},
-                  reflection: newReflection
-                }));
-              }}
-              placeholder="Reflect on today's income-generating activities..."
-              className="min-h-[100px]"
-            />
-            <Button 
-              onClick={() => saveDailyEntry(dailyEntry)}
-              disabled={isSaving || !dailyEntry?.reflection}
-              className="w-full"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Reflection'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Reflection - Removed from mobile as per user request, kept for desktop only */}
+      {/* Note: This section was previously lg:hidden (mobile only), now completely hidden */}
     </div>
   );
 
