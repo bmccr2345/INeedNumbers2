@@ -57,7 +57,7 @@ class Config(BaseSettings):
     # OpenAI (REQUIRED for AI features)
     OPENAI_API_KEY: str = Field(..., description="OpenAI API key")
     OPENAI_MODEL: Optional[str] = Field(default="gpt-4o-mini", description="OpenAI model (optional in dev)")
-    AI_COACH_MAX_TOKENS: int = Field(default=800, description="Max AI tokens")
+    AI_COACH_MAX_TOKENS: int = Field(default=1200, description="Max AI tokens")
     AI_COACH_TEMPERATURE: float = Field(default=0.2, description="AI temperature")
     AI_COACH_RATE_LIMIT_PER_MIN: int = Field(default=10, description="AI rate limit per minute")
     AI_CACHE_TTL_SECONDS: int = Field(default=300, description="AI cache TTL")

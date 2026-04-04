@@ -444,8 +444,27 @@ const BrandingProfilePage = () => {
         </div>
       )}
       
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      {/* Sticky Mobile Header - Always visible when scrolling */}
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 lg:hidden">
+        <div className="flex items-center justify-between p-3">
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="flex items-center text-green-600 font-medium text-sm"
+          >
+            <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Dashboard
+          </button>
+          <span className="font-semibold text-gray-900 text-sm">Branding & Profile</span>
+          <div className="text-xs text-gray-500">
+            {completion.toFixed(0)}%
+          </div>
+        </div>
+      </div>
+      
+      {/* Desktop Header - Hidden on mobile */}
+      <header className="hidden lg:block bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">

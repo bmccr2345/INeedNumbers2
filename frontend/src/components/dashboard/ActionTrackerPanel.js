@@ -87,6 +87,13 @@ const ActionTrackerPanel = () => {
     }
   }, [user]);
 
+  // Refresh data when switching back to dashboard tab
+  useEffect(() => {
+    if (activeSubTab === 'dashboard') {
+      loadTrackerData();
+    }
+  }, [activeSubTab]);
+
   const loadTrackerData = async () => {
     try {
       setIsLoading(true);
@@ -841,13 +848,21 @@ const ActionTrackerPanel = () => {
             <Textarea
               id="reflection"
               value={dailyEntry?.reflection || ''}
-              onChange={(e) => setDailyEntry({...dailyEntry, reflection: e.target.value})}
+              onChange={(e) => {
+                const newReflection = e.target.value;
+                setDailyEntry(prev => ({
+                  ...prev,
+                  completed: prev?.completed || {},
+                  hours: prev?.hours || {},
+                  reflection: newReflection
+                }));
+              }}
               placeholder="Reflect on today's income-generating activities..."
               className="min-h-[100px]"
             />
             <Button 
               onClick={() => saveDailyEntry(dailyEntry)}
-              disabled={isSaving}
+              disabled={isSaving || !dailyEntry?.reflection}
               className="w-full"
             >
               <Save className="w-4 h-4 mr-2" />

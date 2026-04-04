@@ -166,26 +166,26 @@ const AffordabilityAICoach = ({ isOpen, onClose, inputs, results }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4" style={{ zIndex: 9999 }}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg flex-shrink-0">
           <div className="flex items-center">
             <div className="relative">
-              <Sparkles className="w-6 h-6 mr-3 text-green-600" />
-              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 animate-pulse" />
+              <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-green-600" />
+              <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 absolute -top-1 -right-1 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center">
-                <h2 className="text-xl font-semibold">Fairy AI Coach</h2>
-                <span className="ml-2 px-2 py-1 bg-yellow-400 text-purple-900 text-xs font-bold rounded">PRO</span>
+                <h2 className="text-lg sm:text-xl font-semibold">Fairy AI Coach</h2>
+                <span className="ml-2 px-2 py-0.5 bg-yellow-400 text-purple-900 text-xs font-bold rounded">PRO</span>
               </div>
-              <p className="text-purple-100 text-sm">Affordability Analysis</p>
+              <p className="text-purple-100 text-xs sm:text-sm">Affordability Analysis</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-purple-200 transition-colors"
+            className="text-white hover:text-purple-200 transition-colors p-1"
           >
             <X className="w-5 h-5" />
           </button>

@@ -1670,144 +1670,225 @@ const PnLPanel = () => {
                   </CardHeader>
                   <CardContent>
                     {pnlSummary.expenses.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr className="text-left text-sm text-gray-500 border-b">
-                              <th className="pb-2">Date</th>
-                              <th className="pb-2">Category</th>
-                              <th className="pb-2">Description</th>
-                              <th className="pb-2">Amount</th>
-                              <th className="pb-2">Budget Utilization</th>
-                              <th className="pb-2">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {pnlSummary.expenses.map((expense) => {
-                              const utilization = pnlSummary.budget_utilization[expense.category];
-                              return (
-                                <tr key={expense.id} className="border-b hover:bg-gray-50">
-                                  <td className="py-2 text-sm">{new Date(expense.date).toLocaleDateString()}</td>
-                                  <td className="py-2 text-sm font-medium">
-                                    {expense.category}
-                                    {expense.recurring && (
-                                      <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                                        Recurring
-                                      </span>
-                                    )}
-                                    {expense.is_recurring_instance && (
-                                      <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
-                                        Auto
-                                      </span>
-                                    )}
-                                  </td>
-                                  
-                                  {/* Description - Editable */}
-                                  <td className="py-2 text-sm">
-                                    {editingCell?.type === 'expense' && editingCell?.id === expense.id && editingCell?.field === 'description' ? (
-                                      <div className="flex items-center space-x-1">
-                                        <Input
-                                          type="text"
-                                          value={editValue}
-                                          onChange={(e) => setEditValue(e.target.value)}
-                                          onKeyDown={handleKeyPress}
-                                          className="w-32 h-7 text-xs"
-                                          autoFocus
-                                        />
-                                        <button onClick={saveEdit} className="text-green-600 hover:text-green-800" title="Save">
-                                          <Check className="w-3 h-3" />
-                                        </button>
-                                        <button onClick={cancelEditing} className="text-red-600 hover:text-red-800" title="Cancel">
-                                          <X className="w-3 h-3" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        onClick={() => startEditing('expense', expense.id, 'description', expense.description || '')}
-                                        className="hover:bg-blue-100 px-2 py-1 rounded group flex items-center"
-                                        title="Click to edit"
-                                      >
-                                        <span>{expense.description || '—'}</span>
-                                        <Edit3 className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-50" />
-                                      </button>
-                                    )}
-                                  </td>
-                                  
-                                  {/* Amount - Editable */}
-                                  <td className="py-2 text-sm font-bold text-red-600">
-                                    {editingCell?.type === 'expense' && editingCell?.id === expense.id && editingCell?.field === 'amount' ? (
-                                      <div className="flex items-center space-x-1">
-                                        <Input
-                                          type="number"
-                                          step="0.01"
-                                          value={editValue}
-                                          onChange={(e) => setEditValue(e.target.value)}
-                                          onKeyDown={handleKeyPress}
-                                          className="w-20 h-7 text-xs"
-                                          autoFocus
-                                        />
-                                        <button onClick={saveEdit} className="text-green-600 hover:text-green-800" title="Save">
-                                          <Check className="w-3 h-3" />
-                                        </button>
-                                        <button onClick={cancelEditing} className="text-red-600 hover:text-red-800" title="Cancel">
-                                          <X className="w-3 h-3" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        onClick={() => startEditing('expense', expense.id, 'amount', expense.amount)}
-                                        className="hover:bg-blue-100 px-2 py-1 rounded group flex items-center"
-                                        title="Click to edit"
-                                      >
-                                        <span>{formatCurrency(expense.amount)}</span>
-                                        <Edit3 className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-50" />
-                                      </button>
-                                    )}
-                                  </td>
-                                  <td className="py-2 text-sm">
-                                    {utilization ? (
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-20 bg-gray-200 rounded-full h-2">
-                                          <div 
-                                            className={`h-2 rounded-full ${
-                                              utilization.percent > 100 ? 'bg-red-500' : 
-                                              utilization.percent > 80 ? 'bg-yellow-500' : 'bg-green-500'
-                                            }`}
-                                            style={{ width: `${Math.min(utilization.percent, 100)}%` }}
-                                          ></div>
-                                        </div>
-                                        <span className="text-xs">
-                                          {utilization.percent.toFixed(0)}% of {formatCurrency(utilization.budget)}
+                      <>
+                        {/* Desktop: Table view */}
+                        <div className="hidden lg:block overflow-x-auto">
+                          <table className="min-w-full">
+                            <thead>
+                              <tr className="text-left text-sm text-gray-500 border-b">
+                                <th className="pb-2">Date</th>
+                                <th className="pb-2">Category</th>
+                                <th className="pb-2">Description</th>
+                                <th className="pb-2">Amount</th>
+                                <th className="pb-2">Budget Utilization</th>
+                                <th className="pb-2">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {pnlSummary.expenses.map((expense) => {
+                                const utilization = pnlSummary.budget_utilization[expense.category];
+                                return (
+                                  <tr key={expense.id} className="border-b hover:bg-gray-50">
+                                    <td className="py-2 text-sm">{new Date(expense.date).toLocaleDateString()}</td>
+                                    <td className="py-2 text-sm font-medium">
+                                      {expense.category}
+                                      {expense.recurring && (
+                                        <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                          Recurring
                                         </span>
+                                      )}
+                                      {expense.is_recurring_instance && (
+                                        <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                                          Auto
+                                        </span>
+                                      )}
+                                    </td>
+                                    
+                                    {/* Description - Editable */}
+                                    <td className="py-2 text-sm">
+                                      {editingCell?.type === 'expense' && editingCell?.id === expense.id && editingCell?.field === 'description' ? (
+                                        <div className="flex items-center space-x-1">
+                                          <Input
+                                            type="text"
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            onKeyDown={handleKeyPress}
+                                            className="w-32 h-7 text-xs"
+                                            autoFocus
+                                          />
+                                          <button onClick={saveEdit} className="text-green-600 hover:text-green-800" title="Save">
+                                            <Check className="w-3 h-3" />
+                                          </button>
+                                          <button onClick={cancelEditing} className="text-red-600 hover:text-red-800" title="Cancel">
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => startEditing('expense', expense.id, 'description', expense.description || '')}
+                                          className="hover:bg-blue-100 px-2 py-1 rounded group flex items-center"
+                                          title="Click to edit"
+                                        >
+                                          <span>{expense.description || '—'}</span>
+                                          <Edit3 className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-50" />
+                                        </button>
+                                      )}
+                                    </td>
+                                    
+                                    {/* Amount - Editable */}
+                                    <td className="py-2 text-sm font-bold text-red-600">
+                                      {editingCell?.type === 'expense' && editingCell?.id === expense.id && editingCell?.field === 'amount' ? (
+                                        <div className="flex items-center space-x-1">
+                                          <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            onKeyDown={handleKeyPress}
+                                            className="w-20 h-7 text-xs"
+                                            autoFocus
+                                          />
+                                          <button onClick={saveEdit} className="text-green-600 hover:text-green-800" title="Save">
+                                            <Check className="w-3 h-3" />
+                                          </button>
+                                          <button onClick={cancelEditing} className="text-red-600 hover:text-red-800" title="Cancel">
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => startEditing('expense', expense.id, 'amount', expense.amount)}
+                                          className="hover:bg-blue-100 px-2 py-1 rounded group flex items-center"
+                                          title="Click to edit"
+                                        >
+                                          <span>{formatCurrency(expense.amount)}</span>
+                                          <Edit3 className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-50" />
+                                        </button>
+                                      )}
+                                    </td>
+                                    <td className="py-2 text-sm">
+                                      {utilization ? (
+                                        <div className="flex items-center space-x-2">
+                                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                                            <div 
+                                              className={`h-2 rounded-full ${
+                                                utilization.percent > 100 ? 'bg-red-500' : 
+                                                utilization.percent > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                              }`}
+                                              style={{ width: `${Math.min(utilization.percent, 100)}%` }}
+                                            ></div>
+                                          </div>
+                                          <span className="text-xs">
+                                            {utilization.percent.toFixed(0)}% of {formatCurrency(utilization.budget)}
+                                          </span>
+                                        </div>
+                                      ) : '—'}
+                                    </td>
+                                    <td className="py-2">
+                                      <div className="flex space-x-1">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleEditExpense(expense)}
+                                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                        >
+                                          <Edit3 className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => deleteExpense(expense.id)}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
                                       </div>
-                                    ) : '—'}
-                                  </td>
-                                  <td className="py-2">
-                                    <div className="flex space-x-1">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleEditExpense(expense)}
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                      >
-                                        <Edit3 className="w-4 h-4" />
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => deleteExpense(expense.id)}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        {/* Mobile: Card view */}
+                        <div className="lg:hidden space-y-3">
+                          {pnlSummary.expenses.map((expense) => {
+                            const utilization = pnlSummary.budget_utilization[expense.category];
+                            return (
+                              <div key={expense.id} className="border rounded-lg p-4 space-y-3 bg-gray-50">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-gray-900">
+                                      {expense.category}
+                                      {expense.is_recurring_instance && (
+                                        <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
+                                          Auto
+                                        </span>
+                                      )}
+                                      {expense.recurring && (
+                                        <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                          Recurring
+                                        </span>
+                                      )}
                                     </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                                    <div className="text-sm text-gray-500 mt-1">
+                                      {expense.description || 'No description'}
+                                    </div>
+                                  </div>
+                                  <div className="flex space-x-1 ml-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditExpense(expense)}
+                                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0"
+                                    >
+                                      <Edit3 className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => deleteExpense(expense.id)}
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div>
+                                    <span className="text-gray-500">Date:</span>
+                                    <span className="ml-2 font-medium">{new Date(expense.date).toLocaleDateString()}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Amount:</span>
+                                    <span className="ml-2 font-bold text-red-600">{formatCurrency(expense.amount)}</span>
+                                  </div>
+                                </div>
+                                
+                                {utilization && utilization.budget > 0 && (
+                                  <div className="pt-2 border-t">
+                                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                                      <span>Budget Utilization</span>
+                                      <span>{utilization.percent.toFixed(0)}% of {formatCurrency(utilization.budget)}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className={`h-2 rounded-full ${
+                                          utilization.percent > 100 ? 'bg-red-500' : 
+                                          utilization.percent > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                        }`}
+                                        style={{ width: `${Math.min(utilization.percent, 100)}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
