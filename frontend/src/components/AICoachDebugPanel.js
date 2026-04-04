@@ -112,7 +112,7 @@ const AICoachDebugPanel = () => {
       
       const requestConfig = {
         method: 'POST',
-        url: `${API_BASE_URL}/api/ai-coach-v2/generate`,
+        url: `${API_BASE_URL}/api/ai-coach/generate`,
         headers: {
           'Authorization': `Bearer ${token.substring(0, 50)}...`,
           'Content-Type': 'application/json'
@@ -132,7 +132,7 @@ const AICoachDebugPanel = () => {
 
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/api/ai-coach-v2/generate`,
+          `${API_BASE_URL}/api/ai-coach/generate`,
           { context: 'debug_test', stream: false },
           {
             headers: {

@@ -117,7 +117,7 @@ const ActionCoachButton = () => {
       ]);
 
       // Call AI coach with action_coaching context
-      const aiResponse = await fetch(`${API_BASE_URL}/api/ai-coach-v2/generate`, {
+      const aiResponse = await fetch(`${API_BASE_URL}/api/ai-coach/generate`, {
         method: 'POST',
         headers,
         credentials: 'include',

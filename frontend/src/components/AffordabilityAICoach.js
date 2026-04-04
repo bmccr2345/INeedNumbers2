@@ -88,7 +88,7 @@ const AffordabilityAICoach = ({ isOpen, onClose, inputs, results }) => {
         throw new Error('Backend URL not configured');
       }
       
-      const response = await fetch(`${backendUrl}/api/ai-coach-v2/generate`, {
+      const response = await fetch(`${backendUrl}/api/ai-coach/generate`, {
         method: 'POST',
         headers: getHeaders(),
         credentials: 'include',  // Include HttpOnly cookies

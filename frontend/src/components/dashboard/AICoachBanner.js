@@ -74,7 +74,7 @@ const AICoachBanner = () => {
 
       console.log('[AICoachBanner] Token obtained, calling AI Coach...');
 
-      const response = await axios.post(`${backendUrl}/api/ai-coach-v2/generate`, {}, {
+      const response = await axios.post(`${backendUrl}/api/ai-coach/generate`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         },

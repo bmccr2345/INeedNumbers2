@@ -105,7 +105,7 @@ const PnLAICoach = ({ isOpen, onClose, currentMonthData, pastSixMonthsData }) =>
 
       // Call the AI Coach API using axios
       const response = await axios.post(
-        `${API_BASE_URL}/api/ai-coach-v2/generate`,
+        `${API_BASE_URL}/api/ai-coach/generate`,
         {
           context: 'pnl_analysis',
           pnl_data: {

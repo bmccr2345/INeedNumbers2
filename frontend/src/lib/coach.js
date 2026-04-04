@@ -18,7 +18,7 @@ export async function fetchCoachJSON(force = false, year = null) {
     ...(year && { year })
   };
 
-  const response = await fetch(`${BACKEND_URL}/api/ai-coach-v2/generate`, {
+  const response = await fetch(`${BACKEND_URL}/api/ai-coach/generate`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -49,7 +49,7 @@ export async function fetchCoachJSON(force = false, year = null) {
  */
 export async function fetchCoachStream(force = false, onToken, onComplete, onError) {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/ai-coach-v2/generate`, {
+    const response = await fetch(`${BACKEND_URL}/api/ai-coach/generate`, {
       method: "POST",
       credentials: "include", 
       headers: { "Content-Type": "application/json" },
@@ -114,7 +114,7 @@ export async function fetchCoachStream(force = false, onToken, onComplete, onErr
  * @returns {Promise<Object>} Diagnostic information about user's data
  */
 export async function fetchCoachDiagnostics() {
-  const response = await fetch(`${BACKEND_URL}/api/ai-coach-v2/diag`, {
+  const response = await fetch(`${BACKEND_URL}/api/ai-coach/diag`, {
     method: "GET",
     credentials: "include"
   });

@@ -8700,8 +8700,8 @@ async def get_weekly_metrics(
         logger.error(f"Error fetching weekly metrics: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch weekly metrics")
 
-@api_router.post("/ai-coach/generate")
-async def generate_ai_coach_response(
+@api_router.post("/ai-coach-legacy/generate")
+async def generate_ai_coach_response_legacy(
     current_user: User = Depends(require_auth)
 ) -> AICoachResponse:
     """Generate AI coach response"""
@@ -9337,7 +9337,7 @@ async def readiness_check():
 # Include new AI Coach router
 try:
     from app.routes.ai_coach import router as ai_coach_router
-    api_router.include_router(ai_coach_router, prefix="/ai-coach-v2", tags=["ai_coach_v2"])
+    api_router.include_router(ai_coach_router, prefix="/ai-coach", tags=["ai_coach"])
     logger.info("New AI Coach router mounted at /api/ai-coach-v2")
 except ImportError as e:
     logger.warning(f"Could not import new AI Coach router: {e}")

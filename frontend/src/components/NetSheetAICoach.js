@@ -78,7 +78,7 @@ const NetSheetAICoach = ({ isOpen, onClose, inputs, results, dealState }) => {
       const netPercentage = salePrice > 0 ? ((netAmount / salePrice) * 100).toFixed(1) : 0;
       
       // Call the AI Coach API with cookie-based authentication
-      const response = await fetch(`${API_BASE_URL}/api/ai-coach-v2/generate`, {
+      const response = await fetch(`${API_BASE_URL}/api/ai-coach/generate`, {
         method: 'POST',
         headers: getHeaders(),
         credentials: 'include',  // Include HttpOnly cookies
