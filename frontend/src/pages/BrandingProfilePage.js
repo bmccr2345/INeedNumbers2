@@ -949,6 +949,19 @@ const BrandingProfilePage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Mobile Back to Overview Button */}
+          <div className="md:hidden mt-8 mb-6 px-4">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full flex items-center justify-center space-x-2 py-3 px-6 bg-[#2FA163] hover:bg-[#268a54] text-white font-semibold rounded-xl shadow-md transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              <span>Back to Overview</span>
+            </button>
+          </div>
         </div>
       </main>
 

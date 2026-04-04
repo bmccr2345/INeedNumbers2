@@ -548,6 +548,150 @@ async def generate_coach(
             
             if custom_prompt:
                 # Use the custom prompt directly from frontend
+                pass
+        elif context == "action_coaching":
+            # ACTION COACHING - What should I do right now?
+            tracker_settings = body.get("tracker_settings", {}) or {}
+            daily_tracker = body.get("daily_tracker", {}) or {}
+            pnl_data = body.get("pnl_data", {}) or {}
+            recent_activity_logs = body.get("recent_activity_logs", []) or []
+            goal_settings_data = body.get("goal_settings", {}) or {}
+
+            # Extract relevant data points
+            monthly_goal = tracker_settings.get("monthlyClosingsTarget", "not set")
+            income_goal = goal_settings_data.get("annual_gci_goal", "not set")
+            
+            # Get completed activities
+            completed_today = daily_tracker.get("completed", {}) if isinstance(daily_tracker, dict) else {}
+            activities_completed = sum(completed_today.values()) if isinstance(completed_today, dict) else 0
+            
+            # Get income data
+            current_income = pnl_data.get("total_income", 0) if isinstance(pnl_data, dict) else 0
+            current_expenses = pnl_data.get("total_expenses", 0) if isinstance(pnl_data, dict) else 0
+
+            # Format recent actions
+            recent_actions_text = "None recorded"
+            if recent_activity_logs and isinstance(recent_activity_logs, list):
+                recent_items = recent_activity_logs[:5]
+                recent_actions_text = "; ".join([
+                    f"{log.get('activity', 'unknown')} ({log.get('date', 'unknown date')[:10] if log.get('date') else 'unknown'})"
+                    for log in recent_items if isinstance(log, dict)
+                ])
+
+            pipeline_summary = f"Monthly closing goal: {monthly_goal}. Current month income: ${current_income:,.0f}, expenses: ${current_expenses:,.0f}."
+            today_activity = f"{activities_completed} activities completed today."
+
+            action_coaching_prompt = f"""You are an elite real estate performance coach focused on maximizing income through daily actions.
+
+Your job is to decide what this agent should do RIGHT NOW to move closer to a closing.
+
+---
+
+CONTEXT:
+- Monthly closing goal: {monthly_goal}
+- Annual income goal: {income_goal}
+- Current pipeline summary: {pipeline_summary}
+- Activities completed today: {today_activity}
+- Recent actions taken: {recent_actions_text}
+
+---
+
+STEP 1: DIAGNOSE
+Identify the single biggest constraint. Choose one:
+- Not enough new leads
+- Weak follow-up
+- Deals not converting
+- Pipeline too thin for future income
+- Low activity / inconsistency
+
+---
+
+STEP 2: PRIORITIZE
+Based on the constraint, choose ONE focus area:
+- Prospecting (new leads)
+- Follow-up (revive opportunities)
+- Conversion (close deals)
+- Visibility (marketing that leads to conversations)
+
+Do NOT repeat the same focus as the most recent actions suggest.
+
+---
+
+STEP 3: GENERATE ACTIONS
+Generate exactly 3 actions.
+
+Rules:
+- Each action must be specific and executable within 30-60 minutes
+- Must reference real context when possible (their goal numbers, activity gaps, etc.)
+- Must directly impact income (not busy work)
+- Avoid generic advice like "follow up with leads" — be specific about WHO and HOW
+
+---
+
+STEP 4: ADD VARIATION
+Each time this runs:
+- Change communication channel (call, text, video, social, email)
+- Change audience (past client, warm lead, new contact, local audience)
+- Change tone (direct, casual, value-based, urgency)
+
+Avoid repeating these recent actions:
+{recent_actions_text}
+
+---
+
+OUTPUT FORMAT (follow this EXACTLY):
+
+If you do these 3 things today, you increase your chance of a closing this month by [estimate]%.
+
+Constraint:
+[1 sentence identifying the biggest gap]
+
+Focus:
+[Chosen area - one of: Prospecting, Follow-up, Conversion, Visibility]
+
+---
+
+1. Action:
+[Specific action title]
+
+   How to do it:
+[Exact steps, wording, or script to use]
+
+   Why this matters:
+[1 sentence tied to closing or income]
+
+---
+
+2. Action:
+[Specific action title]
+
+   How to do it:
+[Exact steps, wording, or script to use]
+
+   Why this matters:
+[1 sentence tied to closing or income]
+
+---
+
+3. Action:
+[Specific action title]
+
+   How to do it:
+[Exact steps, wording, or script to use]
+
+   Why this matters:
+[1 sentence tied to closing or income]"""
+
+            payload = {
+                "analysis_type": "action_coaching",
+                "tracker_settings": tracker_settings,
+                "daily_tracker": daily_tracker,
+                "pnl_data": pnl_data,
+                "recent_activity_logs": recent_activity_logs,
+                "goal_settings": goal_settings_data,
+                "user_plan": user.plan,
+                "context": "Action coaching for real estate agent performance"
+            }
                 payload = {
                     "analysis_type": "investor_deal_analysis",
                     "custom_prompt": custom_prompt,
@@ -676,6 +820,9 @@ async def generate_coach(
                 except ImportError:
                     # Fallback if prompt not defined
                     system_prompt = "You are an expert real estate investment analyst. Analyze the investment property data and provide insights comparing metrics to industry standards."
+        elif context == "action_coaching":
+            # Use the action coaching prompt we already built
+            system_prompt = action_coaching_prompt
         else:
             system_prompt = coach_system_prompt()
         

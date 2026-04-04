@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import API_BASE_URL from '../../config/api';
+import ActionCoachButton from '../ActionCoachButton';
 
 const ActionTrackerPanel = () => {
   const { user } = useAuth();
@@ -779,6 +780,9 @@ const ActionTrackerPanel = () => {
             : `${settings?.monthlyClosingsTarget} closings`}
         </h2>
       </div>
+
+      {/* AI Coaching Button */}
+      <ActionCoachButton />
 
       {/* Today's Activities Table */}
       <Card>
