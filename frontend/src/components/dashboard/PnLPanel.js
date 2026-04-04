@@ -538,14 +538,7 @@ const PnLPanel = () => {
         return;
       }
 
-      // Prepare data for CSV
-      const deals = pnlSummary?.deals || [];
-      const expenses = pnlSummary?.expenses || [];
-      const totalIncome = pnlSummary?.total_income || 0;
-      const totalExpenses = pnlSummary?.total_expenses || 0;
-      const netIncome = pnlSummary?.net_income || 0;
-
-      // Get month name for filename
+      // Get year from selected month
       const [year, month] = selectedMonth.split('-');
       const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleString('default', { month: 'long' });
 
@@ -553,6 +546,13 @@ const PnLPanel = () => {
       let filename = '';
 
       if (period === 'month') {
+        // Use current loaded data for single month export
+        const deals = pnlSummary?.deals || [];
+        const expenses = pnlSummary?.expenses || [];
+        const totalIncome = pnlSummary?.total_income || 0;
+        const totalExpenses = pnlSummary?.total_expenses || 0;
+        const netIncome = pnlSummary?.net_income || 0;
+
         filename = `PnL_${monthName}_${year}.csv`;
         
         // Section 1: Income - Closed Deals
@@ -584,38 +584,121 @@ const PnLPanel = () => {
         csvContent += `"Net Income:","${formatCurrency(netIncome)}"\n`;
         
       } else {
-        // Year export - would need to fetch full year data from API
+        // YEAR EXPORT: Fetch data for all 12 months
         filename = `PnL_Annual_${year}.csv`;
         
-        // For now, export current month data with annual header
-        csvContent += `Annual P&L Report - ${year}\n\n`;
-        csvContent += `Month: ${monthName} ${year}\n\n`;
+        // Track annual totals
+        let annualIncome = 0;
+        let annualExpenses = 0;
+        let allDeals = [];
+        let allExpenses = [];
+        const monthlyData = [];
+
+        // Fetch data for each month of the selected year
+        for (let m = 1; m <= 12; m++) {
+          const monthKey = `${year}-${String(m).padStart(2, '0')}`;
+          const monthLabel = new Date(parseInt(year), m - 1).toLocaleString('default', { month: 'long' });
+          
+          try {
+            const response = await axios.get(`${backendUrl}/api/pnl/summary`, {
+              params: { month: monthKey },
+              withCredentials: true,
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const monthDeals = response.data?.deals || [];
+            const monthExpenses = response.data?.expenses || [];
+            const monthIncome = response.data?.total_income || 0;
+            const monthExpenseTotal = response.data?.total_expenses || 0;
+            
+            monthlyData.push({
+              month: monthLabel,
+              monthKey,
+              deals: monthDeals,
+              expenses: monthExpenses,
+              totalIncome: monthIncome,
+              totalExpenses: monthExpenseTotal,
+              netIncome: monthIncome - monthExpenseTotal
+            });
+            
+            annualIncome += monthIncome;
+            annualExpenses += monthExpenseTotal;
+            allDeals = [...allDeals, ...monthDeals];
+            allExpenses = [...allExpenses, ...monthExpenses];
+            
+          } catch (err) {
+            // Month may have no data, continue
+            monthlyData.push({
+              month: monthLabel,
+              monthKey,
+              deals: [],
+              expenses: [],
+              totalIncome: 0,
+              totalExpenses: 0,
+              netIncome: 0
+            });
+          }
+        }
+
+        // Build CSV content
+        csvContent += `Annual P&L Report - ${year}\n`;
+        csvContent += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+
+        // Section 1: All Income - Closed Deals (grouped by month)
+        csvContent += '=== INCOME - CLOSED DEALS ===\n\n';
         
-        // Same structure as month export
-        csvContent += 'Income - Closed Deals\n';
-        csvContent += '"Property Address","Sale Price","Commission %","Split %","Team/Brokerage Split %","Cap Amount","Final Income","Lead Source","Closing Date"\n';
-        
-        deals.forEach(deal => {
-          const address = (deal.house_address || '').replace(/"/g, '""');
-          csvContent += `"${address}","${formatCurrency(deal.amount_sold_for)}","${deal.commission_percent}%","${deal.split_percent}%","${deal.team_brokerage_split_percent}%","${formatCurrency(deal.cap_amount || 0)}","${formatCurrency(deal.final_income)}","${deal.lead_source || ''}","${new Date(deal.closing_date).toLocaleDateString()}"\n`;
+        monthlyData.forEach(monthData => {
+          if (monthData.deals.length > 0) {
+            csvContent += `${monthData.month} ${year}\n`;
+            csvContent += '"Property Address","Sale Price","Commission %","Split %","Team/Brokerage Split %","Cap Amount","Final Income","Lead Source","Closing Date"\n';
+            
+            monthData.deals.forEach(deal => {
+              const address = (deal.house_address || '').replace(/"/g, '""');
+              csvContent += `"${address}","${formatCurrency(deal.amount_sold_for)}","${deal.commission_percent}%","${deal.split_percent}%","${deal.team_brokerage_split_percent}%","${formatCurrency(deal.cap_amount || 0)}","${formatCurrency(deal.final_income)}","${deal.lead_source || ''}","${new Date(deal.closing_date).toLocaleDateString()}"\n`;
+            });
+            
+            csvContent += `"${monthData.month} Total Income:","${formatCurrency(monthData.totalIncome)}"\n\n`;
+          }
         });
+
+        csvContent += `"ANNUAL TOTAL INCOME:","${formatCurrency(annualIncome)}"\n\n`;
+
+        // Section 2: All Expenses - Business Costs (grouped by month)
+        csvContent += '=== EXPENSES - BUSINESS COSTS ===\n\n';
         
-        csvContent += `\n"Total Income:","${formatCurrency(totalIncome)}"\n\n`;
-        
-        csvContent += 'Expenses - Business Costs\n';
-        csvContent += '"Date","Category","Description","Amount"\n';
-        
-        expenses.forEach(expense => {
-          const description = (expense.description || '').replace(/"/g, '""');
-          csvContent += `"${new Date(expense.date).toLocaleDateString()}","${expense.category}","${description}","${formatCurrency(expense.amount)}"\n`;
+        monthlyData.forEach(monthData => {
+          if (monthData.expenses.length > 0) {
+            csvContent += `${monthData.month} ${year}\n`;
+            csvContent += '"Date","Category","Description","Amount"\n';
+            
+            monthData.expenses.forEach(expense => {
+              const description = (expense.description || '').replace(/"/g, '""');
+              csvContent += `"${new Date(expense.date).toLocaleDateString()}","${expense.category}","${description}","${formatCurrency(expense.amount)}"\n`;
+            });
+            
+            csvContent += `"${monthData.month} Total Expenses:","${formatCurrency(monthData.totalExpenses)}"\n\n`;
+          }
         });
+
+        csvContent += `"ANNUAL TOTAL EXPENSES:","${formatCurrency(annualExpenses)}"\n\n`;
+
+        // Section 3: Monthly Summary Table
+        csvContent += '=== MONTHLY SUMMARY ===\n';
+        csvContent += '"Month","Income","Expenses","Net Income"\n';
         
-        csvContent += `\n"Total Expenses:","${formatCurrency(totalExpenses)}"\n\n`;
-        
-        csvContent += 'P&L Summary\n';
-        csvContent += `"Total Income:","${formatCurrency(totalIncome)}"\n`;
-        csvContent += `"Total Expenses:","${formatCurrency(totalExpenses)}"\n`;
-        csvContent += `"Net Income:","${formatCurrency(netIncome)}"\n`;
+        monthlyData.forEach(monthData => {
+          csvContent += `"${monthData.month}","${formatCurrency(monthData.totalIncome)}","${formatCurrency(monthData.totalExpenses)}","${formatCurrency(monthData.netIncome)}"\n`;
+        });
+
+        csvContent += '\n';
+
+        // Section 4: Annual Summary
+        csvContent += '=== ANNUAL P&L SUMMARY ===\n';
+        csvContent += `"Total Annual Income:","${formatCurrency(annualIncome)}"\n`;
+        csvContent += `"Total Annual Expenses:","${formatCurrency(annualExpenses)}"\n`;
+        csvContent += `"Net Annual Income:","${formatCurrency(annualIncome - annualExpenses)}"\n`;
+        csvContent += `"Total Deals Closed:","${allDeals.length}"\n`;
+        csvContent += `"Total Expense Entries:","${allExpenses.length}"\n`;
       }
 
       // Create and download the CSV file
