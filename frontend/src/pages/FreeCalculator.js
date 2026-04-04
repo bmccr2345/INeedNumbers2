@@ -19,6 +19,7 @@ import { formatNumberWithCommas, parseNumberFromFormatted } from '../utils/calcu
 import { safeLocalStorage } from '../utils/safeStorage';
 import API_BASE_URL from '../config/api';
 import InvestorAICoach from '../components/InvestorAICoach';
+import PdfLoadingPopup from '../components/PdfLoadingPopup';
 
 const FreeCalculator = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const FreeCalculator = () => {
   
   // AI Coach modal state
   const [showAICoach, setShowAICoach] = useState(false);
+  const [showPdfPopup, setShowPdfPopup] = useState(false);
   
   // Form state - ALL expenses are now MONTHLY
   const [propertyData, setPropertyData] = useState({
@@ -459,6 +461,8 @@ const FreeCalculator = () => {
 
   // Handle PDF download (PART 5)
   const handleDownloadPDF = async () => {
+    setShowPdfPopup(true);
+    
     if (!metrics) {
       toast.error('Please calculate metrics first');
       return;
@@ -1613,6 +1617,11 @@ const FreeCalculator = () => {
           metrics={metrics}
         />
       )}
+      
+      <PdfLoadingPopup
+        isVisible={showPdfPopup}
+        onClose={() => setShowPdfPopup(false)}
+      />
     </div>
   );
 };
